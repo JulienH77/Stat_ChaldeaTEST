@@ -1,0 +1,73 @@
+name: Sync cloud snapshot
+
+on:
+  schedule:
+    # Chaque dimanche à 04:30 UTC.
+    - cron: '30 4 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Build initial-state snapshot
+        run: node tools/sync-initial-state.mjs
+
+      - name: Commit snapshot safely
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- data/initial-state.json; then
+            echo 'Aucune modification dans le snapshot.'
+            exit 0
+          fi
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+          # Keep the generated snapshot, refresh the remote branch, then re-apply
+          # only that generated file. This prevents a normal user commit pushed
+          # while the workflow was running from causing a non-fast-forward failure.
+          cp data/initial-state.json /tmp/initial-state.generated.json
+          git fetch origin main
+          git reset --hard origin/main
+          cp /tmp/initial-state.generated.json data/initial-state.json
+
+          if git diff --quiet -- data/initial-state.json; then
+            echo 'Le snapshot a déjà été publié par une autre exécution.'
+            exit 0
+          fi
+
+          git add data/initial-state.json
+          git commit -m 'chore: update Supabase roster snapshot'
+
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then
+              echo 'Snapshot poussé avec succès.'
+              exit 0
+            fi
+            echo "Push refusé (tentative $attempt/3), actualisation du dépôt distant…"
+            cp data/initial-state.json /tmp/initial-state.generated.json
+            git fetch origin main
+            git reset --hard origin/main
+            cp /tmp/initial-state.generated.json data/initial-state.json
+            git add data/initial-state.json
+            git commit -m 'chore: update Supabase roster snapshot' || true
+          done
+
+          echo 'Impossible de pousser le snapshot après 3 tentatives.'
+          exit 1
