@@ -1,0 +1,113 @@
+function renderAll(){renderMasterSwitch();if(currentView==='overview')renderOverview();if(currentView==='servants'){fillFilters();renderRoster()}if(currentView==='compare')renderCompare();if(currentView==='supports')renderSupports();if(currentView==='xp')renderXp()}
+async function persistStat(id){
+ if(!cloudEnabled||!cloud||!session||!currentCanEdit()){
+   toast('Impossible de synchroniser ce Servant : compte non éditeur');
+   return false;
+ }
+ const s=stats(currentPlayer,id);
+ const body={
+   player_key:currentPlayer,
+   servant_id:Number(id),
+   level:s.level,
+   np:s.np,
+   bond:s.bond,
+   grail:s.grail,
+   fou_hp:s.fouHp,
+   fou_atk:s.fouAtk,
+   servant_coins:s.servantCoins,
+   skills:s.skills||[null,null,null],
+   append_skills:s.appendSkills||[null,null,null,null,null],
+   updated_at:new Date().toISOString()
+ };
+ const {data,error}=await cloud
+   .from('chaldea_stats')
+   .upsert(body,{onConflict:'player_key,servant_id',ignoreDuplicates:false})
+   .select('player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills')
+   .single();
+ if(error){
+   updateSync('Supabase · erreur sauvegarde',true);
+   toast('Erreur Supabase : '+error.message);
+   return false;
+ }
+ if(!data || String(data.player_key)!==String(currentPlayer) || Number(data.servant_id)!==Number(id)){
+   updateSync('Supabase · sauvegarde non confirmée',true);
+   toast('La sauvegarde du Servant n’a pas pu être confirmée');
+   return false;
+ }
+ updateSync('Cloud · synchronisé');
+ return true;
+}
+function renderCurrentView(){
+  if(currentView==='overview')renderOverview();
+  else if(currentView==='servants')renderRoster();
+  else if(currentView==='compare')renderCompare();
+  else if(currentView==='supports')renderSupports();
+  else if(currentView==='xp')renderXp();
+}
+async function refreshPublicStats(){
+ if(!cloudEnabled||!cloud)return;
+ const {data,error}=await cloud.from('chaldea_stats').select('*');
+ if(error){updateSync('Supabase · lecture refusée',true);return}
+ let changed=false;
+ for(const x of data||[]){
+   const p=String(x?.player_key||'');
+   const id=Number(x?.servant_id);
+   if(!PLAYERS.includes(p)||!Number.isFinite(id)||id<=0)continue;
+   const ss=ensureStats(p,id);
+   const next={level:x.level,np:x.np,bond:x.bond,grail:x.grail,fouHp:x.fou_hp,fouAtk:x.fou_atk,servantCoins:x.servant_coins,skills:Array.isArray(x.skills)?x.skills:[null,null,null],appendSkills:Array.isArray(x.append_skills)?x.append_skills:[null,null,null,null,null]};
+   if(JSON.stringify(ss)!==JSON.stringify(next)){Object.assign(ss,next);changed=true}
+ }
+ if(changed){localCacheSave();renderCurrentView();}
+}
+async function seedCurrentPlayer(){if(!cloudEnabled||!cloud||!session||!currentAuth?.canEdit)return;const ids=Object.entries(state.players[currentPlayer]?.stats||{});for(let i=0;i<ids.length;i+=50){const chunk=ids.slice(i,i+50).map(([id,s])=>({player_key:currentPlayer,servant_id:Number(id),level:s.level,np:s.np,bond:s.bond,grail:s.grail,fou_hp:s.fouHp,fou_atk:s.fouAtk,servant_coins:s.servantCoins,skills:s.skills||[null,null,null],append_skills:s.appendSkills||[null,null,null,null,null]}));const {error}=await cloud.from('chaldea_stats').upsert(chunk,{onConflict:'player_key,servant_id'});if(error){toast('Import impossible : '+error.message);return}}toast('Snapshot importé dans Supabase');await refreshPublicStats()}
+async function saveAllToSupabase(){
+ if(!cloudEnabled||!cloud||!session||!currentCanEdit()){toast('Connecte-toi avec ton compte éditeur');return false}
+ try{
+  const now=new Date().toISOString();const rows=Object.entries(state.players[currentPlayer]?.stats||{}).map(([id,st])=>({player_key:currentPlayer,servant_id:Number(id),level:st.level,np:st.np,bond:st.bond,grail:st.grail,fou_hp:st.fouHp,fou_atk:st.fouAtk,servant_coins:st.servantCoins,skills:st.skills||[null,null,null],append_skills:st.appendSkills||[null,null,null,null,null],updated_at:now}));
+  for(let i=0;i<rows.length;i+=100){const {error}=await cloud.from('chaldea_stats').upsert(rows.slice(i,i+100),{onConflict:'player_key,servant_id'});if(error)throw error}
+  const {error:xe}=await cloud.from('chaldea_xp').upsert({player_key:currentPlayer,inventory:xpInventory(currentPlayer),updated_at:now},{onConflict:'player_key'});if(xe)throw xe;
+  const {error:se}=await cloud.from('chaldea_support_profiles').upsert({player_key:currentPlayer,friend_id:supportLocal[currentPlayer]?.friendId||null,updated_at:now},{onConflict:'player_key'});if(se)throw se;
+  localCacheSave();updateSync('Cloud · toutes les données synchronisées');toast('Toutes tes données sont enregistrées dans Supabase');await refreshPublicStats();await loadXpCloud();await loadSupportProfiles();return true;
+ }catch(error){toast('Erreur Supabase : '+(error?.message||error));return false}
+}
+async function saveXpCloud(){if(!cloudEnabled||!cloud||!session||!currentCanEdit())return false;const inv=xpInventory(currentPlayer);const {error}=await cloud.from('chaldea_xp').upsert({player_key:currentPlayer,inventory:inv,updated_at:new Date().toISOString()},{onConflict:'player_key'});if(error){console.warn('XP sync',error.message);return false}return true}
+async function loadXpCloud(){if(!cloudEnabled||!cloud)return;const {data,error}=await cloud.from('chaldea_xp').select('*');if(error)return;for(const x of data||[]){state.players[x.player_key].xp=x.inventory||XP_DEFAULT()}if(currentView==='xp')renderXp()}
+async function loadSupportProfiles(){if(!cloudEnabled||!cloud)return;const {data,error}=await cloud.from('chaldea_support_profiles').select('*');if(error)return;for(const x of data||[])supportLocal[x.player_key]={friendId:x.friend_id||''}}
+async function saveSupportProfile(p,fid){if(!cloudEnabled||!cloud||!session||!currentAuth?.canEdit||currentAuth.playerKey!==p){localCacheSave();return}const {error}=await cloud.from('chaldea_support_profiles').upsert({player_key:p,friend_id:fid||null,updated_at:new Date().toISOString()},{onConflict:'player_key'});if(error)toast('Erreur Support : '+error.message);else toast('Friend ID synchronisé')}
+async function loadCloud(){if(!cloudEnabled||!cloud)return;await refreshPublicStats();await loadSupportProfiles();await loadXpCloud();renderCurrentView();const {data}=await cloud.from('chaldea_stats').select('player_key');const counts={};(data||[]).forEach(x=>counts[x.player_key]=(counts[x.player_key]||0)+1);if(session&&currentAuth?.canEdit&&!counts[currentAuth.playerKey])showSeedBanner()}
+function showSeedBanner(){if($('#seedBanner'))return;const div=document.createElement('div');div.id='seedBanner';div.className='seed-banner';div.innerHTML=`<span>Ton compte n’a pas encore été initialisé dans la base cloud.</span><button>Importer ton snapshot Excel</button>`;div.querySelector('button').onclick=async()=>{await seedCurrentPlayer();div.remove()};document.body.appendChild(div)}
+function updateEditVisibility(){$('#accountText').textContent=session?(currentAuth?.canEdit?`Connecté · ${PLAYER_LABELS[currentAuth.playerKey]}`:'Connecté · lecteur'):'Connexion'}
+async function resolveMembership(){if(!cloud||!session)return;const {data,error}=await cloud.from('chaldea_members').select('auth_user_id,player_key,display_name,can_edit').eq('auth_user_id',session.user.id).maybeSingle();if(error){currentAuth=null;cloudAuthError=error.message||'Accès Supabase refusé';updateSync(error.code==='401'?'Supabase · clé/API refusée':'Supabase · lecture refusée',true);return}cloudAuthError='';currentAuth=data?{playerKey:data.player_key,canEdit:!!data.can_edit}:null;/* Keep the user's currently selected Master. Authentication only controls edit rights. */if(data&&state.players[data.player_key])state.players[data.player_key].displayName=data.display_name||PLAYER_LABELS[data.player_key];updateEditVisibility()}
+async function claimJulien(){if(!cloud||!session)return;const {data,error}=await cloud.rpc('claim_julien');if(error){toast(error.message);return}await resolveMembership();renderAll();toast('Compte associé à Julien')}
+async function setupCloud(){
+  if(!CONFIG.supabaseUrl||!SUPABASE_KEY||!window.supabase){updateSync('Cloud non configuré',true);return}
+  cloud=window.supabase.createClient(CONFIG.supabaseUrl,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+  cloudEnabled=true;
+  const got=await cloud.auth.getSession();
+  session=got.data.session||null;
+  if(session){
+    await resolveMembership();
+    updateSync(currentAuth?.canEdit?'Cloud · éditeur':cloudAuthError?'Supabase · lecture refusée':currentAuth?'Cloud · lecteur':'Compte connecté · non associé',!!cloudAuthError);
+    await loadCloud();
+  }else{
+    const probe=await cloud.from('chaldea_stats').select('player_key').limit(1);
+    if(probe.error){updateSync('Supabase · clé/API refusée',true);console.warn('Supabase REST:',probe.error.message)}
+    else updateSync('Cloud · lecture publique');
+    await refreshPublicStats();await loadSupportProfiles();await loadXpCloud();
+  }
+  cloud.auth.onAuthStateChange((_event,ses)=>{setTimeout(async()=>{session=ses;currentAuth=null;cloudAuthError='';if(ses){await resolveMembership();updateSync(currentAuth?.canEdit?'Cloud · éditeur':cloudAuthError?'Supabase · lecture refusée':currentAuth?'Cloud · lecteur':'Compte connecté · non associé',!!cloudAuthError);await loadCloud();renderAll()}else{updateSync('Cloud · lecture publique');await refreshPublicStats();await loadSupportProfiles();await loadXpCloud();renderAll()}},0)});
+  // Realtime is optional. If the WebSocket is unavailable, keep the site functional and poll instead.
+  if(CONFIG.enableRealtime===true){try{cloud.channel('chaldea-live').on('postgres_changes',{event:'*',schema:'public',table:'chaldea_stats'},()=>refreshPublicStats()).subscribe(()=>{});}catch(e){console.warn('Supabase Realtime disabled',e)}}
+  setInterval(async()=>{if(document.visibilityState==='visible'&&cloudEnabled)await refreshPublicStats()},15000);
+}
+function accountUI(){
+ const logged=!!session,can=currentCanEdit(),missing=logged&&!currentAuth&&!cloudAuthError;
+ $('#modal').innerHTML=`<div style="padding:26px"><span class="eyebrow">CLOUD ACCESS</span><h2 style="font:700 28px 'Space Grotesk';margin:6px 0 0">${logged?'Compte Supabase':'Connexion'}</h2><p class="account-copy">${logged?`${session.user.email}<br>${can?`Éditeur · ${PLAYER_LABELS[currentAuth.playerKey]}`:cloudAuthError?`Session présente · ${cloudAuthError}`:missing?'Compte authentifié mais pas encore associé à un Master.':'Lecture seule'}`:'Connecte ton compte Supabase. Le site reste consultable sans compte.'}</p>${logged?(missing?`<div class="claim-box"><b>Compte Julien</b><span>Utilise cette action uniquement si ce compte doit devenir le compte Julien.</span><button class="save" id="claimJulien">Associer à Julien</button></div>`:`<div class="modal-footer account-actions"><span class="readonly-note">${cloudAuthError?'L’API Supabase refuse actuellement les requêtes.':'Session active.'}</span><div class="account-action-group">${can?'<button class="save" id="saveAllCloud">Enregistrer toutes mes données</button>':''}<button id="modalCancel">Fermer</button><button id="logout">${cloudAuthError?'Réinitialiser la session':'Se déconnecter'}</button></div></div>`):`<div style="display:grid;gap:10px;margin-top:18px"><input id="loginEmail" class="editable-input" type="email" placeholder="Email"><input id="loginPassword" class="editable-input" type="password" placeholder="Mot de passe"></div><div class="modal-footer"><button id="modalCancel">Annuler</button><button class="save" id="login">Se connecter</button></div>`}</div>`;
+ $('#modalBackdrop').classList.add('open');
+ $('#modalCancel').onclick=closeModal;
+ if(logged&&missing){$('#claimJulien').onclick=claimJulien}else if(logged){if($('#saveAllCloud'))$('#saveAllCloud').onclick=async()=>{const ok=await saveAllToSupabase();if(ok)closeModal()};$('#logout').onclick=async()=>{await cloud.auth.signOut();session=null;currentAuth=null;cloudAuthError='';updateSync('Cloud · lecture publique');renderAll();closeModal()}}
+ else{$('#login').onclick=async()=>{const email=$('#loginEmail').value.trim(),password=$('#loginPassword').value;const {data,error}=await cloud.auth.signInWithPassword({email,password});if(error){toast(error.message);return}session=data.session;currentAuth=null;cloudAuthError='';await resolveMembership();await loadCloud();renderAll();closeModal();}}
+}
+$('#modalBackdrop').onclick=e=>{if(e.target.id==='modalBackdrop')closeModal()};
+$$('.nav-item').forEach(b=>b.onclick=()=>navigate(b.dataset.view));$('#mobileMenu').onclick=()=>$('#sidebar').classList.toggle('open');$('#accountBtn').onclick=accountUI;$('#searchInput').oninput=renderRoster;$('#sortFilter').onchange=renderRoster;$('#hideMissing').onclick=()=>{hideMissing=!hideMissing;updateFilterLabels();renderRoster()};$('#xpCurrentLevel').oninput=updateXpComputed;$('#xpCurrentLevel').onblur=()=>{const e=$('#xpCurrentLevel');e.value=Math.max(1,Math.min(120,Number(e.value)||1));updateXpComputed()};$('#xpTargetLevel').oninput=()=>{updateXpComputed();$$('[data-xp-goal]').forEach(x=>x.classList.toggle('active',x.dataset.xpGoal===$('#xpTargetLevel').value))};$$('[data-skill-scope]').forEach(b=>b.onclick=()=>{skillScope=b.dataset.skillScope;renderOverview()});$$('[data-xp-goal]').forEach(b=>b.onclick=()=>{const e=$('#xpTargetLevel');e.value=b.dataset.xpGoal;updateXpComputed()});$('#sortDir').onclick=()=>{sortDir=sortDir==='desc'?'asc':'desc';$('#sortDir').textContent=sortDir==='asc'?'↑ Ascendant':'↓ Descendant';renderRoster()};const xpClassHidden=$('#xpClassSelect'),xpClassGrid=$('#xpClassGrid');const xpClasses=['Saber','Archer','Lancer','Rider','Caster','Assassin','Berserker'];if(xpClassGrid&&!xpClassGrid.children.length)xpClassGrid.innerHTML=xpClasses.map(c=>`<button type="button" class="xp-class-option" data-xp-class-value="${c}" aria-label="${c}" title="${c}">${classImg(c)}</button>`).join('');if(xpClassHidden){$$('[data-xp-class-value]').forEach(b=>b.onclick=()=>{const c=b.dataset.xpClassValue;xpTargetClass=xpTargetClass===c?'':c;xpClassHidden.value=xpTargetClass;$$('[data-xp-class-value]').forEach(x=>x.classList.toggle('active',x.dataset.xpClassValue===xpTargetClass));const hint=$('#xpClassHint');if(hint)hint.textContent=xpTargetClass?`Bonus de classe · ${xpTargetClass}`:'Aucun bonus · clique sur une classe pour l’activer';updateXpComputed();});}$$('[data-support-mode]').forEach(b=>b.onclick=()=>{supportMode=b.dataset.supportMode;renderSupports();});$$('[data-roster-mode]').forEach(b=>b.onclick=()=>{rosterMode=b.dataset.rosterMode;$$('[data-roster-mode]').forEach(x=>x.classList.toggle('active',x===b));renderRoster()});$$('[data-pop]').forEach(b=>b.onclick=e=>{$$('.filter-pop.open').forEach(x=>x.classList.remove('open'));$('#'+b.dataset.pop).classList.toggle('open');e.stopPropagation()});document.addEventListener('click',e=>{$$('.filter-pop.open').forEach(p=>{if(!p.parentElement.contains(e.target))p.classList.remove('open')})});const chooseCompare=()=>{const q=norm($('#compareSearch').value);const exact=state.roster.find(r=>isVisible(r)&&norm(r.name)===q)||state.roster.find(r=>isVisible(r)&&norm(r.name).startsWith(q));if(exact){compareFocusId=exact.id;renderShowdown(true)}};$('#compareSearch').onchange=chooseCompare;$('#compareSearch').onkeydown=e=>{if(e.key==='Enter')chooseCompare()};
+localCacheLoad();state.roster=sanitizeRoster([...state.roster, ...NA_FORCE_INCLUDE]).filter(r=>!NA_BLOCKED_IDS.has(Number(r.id))&&norm(r.name)!=='solomon');if(!state.roster.some(r=>Number(r.id)===417))state.roster.push({...NA_FORCE_INCLUDE[0]});PLAYERS.forEach(p=>{state.players[p]??={displayName:PLAYER_LABELS[p],stats:{}};state.players[p].xp??=XP_DEFAULT()});fillFilters();renderAll();setupCloud();syncRosterNA();

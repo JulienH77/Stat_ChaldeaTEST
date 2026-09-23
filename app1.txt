@@ -1,0 +1,230 @@
+import initialState from './data/initial-state.json?v=34' with { type: 'json' };
+import welfareData from './data/welfare-ids.json?v=34' with { type: 'json' };
+import supportData from './data/support-lists.json?v=34' with { type: 'json' };
+const CONFIG=window.CHALDEA_CONFIG||{};
+let supportSnapshot=supportData||{players:{}};
+const SUPABASE_KEY=CONFIG.supabasePublishableKey||CONFIG.supabaseAnonKey||CONFIG.supabaseKey||'';
+const PLAYERS=['julien','yanis','attmann'];
+const PLAYER_LABELS={julien:'Julien',yanis:'Yanis',attmann:'Attmann'};
+const CLASS_ORDER=['Saber','Archer','Lancer','Rider','Caster','Assassin','Berserker','Ruler','Avenger','Alter Ego','Moon Cancer','Foreigner','Pretender','Shielder','Beast'];
+const MASH_IDS=new Set([1]);
+const MASH_NAMES=new Set(['mash kyrielight','mash']);
+const NON_VISIBLE_CLASSES=new Set(['Extra']);
+const NA_BLOCKED_IDS=new Set([83,149,152,151,168,240,333,411,412,436,443,460]);
+const NA_BLOCKED_NAMES=new Set(['solomon']);
+const isBlockedRecord=r=>{const ids=[Number(r?.id),Number(r?.collectionNo),Number(r?.atlasId)];if(ids.includes(417))return false;return ids.some(v=>NA_BLOCKED_IDS.has(v))||NA_BLOCKED_NAMES.has(norm(r?.name));};
+const NA_FORCE_INCLUDE=[{id:417,name:'Ereshkigal',class:'Beast',rarity:'SSR',attribute:'Beast',cardType:'Buster',atlasId:3300200}];
+const FUTURE_NAMES=new Set(['Phantasmoon','Louhi','Van Gogh (Miner)','Tutankhamun','Kazuradrop']);
+const SUPPORT_GUID_FALLBACKS={julien:'381d9bb7-fc83-49d2-862d-3990b4c1379c',yanis:'',attmann:''};
+const sanitizeRoster=roster=>{const seen=new Set();const out=[];for(const r of Array.isArray(roster)?roster:[]){const id=Number(r?.id);if(!id||seen.has(id)||isBlockedRecord(r)||FUTURE_NAMES.has(norm(r?.name)))continue;seen.add(id);out.push(r);}if(!seen.has(417))out.push({...NA_FORCE_INCLUDE[0]});return out;};
+const IMG={
+ Saber:'saber.webp',Archer:'archer.webp',Lancer:'lancer.webp',Rider:'rider.webp',Caster:'caster.webp',Assassin:'assassin.webp',Berserker:'berserker.webp',Ruler:'ruler.webp',Avenger:'avenger.webp','Alter Ego':'alter_ego.webp','Moon Cancer':'moon_cancer.webp',Foreigner:'foreigner.webp',Pretender:'pretender.webp',Shielder:'shielder.webp',Beast:'beast.webp',
+ grail:'graal.webp', np:'np.webp', Q:'quick.webp', A:'arts.webp', B:'buster.webp'
+};
+const IMG_BASE='./IMG/';
+const norm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+const state=structuredClone(initialState);
+// Hide future Excel placeholders immediately; authoritative NA sync runs afterwards.
+state.roster=sanitizeRoster(state.roster);
+let currentPlayer='julien',currentView='overview',rosterMode='cards',sortDir='desc',compareFocusId=284,skillScope='gold',hideMissing=false,xpTargetClass='',supportMode='normal';
+let cloud=null,session=null,currentAuth=null,cloudEnabled=false,cloudAuthError='',atlasById=new Map(),atlasFull=new Map(),renderToken=0,showdownRenderedId=null,showdownRenderToken=0,supportPlayer='julien';
+const selectedClasses=new Set(),selectedRarities=new Set(['5','4','welfare']),selectedNPTypes=new Set();
+const supportLocal={julien:{friendId:supportSnapshot.players?.julien?.code||'939739133'},yanis:{friendId:supportSnapshot.players?.yanis?.code||''},attmann:{friendId:supportSnapshot.players?.attmann?.code||'921819502'}};
+const XP_CLASSES=['Saber','Archer','Lancer','Rider','Caster','Assassin','Berserker','Autre'];
+const XP_CARD_VALUE={5:81000,4:27000,3:9000};
+const XP_CARD_CLASS_VALUE={5:97200,4:32400,3:10800};
+const XP_TO_LEVEL=[0, 0, 100, 400, 1000, 2000, 3500, 5600, 8400, 12000, 16500, 22000, 28600, 36400, 45500, 56000, 68000, 81600, 96900, 114000, 133000, 154000, 177100, 202400, 230000, 260000, 292500, 327600, 365400, 406000, 449500, 496000, 545600, 598400, 654500, 714000, 777000, 843600, 913900, 988000, 1066000, 1148000, 1234100, 1324400, 1419000, 1518000, 1621500, 1729600, 1842400, 1960000, 2082500, 2210000, 2342600, 2480400, 2623500, 2772000, 2926000, 3085600, 3250900, 3422000, 3599000, 3782000, 3971100, 4166400, 4368000, 4576000, 4790500, 5011600, 5239400, 5474000, 5715500, 5964000, 6219600, 6482400, 6752500, 7030000, 7315000, 7607600, 7907900, 8216000, 8532000, 8856000, 9188100, 9528400, 9877000, 10234000, 10599500, 10973600, 11356400, 11748000, 12148500, 12567000, 13021900, 13532000, 14116500, 14795000, 15587500, 16514400, 17596500, 18855000, 20311500, 40623000, 60934500, 81246000, 101557500, 121869000, 142180500, 162492000, 182803500, 203115000, 223426500, 243738000, 264049500, 284361000, 304672500, 324984000, 345295500, 365607000, 385918500, 406230000, 426541500];
+const XP_DEFAULT=()=>Object.fromEntries(XP_CLASSES.map(c=>[c,{5:0,4:0,3:0}]));
+PLAYERS.forEach(p=>{state.players[p]??={displayName:PLAYER_LABELS[p],stats:{}};state.players[p].xp??=XP_DEFAULT()});
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const num=v=>{if(v===null||v===undefined||v==='')return null;const n=Number(v);return Number.isFinite(n)?n:null};
+const fmtNum=v=>{const n=Number(v);return Number.isFinite(n)?n.toLocaleString('fr-FR'): '—'};
+const fmtInputNumber=v=>{const n=Number(v);return Number.isFinite(n)?String(Math.trunc(n)):''};
+const toast=m=>{const e=$('#toast');e.textContent=m;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),2000)};
+const WELFARE_IDS=new Set((welfareData.ids||[]).map(Number));
+const localKey='chaldea-v23-cloud-authoritative';
+function rarityNum(r){return r==='SSR'?5:r==='SR'?4:r==='R'?3:r==='UC'?2:1}
+function classKey(c){const s=String(c||'').replace(/\n/g,' ').trim();return s==='Moon'?'Moon Cancer':s}
+function localAsset(name){return IMG_BASE+encodeURIComponent(name)}
+function classImg(c){const k=classKey(c);const f=IMG[k]||IMG.Saber;return `<img class="class-icon-img" src="${localAsset(f)}" alt="${k}" loading="eager">`}
+function cardImg(t){const f=IMG[t];return f?`<img class="command-icon-img" src="${localAsset(f)}" alt="${t}" loading="eager">`:''}
+function npTypeImg(t){const f=IMG[t];return f?`<img class="np-type-icon" src="${localAsset(f)}" alt="${t}" loading="eager">`:''}
+function normalizeNPCardType(v){const x=String(v??'').trim().toUpperCase();if(['A','ARTS','ART'].includes(x)||x==='1')return'A';if(['B','BUSTER'].includes(x)||x==='2')return'B';if(['Q','QUICK'].includes(x)||x==='3')return'Q';return null}
+const npTypeCache=new Map();const npTypePromises=new Map();
+function firstArrayItem(v){if(Array.isArray(v))return v[0]||null;if(v&&typeof v==='object')return Object.values(v)[0]||null;return null}
+function extractNPCardType(d){
+ const np=firstArrayItem(d?.noblePhantasms||d?.noblePhantasm);
+ const candidates=[np?.card,np?.cardType,np?.cardTypeName,d?.np?.card,d?.np?.cardType,d?.noblePhantasm?.cardType,d?.noblePhantasm?.cardTypeName];
+ for(const v of candidates){const t=normalizeNPCardType(v);if(t)return t}
+ return null
+}
+async function npCardTypeForServant(r,d=null){const key=Number(r?.atlasId||r?.id);if(!key)return null;if(npTypeCache.has(key))return npTypeCache.get(key);if(npTypePromises.has(key))return npTypePromises.get(key);const promise=(async()=>{const detail=d||await atlasDetail(r);let t=extractNPCardType(detail);if(!t){const np=firstArrayItem(detail?.noblePhantasms||detail?.noblePhantasm);const npId=Number(np?.id||0);if(npId){try{const res=await fetch(`https://api.atlasacademy.io/nice/NA/NP/${npId}`,{cache:'force-cache'});if(res.ok){const nd=await res.json();t=normalizeNPCardType(nd?.card||nd?.cardType||nd?.cardTypeName)}}catch{}}}if(t)npTypeCache.set(key,t);return t||null})();npTypePromises.set(key,promise);try{return await promise}finally{npTypePromises.delete(key)}}
+async function ensureNPTypes(rows){let i=0;const workers=Array.from({length:8},async()=>{while(i<rows.length){const r=rows[i++];if(!r)continue;await npCardTypeForServant(r)}});await Promise.all(workers)}
+function grailImg(){return `<img class="grail-thumb" src="${localAsset(IMG.grail)}" alt="Graal" loading="eager">`}
+function isWelfare(r){return WELFARE_IDS.has(Number(r.id))||r.isWelfare===true}
+function isMash(r){return MASH_IDS.has(Number(r.id))||MASH_NAMES.has(norm(r.name))}
+function isCounted(r){return !isMash(r)&&!r.nonCounted&&!NON_VISIBLE_CLASSES.has(classKey(r.class))}
+function isVisible(r){return !isBlockedRecord(r)&&!NON_VISIBLE_CLASSES.has(classKey(r.class))&&!FUTURE_NAMES.has(norm(r.name))}
+function stats(p,id){return state.players[p]?.stats?.[String(id)]||{level:null,np:null,bond:null,grail:null,fouHp:null,fouAtk:null,servantCoins:null,skills:[null,null,null],appendSkills:[null,null,null,null,null]}}
+function defaultMaxLevel(r){const rr=rarityNum(r.rarity);return rr===5?90:rr===4?80:rr===3?70:rr===2?65:60}
+function displayLevel(p,r,s){const n=Number(s.level);if(Number.isFinite(n)&&n>0)return n;return (p==='yanis'||p==='attmann')&&isOwned(p,r)?defaultMaxLevel(r):'—'}
+function ensureStats(p,id){state.players[p]??={displayName:PLAYER_LABELS[p],stats:{}};state.players[p].stats??={};state.players[p].stats[String(id)]??={level:null,np:null,bond:null,grail:null,fouHp:null,fouAtk:null,servantCoins:null,skills:[null,null,null],appendSkills:[null,null,null,null,null]};return state.players[p].stats[String(id)]}
+function isOwned(p,r){if(!isCounted(r))return true;const s=stats(p,r.id);return ['level','np','bond','grail','fouHp','fouAtk','servantCoins'].some(k=>s[k]!=null)||[...(s.skills||[]),...(s.appendSkills||[])].some(v=>v!=null)}
+function validSkill(v){return Number.isFinite(v)&&v>=1&&v<=10}
+function skillInScope(r){if(skillScope==='all')return true;return isWelfare(r)||rarityNum(r.rarity)>=4}
+function values(p,idx=null){const a=[];for(const r of state.roster){if(!isCounted(r)||!skillInScope(r))continue;const st=stats(p,r.id);const vals=idx===null?(st.skills||[]):[st.skills?.[idx]];for(const v of vals)if(validSkill(v))a.push(Number(v))}return a}
+function average(p,idx=null){const a=values(p,idx);return a.length?a.reduce((x,y)=>x+y,0)/a.length:0}
+function skillDist(p){const d=Array(11).fill(0);values(p).forEach(v=>d[v]++);return d}
+function countOwned(p,pred=()=>true){return state.roster.filter(r=>isVisible(r)&&pred(r)&&isOwned(p,r)).length}
+function countLevel(p,level){return countOwned(p,r=>Number(stats(p,r.id).level)===level)}
+function bond10(p){return countOwned(p,r=>Number(stats(p,r.id).bond)>=10)}
+function fourFiveUniverse(){return state.roster.filter(r=>isCounted(r)&&(rarityNum(r.rarity)>=4))}
+function fourFiveOwned(p){return fourFiveUniverse().filter(r=>isOwned(p,r)).length}
+function collectionPct(p){const den=fourFiveUniverse().length;return den?fourFiveOwned(p)/den*100:0}
+function goldUniverse(){return state.roster.filter(r=>isCounted(r)&&(rarityNum(r.rarity)>=4||isWelfare(r)));}
+function goldOwned(p){return goldUniverse().filter(r=>isOwned(p,r)).length}
+function np5Count(p){return goldUniverse().filter(r=>isOwned(p,r)&&Number(stats(p,r.id).np)>=5).length}
+function np5Pct(p){const den=goldUniverse().length;return den?np5Count(p)/den*100:0}
+function coinEstimate(r,s){if(rarityNum(r.rarity)<4||!isOwned(currentPlayer,r))return null;if(s.servantCoins!=null)return{value:s.servantCoins,estimated:false};let n=Math.max(1,Number(s.np)||1),base=rarityNum(r.rarity)===5?90:50;let copy=Math.max(0,n-1)*base;let bond=Math.max(0,Number(s.bond)||0);let bondCoins=[0,0,0,0,0,30,45,60,75,90,105][Math.min(10,bond)]||0;let app=(s.appendSkills||[]).filter(validSkill).length*20;return{value:copy+base+bondCoins+app,estimated:true}}
+function clampNP(s){return s.np==null?'—':Math.min(5,Math.max(0,Number(s.np)))}
+function npDisplay(v,small=true){const n=num(v);if(n==null)return '—';const c=Math.max(0,Math.min(5,n));return n>5?`NP ${c}${small?` <small>(${n})</small>`:` (${n})`}`:`NP ${c}`}
+function npCardDisplay(v){const n=num(v);if(n==null)return '—';return `NP ${Math.min(5,Math.max(0,n))}`}
+function xpInventory(p){state.players[p].xp??=XP_DEFAULT();for(const c of XP_CLASSES)state.players[p].xp[c]??={5:0,4:0,3:0};return state.players[p].xp}
+function updateSync(text,error=false){$('#syncText').textContent=text;$('#syncDot').parentElement.classList.toggle('error',error)}
+function isApiAuthError(error){return !!error&&(String(error.code)==='401'||String(error.status)==='401'||/jwt|apikey|api key|unauthoriz|invalid/i.test(String(error.message||'')))}
+function currentCanEdit(){return !!currentAuth?.canEdit&&currentAuth.playerKey===currentPlayer}
+function renderMasterSwitch(){
+ $('#masterSwitch').innerHTML=PLAYERS.map(p=>`<button class="master-tab ${p===currentPlayer?'active':''}" data-player="${p}">${state.players[p]?.displayName||PLAYER_LABELS[p]}</button>`).join('');
+ $$('.master-tab').forEach(b=>b.onclick=()=>{currentPlayer=b.dataset.player;supportPlayer=currentPlayer;renderAll()});
+ $('#heroMaster').textContent=state.players[currentPlayer]?.displayName||PLAYER_LABELS[currentPlayer];
+ $('#accountText').textContent=session?(currentAuth?.canEdit?`Connecté · ${PLAYER_LABELS[currentAuth.playerKey]}`:'Connecté · lecteur'):'Connexion';
+}
+function categoryTotals(){
+  const visible=state.roster.filter(isCounted);
+  return {
+    five: visible.filter(r=>rarityNum(r.rarity)===5&&!isWelfare(r)).length,
+    four: visible.filter(r=>rarityNum(r.rarity)===4&&!isWelfare(r)).length,
+    welfare: visible.filter(r=>isWelfare(r)).length
+  };
+}
+function renderOverview(){
+ const p=currentPlayer, ownedAll=countOwned(p), ownedGold=goldOwned(p), owned=skillScope==='gold'?ownedGold:ownedAll;
+ const five=countOwned(p,r=>rarityNum(r.rarity)===5&&!isWelfare(r)),four=countOwned(p,r=>rarityNum(r.rarity)===4&&!isWelfare(r)),wf=countOwned(p,r=>isWelfare(r));
+ $('#introOwned').textContent=owned;
+ $('#introOwned').title=skillScope==='gold'?'Servants Gold possédés':'Servants possédés';
+ $('#rarityDisplay').innerHTML=`<div class="rarity-card"><span class="label">5 STAR</span><span class="stars">★★★★★</span><span class="value">${five}</span></div><div class="rarity-card"><span class="label">4 STAR</span><span class="stars">★★★★</span><span class="value">${four}</span></div><div class="rarity-card welfare"><span class="label">WELFARE</span><span class="stars">FREE</span><span class="value">${wf}</span></div>`;
+ $$('[data-skill-scope]').forEach(b=>b.classList.toggle('active',b.dataset.skillScope===skillScope));
+ const dist=skillDist(p),mx=Math.max(...dist.slice(1),1);$('#skillsAverage').textContent=average(p).toFixed(1);$('#skillBars').innerHTML=Array.from({length:10},(_,i)=>10-i).map(l=>`<div class="skill-row"><span class="skill-level">${l}</span><div class="skill-track"><div class="skill-fill" style="width:${dist[l]/mx*100}%"></div></div><b>${dist[l]}</b></div>`).join('');
+ const scopeLabel=skillScope==='gold'?'GOLD':'ALL';
+ const markers=[['MOYENNE SKILL 1',average(p,0).toFixed(1),scopeLabel],['MOYENNE SKILL 2',average(p,1).toFixed(1),scopeLabel],['MOYENNE SKILL 3',average(p,2).toFixed(1),scopeLabel],['BOND 10+',bond10(p),''],['NIVEAU 120',countLevel(p,120),''],['% NP 5',np5Pct(p).toFixed(1)+'%','']];
+ $('#detailStats').innerHTML=markers.map(([l,v,c])=>`<div class="marker"><small>${l}</small><strong>${v}</strong>${c?`<span class="scope-caption">${c}</span>`:''}</div>`).join('');
+ const pct=collectionPct(p),pctStr=pct.toFixed(1).replace('.0','');$('#collectionPct').textContent=pctStr+'%';$('#collectionRing').style.background=`conic-gradient(#5f89bc 0 ${pct}%,#edf1f5 ${pct}% 100%)`;
+ const totals=categoryTotals(),bars=[['5★',five,totals.five],['4★',four,totals.four],['Welfare',wf,totals.welfare]];$('#miniBars').innerHTML=bars.map(([l,v,t])=>{const pct=t?Math.min(100,v/t*100):0;return `<div class="mini-bar"><span>${l}</span><div class="mini-track"><div class="mini-fill" style="width:${pct}%"></div></div><b>${v} / ${t}</b></div>`}).join('');
+}
+function fillFilters(){
+ const classes=[...new Set(state.roster.filter(isVisible).map(r=>classKey(r.class)).filter(Boolean))].sort((a,b)=>CLASS_ORDER.indexOf(a)-CLASS_ORDER.indexOf(b));
+ $('#classPop').innerHTML=classes.map(c=>`<label class="check-item"><input type="checkbox" data-class="${c}" ${selectedClasses.has(c)?'checked':''}>${classImg(c)}<span>${c}</span></label>`).join('');
+ const rs=[['5','5★'],['4','4★'],['welfare','Welfare'],['3','3★'],['2','2★'],['1','1★']];$('#rarityPop').innerHTML=rs.map(([v,l])=>`<label class="check-item"><input type="checkbox" data-rarity="${v}" ${selectedRarities.has(v)?'checked':''}><span>${l}</span></label>`).join('');
+ const npTypes=[['Q','Quick'],['A','Arts'],['B','Buster']];$('#npPop').innerHTML=npTypes.map(([v,l])=>`<label class="check-item np-filter-item"><input type="checkbox" data-nptype="${v}" ${selectedNPTypes.has(v)?'checked':''}>${npTypeImg(v)}<span>${l}</span></label>`).join('');
+ $$('#classPop input').forEach(i=>i.onchange=()=>{i.checked?selectedClasses.add(i.dataset.class):selectedClasses.delete(i.dataset.class);updateFilterLabels();renderRoster()});
+ $$('#rarityPop input').forEach(i=>i.onchange=()=>{i.checked?selectedRarities.add(i.dataset.rarity):selectedRarities.delete(i.dataset.rarity);updateFilterLabels();renderRoster()});
+ $$('#npPop input').forEach(i=>i.onchange=async()=>{i.checked?selectedNPTypes.add(i.dataset.nptype):selectedNPTypes.delete(i.dataset.nptype);updateFilterLabels();if(selectedNPTypes.size){toast('Chargement des types de NP…');const rows=state.roster.filter(isVisible);await ensureNPTypes(rows)}renderRoster()});
+ updateFilterLabels();
+}
+function updateFilterLabels(){$('#classFilterCount').textContent=selectedClasses.size?`(${selectedClasses.size})`:'';$('#rarityFilterCount').textContent=selectedRarities.size?`(${selectedRarities.size})`:'';const np=$('#npFilterCount');if(np)np.textContent=selectedNPTypes.size?`(${selectedNPTypes.size})`:'';const b=$('#hideMissing');if(b){b.classList.toggle('active',hideMissing);b.textContent=hideMissing?'Afficher les non possédés':'Masquer les non possédés'}}
+function atlasCacheValue(r,kind){const d=atlasById.get(Number(r.atlasId||r.id));if(d){const s=stats(currentPlayer,r.id);if(s.level==null)return 0;const cs=currentStats(d,r,s);const v=kind==='atk'?cs.atk:cs.hp;if(Number.isFinite(Number(v)))return Number(v)}return 0}
+function sortRows(rows){const mode=$('#sortFilter').value,sg=sortDir==='asc'?1:-1;rows.sort((a,b)=>{let x,y;if(mode==='bond'){x=Number(a.s.bond)||-1;y=Number(b.s.bond)||-1}else if(mode==='np'){x=Number(a.s.np)||-1;y=Number(b.s.np)||-1}else if(mode==='level'){x=Number.isFinite(Number(a.s.level))?Number(a.s.level):defaultMaxLevel(a.r);y=Number.isFinite(Number(b.s.level))?Number(b.s.level):defaultMaxLevel(b.r)}else if(mode==='atk'||mode==='hp'){x=atlasCacheValue(a.r,mode)??-1;y=atlasCacheValue(b.r,mode)??-1}else{x=Number(a.r.releaseNo??a.r.id);y=Number(b.r.releaseNo??b.r.id)}return x===y?String(a.r.name).localeCompare(String(b.r.name))*sg:(x-y)*sg})}
+function focusValue(r,s){const mode=$('#sortFilter').value;if(mode==='bond')return `<div class="sort-focus">Bond ${s.bond??'—'}</div>`;if(mode==='np'){const n=num(s.np);return `<div class="sort-focus">NP ${n??'—'}</div>`;}if(mode==='level')return `<div class="sort-focus">Lv ${displayLevel(currentPlayer,r,s)}</div>`;if(mode==='atk')return `<div class="sort-focus">ATK ${fmtNum(atlasCacheValue(r,'atk'))}</div>`;if(mode==='hp')return `<div class="sort-focus">HP ${fmtNum(atlasCacheValue(r,'hp'))}</div>`;return''}
+function renderRoster(){
+ const token=++renderToken,q=norm($('#searchInput').value);let rows=state.roster.filter(isVisible).map(r=>({r,s:stats(currentPlayer,r.id)})).filter(o=>{const c=classKey(o.r.class),rr=isWelfare(o.r)?'welfare':String(rarityNum(o.r.rarity));return(!hideMissing||isOwned(currentPlayer,o.r))&&(!q||norm(o.r.name).includes(q))&&(!selectedClasses.size||selectedClasses.has(c))&&(!selectedRarities.size||selectedRarities.has(rr))&&(!selectedNPTypes.size||selectedNPTypes.has(npTypeCache.get(Number(o.r.atlasId||o.r.id))))});
+ sortRows(rows);$('#rosterCount').textContent=rows.length;const totalVisible=state.roster.filter(isVisible).length,ownedTotal=countOwned(currentPlayer);$('#rosterSummary').textContent=hideMissing?`${ownedTotal} possédés affichés`:`${ownedTotal} possédés · ${totalVisible-ownedTotal} manquants`;$('#rosterCards').classList.toggle('hidden',rosterMode!=='cards');$('#rosterTable').classList.toggle('hidden',rosterMode!=='table');
+ if(rosterMode==='cards'){
+   $('#rosterCards').innerHTML=rows.map(({r,s})=>{const own=isOwned(currentPlayer,r);const d=atlasById.get(Number(r.atlasId||r.id));return `<article class="servant-card ${own?'owned':'missing'}" data-servant-id="${r.id}">${own?'':'<span class="missing-ribbon">NON POSSÉDÉ</span>'}<div class="card-art" data-servant-id="${r.id}"><div class="loader">ATLAS</div><span class="np-type-overlay" data-np-type-for="${r.id}"></span></div><div class="card-content"><div class="card-topline"><span class="rarity-short">${rarityNum(r.rarity)}★${isWelfare(r)?' · W':''}</span>${classImg(r.class)}</div><div class="card-name">${r.name}</div><div class="card-line"><div class="level-wrap"><span class="level-major">Lv ${displayLevel(currentPlayer,r,s)}</span>${Number(s.grail)>0?`<span class="grail-count">${grailImg()}<b>${Number(s.grail)}</b></span>`:''}</div><span class="np-chip"><span class="np-mini-icon">${npIcon()}</span>${npCardDisplay(s.np)}</span></div>${$('#sortFilter').value==='release'?`<div class="release-skill-row">${[0,1,2].map(i=>`<span><b>${s.skills?.[i]??'—'}</b></span>`).join('')}</div>`:''}${focusValue(r,s)}</div></article>`}).join('');loadCardImages(rows,token);
+ }else{$('#rosterTable').innerHTML=`<table class="table"><thead><tr><th>Servant</th><th>Classe</th><th>Rareté</th><th>Lv</th><th>NP</th><th>S1</th><th>S2</th><th>S3</th><th>Bond</th><th>Coins</th></tr></thead><tbody>${rows.map(({r,s})=>`<tr data-servant-id="${r.id}" class="${isOwned(currentPlayer,r)?'':'missing-row'}"><td><b>${r.name}</b></td><td>${classImg(r.class)}</td><td>${rarityNum(r.rarity)}★${isWelfare(r)?' · W':''}</td><td>${displayLevel(currentPlayer,r,s)}</td><td>${s.np??'—'}</td><td>${s.skills?.[0]??'—'}</td><td>${s.skills?.[1]??'—'}</td><td>${s.skills?.[2]??'—'}</td><td>${s.bond??'—'}</td><td>${coinEstimate(r,s)?.value??'—'}</td></tr>`).join('')}</tbody></table>`}
+ $$(`.servant-card,.table tr[data-servant-id]`).forEach(el=>el.onclick=()=>openServant(Number(el.dataset.servantId)));
+}
+async function loadCardImages(rows,token){let i=0;const hadMissing=rows.some(({r})=>!atlasById.has(Number(r.atlasId||r.id)));const workers=Array.from({length:6},async()=>{while(i<rows.length){const row=rows[i++];if(token!==renderToken)return;const holder=$(`.card-art[data-servant-id="${row.r.id}"]`);if(!holder)continue;const d=await atlasDetail(row.r);const npType=await npCardTypeForServant(row.r,d);const url=imageList(d)[0]||guessImage(row.r.atlasId);if(url){const img=new Image();img.decoding='async';img.onload=()=>{if(token!==renderToken)return;holder.innerHTML='';holder.appendChild(img);if(npType){const overlay=document.createElement('span');overlay.className='np-type-overlay';overlay.setAttribute('data-np-type-for',row.r.id);overlay.innerHTML=npTypeImg(npType);holder.appendChild(overlay)}const chip=holder.closest('.servant-card')?.querySelector('.np-mini-icon');const ni=npIcon();if(chip&&ni)chip.innerHTML=ni};img.onerror=()=>{holder.innerHTML=`<div class="image-fallback">ART<br><small>indisponible</small></div>${npType?`<span class="np-type-overlay" data-np-type-for="${row.r.id}">${npTypeImg(npType)}</span>`:''}`};img.src=url}else holder.innerHTML=`<div class="image-fallback">ART<br><small>indisponible</small></div>${npType?`<span class="np-type-overlay" data-np-type-for="${row.r.id}">${npTypeImg(npType)}</span>`:''}`}});await Promise.all(workers);const mode=$('#sortFilter')?.value;if(hadMissing&&(mode==='atk'||mode==='hp')&&token===renderToken)renderRoster()}
+function guessImage(atlasId){if(!atlasId)return'';const id=String(atlasId);return `https://static.atlasacademy.io/NA/CharaGraph/${id}/${id}a@1.png`}
+async function fetchAtlasList(){
+  try{
+    const urls=[
+      'https://api.atlasacademy.io/export/NA/basic_servant.json?v=32',
+      'https://api.atlasacademy.io/export/NA/basic_servant.json'
+    ];
+    for(const url of urls){
+      try{
+        const r=await fetch(url,{cache:'no-store'});
+        if(!r.ok)continue;
+        const raw=await r.json();
+        const candidates=[raw,raw?.Entries,raw?.entries,raw?.data];
+        for(const candidate of candidates){
+          const arr=Array.isArray(candidate)?candidate:(candidate&&typeof candidate==='object'?Object.values(candidate):[]);
+          const useful=arr.filter(x=>x&&typeof x==='object'&&Number(x.collectionNo));
+          if(useful.length)return useful;
+        }
+      }catch(e){/* try next endpoint */}
+    }
+  }catch(e){console.warn('Atlas NA static export indisponible',e)}
+  return [];
+}
+
+
+function normalizeAtlasServant(a){
+  const collectionNo=Number(a?.collectionNo);
+  const atlasId=Number(a?.id||a?.atlasId||collectionNo);
+  if(!collectionNo||!atlasId)return null;
+  const name=String(a?.name||'');
+  const cls=normalizeClass(a?.className||a?.class);
+  return {id:collectionNo,name,class:cls,rarity:atlasRarity(a),attribute:a?.attribute||'',cardType:a?.cardType||'',atlasId,nonCounted:isMash({id:collectionNo,name})};
+}
+
+async function syncRosterNA(){
+  const arr=await fetchAtlasList();
+  if(!arr.length){
+    state.roster=sanitizeRoster(state.roster);
+    PLAYERS.forEach(p=>state.roster.forEach(r=>ensureStats(p,r.id)));
+    $('#atlasStatus').textContent=`ATLAS / NA · ${state.roster.filter(isCounted).length} Servants`;
+    fillFilters();renderAll();
+    return;
+  }
+  const keep=[];
+  const pushUnique=r=>{
+    const id=Number(r?.id);
+    if(!id||isBlockedRecord(r)||FUTURE_NAMES.has(norm(r?.name))||keep.some(x=>Number(x.id)===id))return;
+    keep.push(r);
+  };
+  // Atlas NA is authoritative for which Servants are currently released.
+  // Filter unwanted IDs/names first, then explicitly keep No.417 because the
+  // export can temporarily lag while a new NA release is propagating.
+  for(const a of arr){
+    const normalized=normalizeAtlasServant(a);
+    if(!normalized||isBlockedRecord({...a,...normalized})||normalized.class==='Extra'||FUTURE_NAMES.has(norm(normalized.name)))continue;
+    pushUnique(normalized);
+  }
+  const existing=state.roster.find(r=>Number(r.id)===417)||NA_FORCE_INCLUDE[0];
+  const e=arr.find(x=>Number(x?.collectionNo)===417);
+  if(e){
+    keep.push({id:417,name:e.name||existing.name,class:'Beast',rarity:'SSR',attribute:e.attribute||'Beast',cardType:e.cardType||existing.cardType,atlasId:Number(e.id||existing.atlasId||3300200),nonCounted:false});
+  }else{
+    keep.push({...existing,...NA_FORCE_INCLUDE[0],id:417,atlasId:Number(existing.atlasId||3300200)});
+  }
+  const cleaned=sanitizeRoster(keep).filter(r=>Number(r.id)!==83&&Number(r.id)!==152&&norm(r.name)!=='solomon');
+  if(!cleaned.some(r=>Number(r.id)===417))cleaned.push({...NA_FORCE_INCLUDE[0]});
+  state.roster=cleaned.sort((a,b)=>Number(a.id)-Number(b.id));
+  PLAYERS.forEach(p=>state.roster.forEach(r=>ensureStats(p,r.id)));
+  fillFilters();renderAll();
+  $('#atlasStatus').textContent=`ATLAS / NA · ${state.roster.filter(isCounted).length} Servants`;
+}
+
+
+function normalizeClass(c){const s=String(c||'').toLowerCase().replace(/[^a-z]/g,'');const m={saber:'Saber',archer:'Archer',lancer:'Lancer',rider:'Rider',caster:'Caster',assassin:'Assassin',berserker:'Berserker',ruler:'Ruler',avenger:'Avenger',alterego:'Alter Ego',mooncancer:'Moon Cancer',foreigner:'Foreigner',pretender:'Pretender',shielder:'Shielder',beast:'Beast'};return m[s]||'Extra'}
+function atlasRarity(x){return Number(x.rarity)>=5?'SSR':Number(x.rarity)===4?'SR':Number(x.rarity)===3?'R':Number(x.rarity)===2?'UC':'C'}
+async function atlasDetail(r){const key=Number(r.atlasId||r.id);if(!key)return null;if(atlasFull.has(key))return atlasFull.get(key);const p=(async()=>{try{const res=await fetch(`https://api.atlasacademy.io/nice/NA/servant/${key}`,{cache:'force-cache'});if(!res.ok)throw Error();const d=await res.json();atlasById.set(Number(key),d);if(d?.collectionNo!=null)atlasById.set(Number(d.collectionNo),d);return d}catch{return null}})();atlasFull.set(key,p);return p}
+function imageList(d){
+  if(!d?.extraAssets) return [];
+  const obj=d.extraAssets?.charaGraph?.ascension || {};
+  return Object.entries(obj).sort(([a],[b])=>Number(a)-Number(b)).map(([,v])=>v)
+    .filter(v=>typeof v==='string'&&/^https?:\/\//.test(v)).slice(0,4);
+}
+function commandCards(d,r){
+  const arr=Array.isArray(d?.cards)?d.cards:[];

@@ -1,6 +1,6 @@
-import initialState from './data/initial-state.json?v=34' with { type: 'json' };
-import welfareData from './data/welfare-ids.json?v=34' with { type: 'json' };
-import supportData from './data/support-lists.json?v=34' with { type: 'json' };
+import initialState from './data/initial-state.json?v=103' with { type: 'json' };
+import welfareData from './data/welfare-ids.json?v=103' with { type: 'json' };
+import supportData from './data/support-lists.json?v=103' with { type: 'json' };
 const CONFIG=window.CHALDEA_CONFIG||{};
 let supportSnapshot=supportData||{players:{}};
 const SUPABASE_KEY=CONFIG.supabasePublishableKey||CONFIG.supabaseAnonKey||CONFIG.supabaseKey||'';
@@ -95,7 +95,7 @@ function isApiAuthError(error){return !!error&&(String(error.code)==='401'||Stri
 function currentCanEdit(){return !!currentAuth?.canEdit&&currentAuth.playerKey===currentPlayer}
 function renderMasterSwitch(){
  $('#masterSwitch').innerHTML=PLAYERS.map(p=>`<button class="master-tab ${p===currentPlayer?'active':''}" data-player="${p}">${state.players[p]?.displayName||PLAYER_LABELS[p]}</button>`).join('');
- $$('.master-tab').forEach(b=>b.onclick=()=>{currentPlayer=b.dataset.player;supportPlayer=currentPlayer;renderAll()});
+ $$('.master-tab').forEach(b=>b.onclick=()=>{currentPlayer=b.dataset.player;supportPlayer=currentPlayer;renderAll();refreshPublicStats({force:true})});
  $('#heroMaster').textContent=state.players[currentPlayer]?.displayName||PLAYER_LABELS[currentPlayer];
  $('#accountText').textContent=session?(currentAuth?.canEdit?`Connecté · ${PLAYER_LABELS[currentAuth.playerKey]}`:'Connecté · lecteur'):'Connexion';
 }
@@ -523,20 +523,64 @@ function renderCurrentView(){
   else if(currentView==='supports')renderSupports();
   else if(currentView==='xp')renderXp();
 }
-async function refreshPublicStats(){
- if(!cloudEnabled||!cloud)return;
- const {data,error}=await cloud.from('chaldea_stats').select('*');
- if(error){updateSync('Supabase · lecture refusée',true);return}
- let changed=false;
- for(const x of data||[]){
-   const p=String(x?.player_key||'');
-   const id=Number(x?.servant_id);
-   if(!PLAYERS.includes(p)||!Number.isFinite(id)||id<=0)continue;
-   const ss=ensureStats(p,id);
-   const next={level:x.level,np:x.np,bond:x.bond,grail:x.grail,fouHp:x.fou_hp,fouAtk:x.fou_atk,servantCoins:x.servant_coins,skills:Array.isArray(x.skills)?x.skills:[null,null,null],appendSkills:Array.isArray(x.append_skills)?x.append_skills:[null,null,null,null,null]};
-   if(JSON.stringify(ss)!==JSON.stringify(next)){Object.assign(ss,next);changed=true}
+let publicRefreshInFlight=null,lastPublicRefreshAt=0;
+function normalizeCloudServantId(rawId){
+ const n=Number(rawId);
+ if(!Number.isFinite(n)||n<=0)return null;
+ const direct=state.roster.find(r=>Number(r.id)===n);
+ if(direct)return Number(direct.id);
+ const byAtlas=state.roster.find(r=>Number(r.atlasId)===n);
+ return byAtlas?Number(byAtlas.id):n;
+}
+async function fetchPlayerStatsRows(player){
+ const out=[];
+ const pageSize=500;
+ for(let from=0;;from+=pageSize){
+   const {data,error}=await cloud.from('chaldea_stats').select('*').eq('player_key',player).order('servant_id',{ascending:true}).range(from,from+pageSize-1);
+   if(error)throw error;
+   const batch=data||[]; out.push(...batch);
+   if(batch.length<pageSize)break;
  }
- if(changed){localCacheSave();renderCurrentView();}
+ return out;
+}
+async function refreshPublicStats({force=false}={}){
+ if(!cloudEnabled||!cloud)return false;
+ const now=Date.now();
+ if(!force&&now-lastPublicRefreshAt<5000)return false;
+ if(publicRefreshInFlight)return publicRefreshInFlight;
+ publicRefreshInFlight=(async()=>{
+   try{
+     const batches=await Promise.all(PLAYERS.map(fetchPlayerStatsRows));
+     const data=batches.flat();
+     const latest=new Map();
+     for(const x of data){
+       const p=String(x?.player_key||'');
+       const id=normalizeCloudServantId(x?.servant_id);
+       if(!PLAYERS.includes(p)||!id)continue;
+       const key=`${p}:${id}`;
+       const old=latest.get(key);
+       const stamp=Date.parse(x?.updated_at||'')||0;
+       const oldStamp=Date.parse(old?.updated_at||'')||0;
+       if(!old||stamp>=oldStamp)latest.set(key,x);
+     }
+     let changed=false;
+     for(const [key,x] of latest){
+       const [p,idText]=key.split(':');
+       const id=Number(idText);
+       const ss=ensureStats(p,id);
+       const next={level:x.level??null,np:x.np??null,bond:x.bond??null,grail:x.grail??null,fouHp:x.fou_hp??null,fouAtk:x.fou_atk??null,servantCoins:x.servant_coins??null,skills:Array.isArray(x.skills)?x.skills.slice(0,3):[null,null,null],appendSkills:Array.isArray(x.append_skills)?x.append_skills.slice(0,5):[null,null,null,null,null]};
+       if(JSON.stringify(ss)!==JSON.stringify(next)){Object.assign(ss,next);changed=true}
+     }
+     lastPublicRefreshAt=Date.now();
+     if(changed){localCacheSave();renderCurrentView();}
+     return changed;
+   }catch(error){
+     updateSync('Supabase · lecture refusée',true);
+     console.warn('Supabase refresh:',error?.message||error);
+     return false;
+   }finally{publicRefreshInFlight=null;}
+ })();
+ return publicRefreshInFlight;
 }
 async function seedCurrentPlayer(){if(!cloudEnabled||!cloud||!session||!currentAuth?.canEdit)return;const ids=Object.entries(state.players[currentPlayer]?.stats||{});for(let i=0;i<ids.length;i+=50){const chunk=ids.slice(i,i+50).map(([id,s])=>({player_key:currentPlayer,servant_id:Number(id),level:s.level,np:s.np,bond:s.bond,grail:s.grail,fou_hp:s.fouHp,fou_atk:s.fouAtk,servant_coins:s.servantCoins,skills:s.skills||[null,null,null],append_skills:s.appendSkills||[null,null,null,null,null]}));const {error}=await cloud.from('chaldea_stats').upsert(chunk,{onConflict:'player_key,servant_id'});if(error){toast('Import impossible : '+error.message);return}}toast('Snapshot importé dans Supabase');await refreshPublicStats()}
 async function saveAllToSupabase(){
@@ -577,7 +621,9 @@ async function setupCloud(){
   cloud.auth.onAuthStateChange((_event,ses)=>{setTimeout(async()=>{session=ses;currentAuth=null;cloudAuthError='';if(ses){await resolveMembership();updateSync(currentAuth?.canEdit?'Cloud · éditeur':cloudAuthError?'Supabase · lecture refusée':currentAuth?'Cloud · lecteur':'Compte connecté · non associé',!!cloudAuthError);await loadCloud();renderAll()}else{updateSync('Cloud · lecture publique');await refreshPublicStats();await loadSupportProfiles();await loadXpCloud();renderAll()}},0)});
   // Realtime is optional. If the WebSocket is unavailable, keep the site functional and poll instead.
   if(CONFIG.enableRealtime===true){try{cloud.channel('chaldea-live').on('postgres_changes',{event:'*',schema:'public',table:'chaldea_stats'},()=>refreshPublicStats()).subscribe(()=>{});}catch(e){console.warn('Supabase Realtime disabled',e)}}
-  setInterval(async()=>{if(document.visibilityState==='visible'&&cloudEnabled)await refreshPublicStats()},15000);
+  const refreshOnReturn=()=>{if(document.visibilityState==='visible')refreshPublicStats({force:true});};
+  window.addEventListener('focus',refreshOnReturn,{passive:true});
+  document.addEventListener('visibilitychange',refreshOnReturn,{passive:true});
 }
 function accountUI(){
  const logged=!!session,can=currentCanEdit(),missing=logged&&!currentAuth&&!cloudAuthError;
