@@ -49,10 +49,16 @@ function localAsset(name){return IMG_BASE+encodeURIComponent(name)}
 function classImg(c){const k=classKey(c);const f=IMG[k]||IMG.Saber;return `<img class="class-icon-img" src="${localAsset(f)}" alt="${k}" loading="eager">`}
 function cardImg(t){const f=IMG[t];return f?`<img class="command-icon-img" src="${localAsset(f)}" alt="${t}" loading="eager">`:''}
 function npTypeImg(t){const f=IMG[t];return f?`<img class="np-type-icon" src="${localAsset(f)}" alt="${t}" loading="eager">`:''}
-function normalizeNPCardType(v){const x=String(v??'').trim().toUpperCase();if(['A','ARTS','ART'].includes(x)||x==='2')return'A';if(['B','BUSTER'].includes(x)||x==='1')return'B';if(['Q','QUICK'].includes(x)||x==='3')return'Q';return null}
+function normalizeNPCardType(v){const x=String(v??'').trim().toUpperCase();if(['A','ARTS','ART'].includes(x)||x==='1')return'A';if(['B','BUSTER'].includes(x)||x==='2')return'B';if(['Q','QUICK'].includes(x)||x==='3')return'Q';return null}
 const npTypeCache=new Map();const npTypePromises=new Map();
-function extractNPCardType(d){const candidates=[d?.noblePhantasms?.[0]?.cardType,d?.noblePhantasms?.[0]?.card,d?.noblePhantasms?.[0]?.type,d?.noblePhantasm?.cardType,d?.noblePhantasm?.cardTypeName];for(const v of candidates){const t=normalizeNPCardType(v);if(t)return t}return null}
-async function npCardTypeForServant(r,d=null){const key=Number(r?.atlasId||r?.id);if(!key)return null;if(npTypeCache.has(key))return npTypeCache.get(key);if(npTypePromises.has(key))return npTypePromises.get(key);const promise=(async()=>{const detail=d||await atlasDetail(r);let t=extractNPCardType(detail);if(!t){const npId=Number(detail?.noblePhantasms?.[0]?.id||detail?.noblePhantasm?.id||0);if(npId){try{const res=await fetch(`https://api.atlasacademy.io/nice/NA/NP/${npId}`,{cache:'force-cache'});if(res.ok){const nd=await res.json();t=normalizeNPCardType(nd?.cardType)}}catch{}}}if(t)npTypeCache.set(key,t);return t||null})();npTypePromises.set(key,promise);try{return await promise}finally{npTypePromises.delete(key)}}
+function firstArrayItem(v){if(Array.isArray(v))return v[0]||null;if(v&&typeof v==='object')return Object.values(v)[0]||null;return null}
+function extractNPCardType(d){
+ const np=firstArrayItem(d?.noblePhantasms||d?.noblePhantasm);
+ const candidates=[np?.card,np?.cardType,np?.cardTypeName,d?.np?.card,d?.np?.cardType,d?.noblePhantasm?.cardType,d?.noblePhantasm?.cardTypeName];
+ for(const v of candidates){const t=normalizeNPCardType(v);if(t)return t}
+ return null
+}
+async function npCardTypeForServant(r,d=null){const key=Number(r?.atlasId||r?.id);if(!key)return null;if(npTypeCache.has(key))return npTypeCache.get(key);if(npTypePromises.has(key))return npTypePromises.get(key);const promise=(async()=>{const detail=d||await atlasDetail(r);let t=extractNPCardType(detail);if(!t){const np=firstArrayItem(detail?.noblePhantasms||detail?.noblePhantasm);const npId=Number(np?.id||0);if(npId){try{const res=await fetch(`https://api.atlasacademy.io/nice/NA/NP/${npId}`,{cache:'force-cache'});if(res.ok){const nd=await res.json();t=normalizeNPCardType(nd?.card||nd?.cardType||nd?.cardTypeName)}}catch{}}}if(t)npTypeCache.set(key,t);return t||null})();npTypePromises.set(key,promise);try{return await promise}finally{npTypePromises.delete(key)}}
 async function ensureNPTypes(rows){let i=0;const workers=Array.from({length:8},async()=>{while(i<rows.length){const r=rows[i++];if(!r)continue;await npCardTypeForServant(r)}});await Promise.all(workers)}
 function grailImg(){return `<img class="grail-thumb" src="${localAsset(IMG.grail)}" alt="Graal" loading="eager">`}
 function isWelfare(r){return WELFARE_IDS.has(Number(r.id))||r.isWelfare===true}
@@ -163,6 +169,15 @@ async function fetchAtlasList(){
 }
 
 
+function normalizeAtlasServant(a){
+  const collectionNo=Number(a?.collectionNo);
+  const atlasId=Number(a?.id||a?.atlasId||collectionNo);
+  if(!collectionNo||!atlasId)return null;
+  const name=String(a?.name||'');
+  const cls=normalizeClass(a?.className||a?.class);
+  return {id:collectionNo,name,class:cls,rarity:atlasRarity(a),attribute:a?.attribute||'',cardType:a?.cardType||'',atlasId,nonCounted:isMash({id:collectionNo,name})};
+}
+
 async function syncRosterNA(){
   const arr=await fetchAtlasList();
   if(!arr.length){
@@ -182,18 +197,16 @@ async function syncRosterNA(){
   // Filter unwanted IDs/names first, then explicitly keep No.417 because the
   // export can temporarily lag while a new NA release is propagating.
   for(const a of arr){
-    const id=Number(a?.collectionNo),name=String(a?.name||'');
-    if(!id||isBlockedRecord(a))continue;
-    const cls=normalizeClass(a.className);
-    if(cls==='Extra'||FUTURE_NAMES.has(norm(name)))continue;
-    pushUnique({id,name,class:cls,rarity:atlasRarity(a),attribute:a.attribute||'',cardType:a.cardType||'',atlasId:a.id,nonCounted:isMash(a)});
+    const normalized=normalizeAtlasServant(a);
+    if(!normalized||isBlockedRecord({...a,...normalized})||normalized.class==='Extra'||FUTURE_NAMES.has(norm(normalized.name)))continue;
+    pushUnique(normalized);
   }
   const existing=state.roster.find(r=>Number(r.id)===417)||NA_FORCE_INCLUDE[0];
   const e=arr.find(x=>Number(x?.collectionNo)===417);
   if(e){
-    keep.push({id:417,name:e.name||existing.name,class:'Beast',rarity:'SSR',attribute:e.attribute||'Beast',cardType:e.cardType||existing.cardType,atlasId:e.id||3300200,nonCounted:false});
+    keep.push({id:417,name:e.name||existing.name,class:'Beast',rarity:'SSR',attribute:e.attribute||'Beast',cardType:e.cardType||existing.cardType,atlasId:Number(e.id||existing.atlasId||3300200),nonCounted:false});
   }else{
-    keep.push({...existing,...NA_FORCE_INCLUDE[0]});
+    keep.push({...existing,...NA_FORCE_INCLUDE[0],id:417,atlasId:Number(existing.atlasId||3300200)});
   }
   const cleaned=sanitizeRoster(keep).filter(r=>Number(r.id)!==83&&Number(r.id)!==152&&norm(r.name)!=='solomon');
   if(!cleaned.some(r=>Number(r.id)===417))cleaned.push({...NA_FORCE_INCLUDE[0]});
@@ -503,7 +516,28 @@ async function persistStat(id){
  updateSync('Cloud · synchronisé');
  return true;
 }
-async function refreshPublicStats(){if(!cloudEnabled||!cloud)return;const {data,error}=await cloud.from('chaldea_stats').select('*');if(error){updateSync('Supabase · lecture refusée',true);return}let changed=false;for(const x of data||[]){const ss=ensureStats(x.player_key,x.servant_id);const next={level:x.level,np:x.np,bond:x.bond,grail:x.grail,fouHp:x.fou_hp,fouAtk:x.fou_atk,servantCoins:x.servant_coins,skills:x.skills||[null,null,null],appendSkills:x.append_skills||[null,null,null,null,null]};if(JSON.stringify(ss)!==JSON.stringify(next)){Object.assign(ss,next);changed=true}}if(changed){localCacheSave();if(currentView==='overview')renderOverview();else if(currentView==='compare')renderCompare()}}
+function renderCurrentView(){
+  if(currentView==='overview')renderOverview();
+  else if(currentView==='servants')renderRoster();
+  else if(currentView==='compare')renderCompare();
+  else if(currentView==='supports')renderSupports();
+  else if(currentView==='xp')renderXp();
+}
+async function refreshPublicStats(){
+ if(!cloudEnabled||!cloud)return;
+ const {data,error}=await cloud.from('chaldea_stats').select('*');
+ if(error){updateSync('Supabase · lecture refusée',true);return}
+ let changed=false;
+ for(const x of data||[]){
+   const p=String(x?.player_key||'');
+   const id=Number(x?.servant_id);
+   if(!PLAYERS.includes(p)||!Number.isFinite(id)||id<=0)continue;
+   const ss=ensureStats(p,id);
+   const next={level:x.level,np:x.np,bond:x.bond,grail:x.grail,fouHp:x.fou_hp,fouAtk:x.fou_atk,servantCoins:x.servant_coins,skills:Array.isArray(x.skills)?x.skills:[null,null,null],appendSkills:Array.isArray(x.append_skills)?x.append_skills:[null,null,null,null,null]};
+   if(JSON.stringify(ss)!==JSON.stringify(next)){Object.assign(ss,next);changed=true}
+ }
+ if(changed){localCacheSave();renderCurrentView();}
+}
 async function seedCurrentPlayer(){if(!cloudEnabled||!cloud||!session||!currentAuth?.canEdit)return;const ids=Object.entries(state.players[currentPlayer]?.stats||{});for(let i=0;i<ids.length;i+=50){const chunk=ids.slice(i,i+50).map(([id,s])=>({player_key:currentPlayer,servant_id:Number(id),level:s.level,np:s.np,bond:s.bond,grail:s.grail,fou_hp:s.fouHp,fou_atk:s.fouAtk,servant_coins:s.servantCoins,skills:s.skills||[null,null,null],append_skills:s.appendSkills||[null,null,null,null,null]}));const {error}=await cloud.from('chaldea_stats').upsert(chunk,{onConflict:'player_key,servant_id'});if(error){toast('Import impossible : '+error.message);return}}toast('Snapshot importé dans Supabase');await refreshPublicStats()}
 async function saveAllToSupabase(){
  if(!cloudEnabled||!cloud||!session||!currentCanEdit()){toast('Connecte-toi avec ton compte éditeur');return false}
@@ -519,7 +553,7 @@ async function saveXpCloud(){if(!cloudEnabled||!cloud||!session||!currentCanEdit
 async function loadXpCloud(){if(!cloudEnabled||!cloud)return;const {data,error}=await cloud.from('chaldea_xp').select('*');if(error)return;for(const x of data||[]){state.players[x.player_key].xp=x.inventory||XP_DEFAULT()}if(currentView==='xp')renderXp()}
 async function loadSupportProfiles(){if(!cloudEnabled||!cloud)return;const {data,error}=await cloud.from('chaldea_support_profiles').select('*');if(error)return;for(const x of data||[])supportLocal[x.player_key]={friendId:x.friend_id||''}}
 async function saveSupportProfile(p,fid){if(!cloudEnabled||!cloud||!session||!currentAuth?.canEdit||currentAuth.playerKey!==p){localCacheSave();return}const {error}=await cloud.from('chaldea_support_profiles').upsert({player_key:p,friend_id:fid||null,updated_at:new Date().toISOString()},{onConflict:'player_key'});if(error)toast('Erreur Support : '+error.message);else toast('Friend ID synchronisé')}
-async function loadCloud(){if(!cloudEnabled||!cloud)return;await refreshPublicStats();await loadSupportProfiles();await loadXpCloud();const {data}=await cloud.from('chaldea_stats').select('player_key');const counts={};(data||[]).forEach(x=>counts[x.player_key]=(counts[x.player_key]||0)+1);if(session&&currentAuth?.canEdit&&!counts[currentAuth.playerKey])showSeedBanner()}
+async function loadCloud(){if(!cloudEnabled||!cloud)return;await refreshPublicStats();await loadSupportProfiles();await loadXpCloud();renderCurrentView();const {data}=await cloud.from('chaldea_stats').select('player_key');const counts={};(data||[]).forEach(x=>counts[x.player_key]=(counts[x.player_key]||0)+1);if(session&&currentAuth?.canEdit&&!counts[currentAuth.playerKey])showSeedBanner()}
 function showSeedBanner(){if($('#seedBanner'))return;const div=document.createElement('div');div.id='seedBanner';div.className='seed-banner';div.innerHTML=`<span>Ton compte n’a pas encore été initialisé dans la base cloud.</span><button>Importer ton snapshot Excel</button>`;div.querySelector('button').onclick=async()=>{await seedCurrentPlayer();div.remove()};document.body.appendChild(div)}
 function updateEditVisibility(){$('#accountText').textContent=session?(currentAuth?.canEdit?`Connecté · ${PLAYER_LABELS[currentAuth.playerKey]}`:'Connecté · lecteur'):'Connexion'}
 async function resolveMembership(){if(!cloud||!session)return;const {data,error}=await cloud.from('chaldea_members').select('auth_user_id,player_key,display_name,can_edit').eq('auth_user_id',session.user.id).maybeSingle();if(error){currentAuth=null;cloudAuthError=error.message||'Accès Supabase refusé';updateSync(error.code==='401'?'Supabase · clé/API refusée':'Supabase · lecture refusée',true);return}cloudAuthError='';currentAuth=data?{playerKey:data.player_key,canEdit:!!data.can_edit}:null;/* Keep the user's currently selected Master. Authentication only controls edit rights. */if(data&&state.players[data.player_key])state.players[data.player_key].displayName=data.display_name||PLAYER_LABELS[data.player_key];updateEditVisibility()}
