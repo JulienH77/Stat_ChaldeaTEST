@@ -1,0 +1,92 @@
+{
+  "version": 2,
+  "source": "Rayshift public API",
+  "region": "NA",
+  "updatedAt": "2026-09-23T16:53:26.277Z",
+  "players": {
+    "julien": {
+      "code": "939739133",
+      "name": "oShaRKio",
+      "lastUpdate": 1790164237,
+      "lastLogin": 1790149865,
+      "guid": "d8a80f69-3197-4bef-8de9-624d374609db",
+      "decksPresent": [
+        1,
+        2,
+        4,
+        8,
+        16,
+        32
+      ],
+      "decks": {
+        "0": "https://rayshift.io/static/images/deck-gen/na/939739133/d8a80f69-3197-4bef-8de9-624d374609db/1/1.png",
+        "1": "https://rayshift.io/static/images/deck-gen/na/939739133/d8a80f69-3197-4bef-8de9-624d374609db/8/1.png"
+      },
+      "deckImages": {
+        "1": "https://rayshift.io/static/images/deck-gen/na/939739133/d8a80f69-3197-4bef-8de9-624d374609db/1/9.png",
+        "2": "https://rayshift.io/static/images/deck-gen/na/939739133/d8a80f69-3197-4bef-8de9-624d374609db/2/9.png",
+        "4": "https://rayshift.io/static/images/deck-gen/na/939739133/d8a80f69-3197-4bef-8de9-624d374609db/4/9.png",
+        "8": "https://rayshift.io/static/images/deck-gen/na/939739133/d8a80f69-3197-4bef-8de9-624d374609db/8/9.png",
+        "16": "https://rayshift.io/static/images/deck-gen/na/939739133/d8a80f69-3197-4bef-8de9-624d374609db/16/9.png",
+        "32": "https://rayshift.io/static/images/deck-gen/na/939739133/d8a80f69-3197-4bef-8de9-624d374609db/32/9.png"
+      },
+      "message": "ok"
+    },
+    "yanis": {
+      "code": "466299356",
+      "name": "Die;Heart v2",
+      "lastUpdate": 1790116214,
+      "lastLogin": 1790105788,
+      "guid": "c20e3c87-99cf-48e0-afe1-ad4bf605c391",
+      "decksPresent": [
+        1,
+        2,
+        4,
+        8,
+        16,
+        32
+      ],
+      "decks": {
+        "0": "https://rayshift.io/static/images/deck-gen/na/466299356/c20e3c87-99cf-48e0-afe1-ad4bf605c391/1/1.png",
+        "1": "https://rayshift.io/static/images/deck-gen/na/466299356/c20e3c87-99cf-48e0-afe1-ad4bf605c391/8/1.png"
+      },
+      "deckImages": {
+        "1": "https://rayshift.io/static/images/deck-gen/na/466299356/c20e3c87-99cf-48e0-afe1-ad4bf605c391/1/9.png",
+        "2": "https://rayshift.io/static/images/deck-gen/na/466299356/c20e3c87-99cf-48e0-afe1-ad4bf605c391/2/9.png",
+        "4": "https://rayshift.io/static/images/deck-gen/na/466299356/c20e3c87-99cf-48e0-afe1-ad4bf605c391/4/9.png",
+        "8": "https://rayshift.io/static/images/deck-gen/na/466299356/c20e3c87-99cf-48e0-afe1-ad4bf605c391/8/9.png",
+        "16": "https://rayshift.io/static/images/deck-gen/na/466299356/c20e3c87-99cf-48e0-afe1-ad4bf605c391/16/9.png",
+        "32": "https://rayshift.io/static/images/deck-gen/na/466299356/c20e3c87-99cf-48e0-afe1-ad4bf605c391/32/9.png"
+      },
+      "message": "ok"
+    },
+    "attmann": {
+      "code": "921819502",
+      "name": "Seph",
+      "lastUpdate": 1790176436,
+      "lastLogin": 1790173721,
+      "guid": "00023164-a3d9-4835-b4c9-e29744d49559",
+      "decksPresent": [
+        1,
+        2,
+        4,
+        8,
+        16,
+        32
+      ],
+      "decks": {
+        "0": "https://rayshift.io/static/images/deck-gen/na/921819502/00023164-a3d9-4835-b4c9-e29744d49559/1/1.png",
+        "1": "https://rayshift.io/static/images/deck-gen/na/921819502/00023164-a3d9-4835-b4c9-e29744d49559/8/1.png"
+      },
+      "deckImages": {
+        "1": "https://rayshift.io/static/images/deck-gen/na/921819502/00023164-a3d9-4835-b4c9-e29744d49559/1/9.png",
+        "2": "https://rayshift.io/static/images/deck-gen/na/921819502/00023164-a3d9-4835-b4c9-e29744d49559/2/9.png",
+        "4": "https://rayshift.io/static/images/deck-gen/na/921819502/00023164-a3d9-4835-b4c9-e29744d49559/4/9.png",
+        "8": "https://rayshift.io/static/images/deck-gen/na/921819502/00023164-a3d9-4835-b4c9-e29744d49559/8/9.png",
+        "16": "https://rayshift.io/static/images/deck-gen/na/921819502/00023164-a3d9-4835-b4c9-e29744d49559/16/9.png",
+        "32": "https://rayshift.io/static/images/deck-gen/na/921819502/00023164-a3d9-4835-b4c9-e29744d49559/32/9.png"
+      },
+      "message": "ok"
+    }
+  }
+}

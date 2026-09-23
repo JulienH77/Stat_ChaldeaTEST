@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="fr"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#eef2f6"><title>Chaldea Command</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=101.0">
+<link rel="icon" href="chaldea.ico">
+</head><body>
+<div class="app-shell">
+<aside class="sidebar" id="sidebar">
+  <div class="brand"><div class="brand-mark">F</div><div><strong>CHALDEA</strong><span>COMMAND</span></div></div>
+  <div class="nav-label">COMMAND DECK</div>
+  <nav class="nav-stack">
+    <button class="nav-item active" data-view="overview"><span class="nav-index">01</span><span>Overview</span></button>
+    <button class="nav-item" data-view="servants"><span class="nav-index">02</span><span>Servants</span></button>
+    <button class="nav-item" data-view="compare"><span class="nav-index">03</span><span>Compare</span></button>
+    <button class="nav-item" data-view="supports"><span class="nav-index">04</span><span>Support Lists</span></button>
+    <button class="nav-item" data-view="xp"><span class="nav-index">05</span><span>Calcul XP</span></button>
+  </nav>
+  <div class="sidebar-foot">
+    <div class="sync-box"><span id="syncDot"></span><div><small>SYNCHRONISATION</small><b id="syncText">Mode local</b></div></div>
+    <button class="account-btn" id="accountBtn"><span id="accountText">Connexion</span><span>↗</span></button>
+  </div>
+</aside>
+<main class="main">
+<header class="topbar"><button class="mobile-menu" id="mobileMenu">☰</button><div><small>FATE / GRAND ORDER</small><strong id="pageName">Overview</strong></div><div class="master-switch" id="masterSwitch"></div></header>
+
+<section class="view active" id="view-overview">
+  <div class="page-heading"><div><span class="eyebrow">MASTER PROFILE</span><h1 id="heroMaster">Julien</h1><p>Ta collection NA, ta progression et les chiffres qui comptent vraiment.</p></div><div class="hero-badge"><span id="introOwned">0</span><small>SERVANTS POSSÉDÉS</small><em>NA / LIVE</em></div></div>
+  <div class="overview-grid">
+    <section class="panel collection-panel"><div class="panel-head"><div><span class="eyebrow">COLLECTION</span><h2>Raretés possédées</h2></div><span class="panel-tag">HORS MASH</span></div><div id="rarityDisplay" class="rarity-display"></div></section>
+    <section class="panel skills-panel"><div class="panel-head"><div><span class="eyebrow">SKILL MASTERY</span><h2>Distribution des niveaux</h2></div><div class="skills-head-actions"><div class="scope-switch" id="skillScopeToggle"><button data-skill-scope="all">ALL</button><button data-skill-scope="gold" class="active">GOLD</button></div><div class="avg-pill"><strong id="skillsAverage">—</strong><span>/10</span></div></div></div><div id="skillBars" class="skill-bars"></div></section>
+    <section class="panel markers-panel"><div class="panel-head"><div><span class="eyebrow">ACCOUNT MARKERS</span><h2>Repères de compte</h2></div></div><div id="detailStats" class="marker-grid"></div></section>
+    <section class="panel trend-panel"><div class="panel-head"><div><span class="eyebrow">ACCOUNT READOUT</span><h2>Collection 4★ + 5★</h2></div><div class="ring" id="collectionRing" aria-hidden="true"></div></div><div class="trend-copy"><strong id="collectionPct">0%</strong><span>des Servants 4★ / 5★ NA obtenus</span></div><div class="mini-bars" id="miniBars"></div></section>
+  </div>
+</section>
+
+<section class="view" id="view-servants">
+  <div class="page-heading"><div><span class="eyebrow">ROSTER DATABASE</span><h1>Servants</h1><p>Catalogue NA vivant, progression individuelle et artworks Atlas Academy.</p></div><div class="source-badge" id="atlasStatus">ATLAS / NA</div></div>
+  <div class="toolbar">
+    <label class="search-field"><span>⌕</span><input id="searchInput" type="search" placeholder="Rechercher un Servant…" autocomplete="off"></label>
+    <div class="pop-wrap"><button class="filter-btn" data-pop="classPop">Classes <b id="classFilterCount"></b>⌄</button><div class="filter-pop" id="classPop"></div></div>
+    <div class="pop-wrap"><button class="filter-btn" data-pop="rarityPop">Raretés <b id="rarityFilterCount"></b>⌄</button><div class="filter-pop" id="rarityPop"></div></div>
+    <div class="pop-wrap"><button class="filter-btn" data-pop="npPop">NP <b id="npFilterCount"></b>⌄</button><div class="filter-pop np-filter-pop" id="npPop"></div></div>
+    <select id="sortFilter"><option value="release">Sortie</option><option value="bond">Bond level</option><option value="np">NP level</option><option value="level">Niveau</option><option value="atk">ATK</option><option value="hp">HP</option></select>
+    <button class="filter-btn hide-missing-btn" id="hideMissing" type="button">Masquer les non possédés</button>
+    <button class="filter-btn sort-dir" id="sortDir">↓ Descendant</button>
+    <div class="view-toggle"><button class="active" data-roster-mode="cards">Cards</button><button data-roster-mode="table">Table</button></div>
+  </div>
+  <div class="roster-info"><strong id="rosterCount">0</strong><span id="rosterSummary"></span></div>
+  <div id="rosterCards" class="roster-grid"></div><div id="rosterTable" class="table-wrap hidden"></div>
+</section>
+
+<section class="view" id="view-compare">
+  <div class="page-heading"><div><span class="eyebrow">HEAD TO HEAD</span><h1>Compare</h1><p>Une lecture visuelle de vos trois comptes, sans barres mystérieuses.</p></div></div>
+  <div id="compareTop" class="compare-people"></div>
+  <section class="panel showdown"><div class="panel-head showdown-head"><div><span class="eyebrow">SERVANT SHOWDOWN</span><h2 id="compareFocusTitle">Sélectionne un Servant</h2></div><div class="autocomplete-wrap"><input id="compareSearch" list="compareNames" type="search" placeholder="Choisir un Servant…"><datalist id="compareNames"></datalist></div></div><div id="compareCards" class="showdown-grid"></div></section>
+  <section class="panel compare-visual"><div class="panel-head"><div><span class="eyebrow">MASTER RADAR</span><h2>Profil de progression</h2></div><div class="legend" id="radarLegend"></div></div><div id="compareRadar" class="radar-wrap"></div></section>
+</section>
+
+<section class="view" id="view-xp">
+  <div class="page-heading">
+    <div><span class="eyebrow">RESOURCE PLANNER</span><h1>Calcul XP</h1><p>Deux niveaux, un résultat immédiat, puis ton stock de cartes XP. Les champs beige sont les seuls à modifier.</p></div>
+    <div class="source-badge">FGO · LEVEL 120</div>
+  </div>
+
+  <section class="panel xp-planner-card">
+    <div class="xp-planner-head">
+      <div><span class="eyebrow">CALCULATEUR</span><h2>De ton niveau actuel à ton objectif</h2></div>
+      <div class="xp-level-shortcuts" aria-label="Objectifs rapides">
+        <button data-xp-goal="60">60</button><button data-xp-goal="70">70</button><button data-xp-goal="80">80</button><button data-xp-goal="90">90</button><button data-xp-goal="100">100</button><button data-xp-goal="120" class="active">120</button>
+      </div>
+    </div>
+    <div class="xp-planner-main">
+      <label class="xp-big-field"><span>NIVEAU ACTUEL</span><input id="xpCurrentLevel" class="xp-input beige" type="number" min="1" max="120" value="1" inputmode="numeric"></label>
+      <div class="xp-arrow-big">→</div>
+      <label class="xp-big-field target"><span>NIVEAU SOUHAITÉ</span><input id="xpTargetLevel" class="xp-input beige" type="number" min="1" max="120" value="120" inputmode="numeric"></label>
+      <div class="xp-big-field xp-class-field"><span>CLASSE DU SERVANT</span><input id="xpClassSelect" type="hidden" value=""><div class="xp-class-grid" id="xpClassGrid" aria-label="Choisir la classe du Servant"></div><small class="xp-class-hint" id="xpClassHint">Aucun bonus · clique sur une classe pour l’activer</small></div>
+      <div id="xpTargetSummary" class="xp-result-card"></div>
+    </div>
+  </section>
+
+  <div class="xp-main-grid">
+    <section class="panel xp-inventory-panel">
+      <div class="panel-head"><div><span class="eyebrow">INVENTAIRE</span><h2>Mes cartes XP</h2></div><span class="panel-tag">PERSONNEL</span></div>
+      <div class="xp-table-wrap xp-table-clean">
+        <table class="xp-table">
+          <thead><tr><th>CLASSE</th><th><span class="star-title five">5★</span><small>81 000 XP</small></th><th><span class="star-title four">4★</span><small>27 000 XP</small></th><th><span class="star-title three">3★</span><small>9 000 XP</small></th><th>XP BRUTE</th><th>XP AVEC BONUS</th></tr></thead>
+          <tbody id="xpTableBody"></tbody><tfoot id="xpTableFoot"></tfoot>
+        </table>
+      </div>
+    </section>
+
+    <aside class="xp-side">
+      <section class="panel xp-stock-panel">
+        <div class="panel-head"><div><span class="eyebrow">MON STOCK</span><h2>Disponible maintenant</h2></div></div>
+        <div class="xp-stock-hero"><strong id="xpRandomTotal">0</strong><span>XP brute</span></div>
+        <div class="xp-stock-secondary"><div><b id="xpClassBonusTotal">0</b><span>avec bonus de classe</span></div><div id="xpStockHint"><strong>—</strong><span>Choisis un objectif pour voir le besoin.</span></div></div>
+      </section>
+      <section class="panel xp-milestones-panel">
+        <div class="panel-head"><div><span class="eyebrow">REPÈRES</span><h2>Coût depuis le niveau 1</h2></div></div>
+        <div id="xpMilestones" class="xp-milestones-grid"></div>
+      </section>
+    </aside>
+  </div>
+</section>
+
+<section class="view" id="view-supports">
+  <div class="page-heading">
+    <div><span class="eyebrow">FRIEND SYSTEM</span><h1>Support Lists</h1></div>
+  </div>
+  <section class="panel support-hub">
+    <div class="support-hub-top">
+      <div class="support-mode-switch" role="tablist" aria-label="Type de support">
+        <span class="support-mode-thumb"></span>
+        <button type="button" data-support-mode="normal" class="active">Normal</button>
+        <button type="button" data-support-mode="event">Event</button>
+      </div>
+    </div>
+    <div id="rayFrameWrap" class="ray-frame-wrap">
+      <div class="empty-state"><strong>Aucun Friend ID sélectionné</strong><span>Enregistre un identifiant pour charger le profil public.</span></div>
+    </div>
+    <div id="supportLists" class="support-stack"></div>
+  </section>
+</section>
+</main></div>
+
+<div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modal"></div></div><div class="toast" id="toast"></div>
+<script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script type="module" src="app.js?v=101.0"></script>
+</body></html>
