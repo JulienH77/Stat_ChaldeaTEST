@@ -448,7 +448,7 @@ main.main{position:relative;overflow:visible;isolation:isolate}
   grid-template-rows:auto auto;
   row-gap:7px!important;
 }
-.detail-stats-v10>.detail-box{align-self:start;min-width:0;}
+.detail-stats-v10>.detail-box{align-self:start;min-height:100px;}
 .detail-stats-v10>.np-detail-box{grid-column:4;grid-row:1;}
 .detail-stats-v10>.bond-block{grid-column:1;grid-row:2;align-self:start;min-width:0;margin-top:0;}
 .np-types-underbox{
