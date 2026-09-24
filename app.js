@@ -26,7 +26,7 @@ const norm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase(
 const state=structuredClone(initialState);
 // Hide future Excel placeholders immediately; authoritative NA sync runs afterwards.
 state.roster=sanitizeRoster(state.roster);
-let currentPlayer='julien',currentView='overview',rosterMode='cards',sortDir='desc',compareFocusId=284,skillScope='gold',hideMissing=false,xpTargetClass='',supportMode='normal',showNpOverlay=true;
+let currentPlayer='julien',currentView='overview',rosterMode='cards',sortDir='desc',compareFocusId=284,skillScope='gold',hideMissing=false,xpTargetClass='',supportMode='normal',showNpOverlay=false;
 let cloud=null,session=null,currentAuth=null,cloudEnabled=false,cloudAuthError='',atlasById=new Map(),atlasFull=new Map(),atlasVariantsByName=new Map(),variantDetailCache=new Map(),renderToken=0,showdownRenderedId=null,showdownRenderToken=0,supportPlayer='julien';
 const selectedClasses=new Set(),selectedRarities=new Set(['5','4','welfare']),selectedNpTypes=new Set();
 const NP_EFFECT_ORDER=['Support','ST','AOE'];
@@ -34,6 +34,7 @@ const NP_EFFECT_LABELS={Support:'Support',ST:'ST',AOE:'AOE'};
 const NP_FILTERS=[['Q:Support','Support'],['Q:ST','ST'],['Q:AOE','AOE'],['A:Support','Support'],['A:ST','ST'],['A:AOE','AOE'],['B:Support','Support'],['B:ST','ST'],['B:AOE','AOE']];
 const npTypeCache=new Map();
 let npTypeIndexPromise=null;
+const npOverlayTimers=new Map();
 const supportLocal={julien:{friendId:supportSnapshot.players?.julien?.code||'939739133'},yanis:{friendId:supportSnapshot.players?.yanis?.code||''},attmann:{friendId:supportSnapshot.players?.attmann?.code||'921819502'}};
 const XP_CLASSES=['Saber','Archer','Lancer','Rider','Caster','Assassin','Berserker','Autre'];
 const XP_CARD_VALUE={5:81000,4:27000,3:9000};
@@ -124,18 +125,56 @@ function fillFilters(){
  $$('#npPop input').forEach(i=>i.onchange=async()=>{i.checked?selectedNpTypes.add(i.dataset.nptype):selectedNpTypes.delete(i.dataset.nptype);if(selectedNpTypes.size)await ensureNpTypeIndex();updateFilterLabels();renderRoster()});
  updateFilterLabels();
 }
-function updateFilterLabels(){$('#classFilterCount').textContent=selectedClasses.size?`(${selectedClasses.size})`:'';$('#rarityFilterCount').textContent=selectedRarities.size?`(${selectedRarities.size})`:'';$('#npFilterCount').textContent=selectedNpTypes.size?`(${selectedNpTypes.size})`:'';const b=$('#hideMissing');if(b){b.classList.toggle('active',hideMissing);b.textContent=hideMissing?'Afficher les non possédés':'Masquer les non possédés'}const n=$('#toggleNpOverlay');if(n){n.classList.toggle('active',showNpOverlay);n.textContent=showNpOverlay?'Cartes NP':'Afficher les cartes NP'}}
+function updateFilterLabels(){$('#classFilterCount').textContent=selectedClasses.size?`(${selectedClasses.size})`:'';$('#rarityFilterCount').textContent=selectedRarities.size?`(${selectedRarities.size})`:'';$('#npFilterCount').textContent=selectedNpTypes.size?`(${selectedNpTypes.size})`:'';const b=$('#hideMissing');if(b){b.classList.toggle('active',hideMissing);b.textContent=hideMissing?'Afficher les non possédés':'Masquer les non possédés'}const n=$('#toggleNpOverlay');if(n){n.classList.toggle('active',showNpOverlay);n.textContent='NP card'}}
 function atlasCacheValue(r,kind){const d=atlasById.get(Number(r.atlasId||r.id));if(d){const s=stats(currentPlayer,r.id);if(s.level==null)return 0;const cs=currentStats(d,r,s);const v=kind==='atk'?cs.atk:cs.hp;if(Number.isFinite(Number(v)))return Number(v)}return 0}
 function sortRows(rows){const mode=$('#sortFilter').value,sg=sortDir==='asc'?1:-1;rows.sort((a,b)=>{let x,y;if(mode==='bond'){x=Number(a.s.bond)||-1;y=Number(b.s.bond)||-1}else if(mode==='np'){x=Number(a.s.np)||-1;y=Number(b.s.np)||-1}else if(mode==='level'){x=Number.isFinite(Number(a.s.level))?Number(a.s.level):defaultMaxLevel(a.r);y=Number.isFinite(Number(b.s.level))?Number(b.s.level):defaultMaxLevel(b.r)}else if(mode==='atk'||mode==='hp'){x=atlasCacheValue(a.r,mode)??-1;y=atlasCacheValue(b.r,mode)??-1}else{x=Number(a.r.releaseNo??a.r.id);y=Number(b.r.releaseNo??b.r.id)}return x===y?String(a.r.name).localeCompare(String(b.r.name))*sg:(x-y)*sg})}
 function focusValue(r,s){const mode=$('#sortFilter').value;if(mode==='bond')return `<div class="sort-focus">Bond ${s.bond??'—'}</div>`;if(mode==='np'){const n=num(s.np);return `<div class="sort-focus">NP ${n??'—'}</div>`;}if(mode==='level')return `<div class="sort-focus">Lv ${displayLevel(currentPlayer,r,s)}</div>`;if(mode==='atk')return `<div class="sort-focus">ATK ${fmtNum(atlasCacheValue(r,'atk'))}</div>`;if(mode==='hp')return `<div class="sort-focus">HP ${fmtNum(atlasCacheValue(r,'hp'))}</div>`;return''}
 function renderRoster(){
  const token=++renderToken,q=norm($('#searchInput').value);let rows=state.roster.filter(isVisible).map(r=>({r,s:stats(currentPlayer,r.id)})).filter(o=>{const c=classKey(o.r.class),rr=isWelfare(o.r)?'welfare':String(rarityNum(o.r.rarity));return(!hideMissing||isOwned(currentPlayer,o.r))&&(!q||norm(o.r.name).includes(q))&&(!selectedClasses.size||selectedClasses.has(c))&&(!selectedRarities.size||selectedRarities.has(rr))&&matchesNpFilters(o.r)});
  sortRows(rows);$('#rosterCount').textContent=rows.length;const totalVisible=state.roster.filter(isVisible).length,ownedTotal=countOwned(currentPlayer);$('#rosterSummary').textContent=hideMissing?`${ownedTotal} possédés affichés`:`${ownedTotal} possédés · ${totalVisible-ownedTotal} manquants`;
- $('#rosterCards').innerHTML=rows.map(({r,s})=>{const own=isOwned(currentPlayer,r);return `<article class="servant-card ${own?'owned':'missing'}" data-servant-id="${r.id}">${own?'':'<span class="missing-ribbon">NON POSSÉDÉ</span>'}<div class="card-art" data-servant-id="${r.id}"><div class="loader">ATLAS</div>${showNpOverlay&&npCardCode(r)?`<div class="np-type-overlay" data-np-overlay="${r.id}">${cardImg(npCardCode(r))}</div>`:''}</div><div class="card-content"><div class="card-topline"><span class="rarity-short">${rarityNum(r.rarity)}★${isWelfare(r)?' · W':''}</span>${classImg(r.class)}</div><div class="card-name">${r.name}</div><div class="card-line"><div class="level-wrap"><span class="level-major">Lv ${displayLevel(currentPlayer,r,s)}</span>${Number(s.grail)>0?`<span class="grail-count">${grailImg()}<b>${Number(s.grail)}</b></span>`:''}</div><span class="np-chip"><span class="np-mini-icon">${npIcon()}</span>${npCardDisplay(s.np)}</span></div>${$('#sortFilter').value==='release'?`<div class="release-skill-row">${[0,1,2].map(i=>`<span><b>${s.skills?.[i]??'—'}</b></span>`).join('')}</div>`:''}${focusValue(r,s)}</div></article>`}).join('');
+ $('#rosterCards').innerHTML=rows.map(({r,s})=>{const own=isOwned(currentPlayer,r);return `<article class="servant-card ${own?'owned':'missing'}" data-servant-id="${r.id}">${own?'':'<span class="missing-ribbon">NON POSSÉDÉ</span>'}<div class="card-art" data-servant-id="${r.id}"><div class="loader">ATLAS</div></div><div class="card-content"><div class="card-topline"><span class="rarity-short">${rarityNum(r.rarity)}★${isWelfare(r)?' · W':''}</span>${classImg(r.class)}</div><div class="card-name">${r.name}</div><div class="card-line"><div class="level-wrap"><span class="level-major">Lv ${displayLevel(currentPlayer,r,s)}</span>${Number(s.grail)>0?`<span class="grail-count">${grailImg()}<b>${Number(s.grail)}</b></span>`:''}</div><span class="np-chip"><span class="np-mini-icon">${npIcon()}</span>${npCardDisplay(s.np)}</span></div>${$('#sortFilter').value==='release'?`<div class="release-skill-row">${[0,1,2].map(i=>`<span><b>${s.skills?.[i]??'—'}</b></span>`).join('')}</div>`:''}${focusValue(r,s)}</div></article>`}).join('');
  loadCardImages(rows,token);
  $$('.servant-card').forEach(el=>el.onclick=()=>openServant(Number(el.dataset.servantId)));
 }
-async function loadCardImages(rows,token){let i=0;const hadMissing=rows.some(({r})=>!atlasById.has(Number(r.atlasId||r.id)));const workers=Array.from({length:6},async()=>{while(i<rows.length){const row=rows[i++];if(token!==renderToken)return;const holder=$(`.card-art[data-servant-id="${row.r.id}"]`);if(!holder)continue;const d=await atlasDetail(row.r);const url=imageList(d)[0]||guessImage(row.r.atlasId);const overlay=holder.querySelector('.np-type-overlay');const resolvedCard=npCardCode(row.r,d);if(showNpOverlay&&overlay&&resolvedCard)overlay.innerHTML=cardImg(resolvedCard);else if(showNpOverlay&&!overlay&&resolvedCard){const el=document.createElement('div');el.className='np-type-overlay';el.dataset.npOverlay=row.r.id;el.innerHTML=cardImg(resolvedCard);holder.appendChild(el)};if(url){const img=new Image();img.decoding='async';img.onload=()=>{if(token!==renderToken)return;const overlay=holder.querySelector('.np-type-overlay');holder.innerHTML='';holder.appendChild(img);if(overlay)holder.appendChild(overlay);const chip=holder.closest('.servant-card')?.querySelector('.np-mini-icon');const ni=npIcon();if(chip&&ni)chip.innerHTML=ni};img.onerror=()=>holder.innerHTML='<div class="image-fallback">ART<br><small>indisponible</small></div>';img.src=url}else holder.innerHTML='<div class="image-fallback">ART<br><small>indisponible</small></div>'}});await Promise.all(workers);const mode=$('#sortFilter')?.value;if(hadMissing&&(mode==='atk'||mode==='hp')&&token===renderToken)renderRoster()}
+async function loadCardImages(rows,token){
+  clearNpOverlayTimers();
+  let i=0;
+  const hadMissing=rows.some(({r})=>!atlasById.has(Number(r.atlasId||r.id)));
+  const workers=Array.from({length:6},async()=>{
+    while(i<rows.length){
+      const row=rows[i++];
+      if(token!==renderToken)return;
+      const holder=$(`.card-art[data-servant-id="${row.r.id}"]`);
+      if(!holder)continue;
+      const d=await atlasDetail(row.r);
+      const url=imageList(d)[0]||guessImage(row.r.atlasId);
+      if(showNpOverlay){
+        const profiles=await npProfilesForServant(row.r,d);
+        const cards=npCardsFromProfiles(profiles);
+        if(token===renderToken)setNpOverlayCards(holder,cards.length?cards:(npCardCode(row.r,d)?[npCardCode(row.r,d)]:[]));
+      }
+      if(url){
+        const img=new Image();
+        img.decoding='async';
+        img.onload=()=>{
+          if(token!==renderToken)return;
+          const overlay=holder.querySelector('.np-type-overlay');
+          holder.innerHTML='';
+          holder.appendChild(img);
+          if(overlay)holder.appendChild(overlay);
+          const chip=holder.closest('.servant-card')?.querySelector('.np-mini-icon');
+          const ni=npIcon();
+          if(chip&&ni)chip.innerHTML=ni;
+        };
+        img.onerror=()=>holder.innerHTML='<div class="image-fallback">ART<br><small>indisponible</small></div>';
+        img.src=url;
+      }else holder.innerHTML='<div class="image-fallback">ART<br><small>indisponible</small></div>';
+    }
+  });
+  await Promise.all(workers);
+  const mode=$('#sortFilter')?.value;
+  if(hadMissing&&(mode==='atk'||mode==='hp')&&token===renderToken)renderRoster();
+}
 function guessImage(atlasId){if(!atlasId)return'';const id=String(atlasId);return `https://static.atlasacademy.io/NA/CharaGraph/${id}/${id}a@1.png`}
 async function fetchAtlasList(){
   try{
@@ -262,9 +301,33 @@ function npProfilesFromDetails(details,r){
  return profiles.filter(p=>{const key=`${p.card}:${p.types.join(',')}`;if(seen.has(key))return false;seen.add(key);return true});
 }
 async function fetchVariantDetail(id){const key=Number(id);if(!key)return null;if(variantDetailCache.has(key))return variantDetailCache.get(key);const p=(async()=>{try{const res=await fetch(`https://api.atlasacademy.io/nice/NA/servant/${key}`,{cache:'force-cache'});if(!res.ok)throw Error();return await res.json()}catch{return null}})();variantDetailCache.set(key,p);return p}
+async function discoverNameVariants(r){
+ const key=norm(r?.name);
+ if(!key)return [];
+ if(atlasVariantsByName.has(key))return atlasVariantsByName.get(key)||[];
+ const known=[];
+ try{
+   const url=`https://api.atlasacademy.io/nice/NA/servant/search?name=${encodeURIComponent(r.name)}&lang=en&excludeCollectionNo=999999999`;
+   const res=await fetch(url,{cache:'force-cache'});
+   if(res.ok){
+     const raw=await res.json();
+     const arr=Array.isArray(raw)?raw:(raw&&typeof raw==='object'?Object.values(raw):[]);
+     for(const x of arr){
+       const id=Number(x?.id),cn=Number(x?.collectionNo);
+       if(!id||norm(x?.name)!==key)continue;
+       if(id===Number(r?.atlasId))continue;
+       if(!known.some(v=>Number(v.id)===id))known.push({id,name:x.name,collectionNo:Number.isFinite(cn)?cn:0});
+     }
+   }
+ }catch(e){}
+ // Keep any variants discovered in the lightweight export as well.
+ for(const v of (atlasVariantsByName.get(key)||[])){if(!known.some(x=>Number(x.id)===Number(v.id)))known.push(v)}
+ atlasVariantsByName.set(key,known);
+ return known;
+}
 async function npProfilesForServant(r,d){
  const details=[d];
- const variants=atlasVariantsByName.get(norm(r?.name))||[];
+ const variants=await discoverNameVariants(r);
  for(const v of variants){if(Number(v.id)===Number(r?.atlasId))continue;const vd=await fetchVariantDetail(v.id);if(vd)details.push(vd)}
  return npProfilesFromDetails(details,r);
 }
@@ -272,6 +335,20 @@ function npFilterKeysFromProfiles(profiles){return profiles.flatMap(p=>p.types.m
 function npProfileKeys(d,r){return npFilterKeysFromProfiles(npProfilesFromDetails([d],r))}
 function npTypeText(d,r){const profiles=npProfilesFromDetails([d],r);return profiles.length?profiles.map(p=>p.types.length?p.types.join(' · '):'Type non défini').join(' · '):'—'}
 function npProfilesHtml(profiles){if(!profiles.length)return '<span class="np-profile-empty">Type NP indisponible</span>';return `<div class="np-profile-list">${profiles.map(p=>`<div class="np-profile"><span class="np-profile-card">${p.card?cardImg(p.card):''}</span><span class="np-profile-types">${p.types.length?p.types.map(t=>`<b>${t}</b>`).join('<span class="np-profile-sep">·</span>'):''}</span></div>`).join('')}</div>`}
+function npCardsFromProfiles(profiles){return [...new Set((profiles||[]).map(p=>p?.card).filter(Boolean))]}
+function clearNpOverlayTimers(){for(const timer of npOverlayTimers.values())clearInterval(timer);npOverlayTimers.clear()}
+function setNpOverlayCards(holder,cards){
+ const id=holder?.dataset?.servantId;
+ if(id&&npOverlayTimers.has(id)){clearInterval(npOverlayTimers.get(id));npOverlayTimers.delete(id)}
+ if(!holder)return;
+ let overlay=holder.querySelector('.np-type-overlay');
+ if(!showNpOverlay||!cards.length){overlay?.remove();return}
+ if(!overlay){overlay=document.createElement('div');overlay.className='np-type-overlay';overlay.dataset.npOverlay=id;holder.appendChild(overlay)}
+ let index=0;
+ const paint=()=>{if(!overlay.isConnected||!showNpOverlay)return;const next=cardImg(cards[index]);overlay.classList.add('np-overlay-fade-out');setTimeout(()=>{if(!overlay.isConnected||!showNpOverlay)return;overlay.innerHTML=next;overlay.classList.remove('np-overlay-fade-out')},160);index=(index+1)%cards.length};
+ overlay.innerHTML=cardImg(cards[0]);
+ if(cards.length>1){const timer=setInterval(paint,1800);if(id)npOverlayTimers.set(id,timer)}
+}
 function npFilterKeys(r){const cached=npTypeCache.get(Number(r.id));if(!cached)return null;return cached.keys||[]}
 function matchesNpFilters(r){if(!selectedNpTypes.size)return true;const keys=npFilterKeys(r);return keys==null?true:keys.some(k=>selectedNpTypes.has(k))}
 async function ensureNpTypeIndex(){if(npTypeIndexPromise)return npTypeIndexPromise;const rows=state.roster.filter(isVisible).filter(r=>!npTypeCache.has(Number(r.id)));if(!rows.length)return;let cursor=0;npTypeIndexPromise=(async()=>{const workers=Array.from({length:6},async()=>{while(cursor<rows.length){const r=rows[cursor++];const d=await atlasDetail(r);const profiles=await npProfilesForServant(r,d);const keys=npFilterKeysFromProfiles(profiles);npTypeCache.set(Number(r.id),{profiles,keys});}});await Promise.all(workers)})().finally(()=>{npTypeIndexPromise=null});return npTypeIndexPromise}
@@ -292,7 +369,7 @@ function openModalBase(r,d,urls,idx,profiles=[]){
  const npValue=s.np??'';
  const npRead=npDisplay(s.np,true);
  const levelHtml=can?`<input class="editable-input" id="e-level" type="number" value="${s.level??''}" min="1" max="120">`:`<span class="detail-value"><strong>${s.level??'—'}</strong></span>`;
- const npProfileMarkup=npProfilesHtml(profiles);const npHtml=can?`<div class="np-edit-wrap"><div class="np-topline">${npIcon()}<div class="np-value-line"><input class="editable-input np-input" id="e-np" type="number" value="${npValue}" min="1" max="999"><span class="np-display-hint">Affiché ${npRead}</span></div></div><div class="np-types-row">${npProfileMarkup}</div></div>`:`<div class="np-detail-row"><div class="np-topline">${npIcon()}<b>${npRead}</b></div><div class="np-types-row">${npProfileMarkup}</div></div>`;
+ const npProfileMarkup=npProfilesHtml(profiles);const npHtml=can?`<div class="np-edit-wrap np-two-row"><div class="np-topline">${npIcon()}<div class="np-value-line"><input class="editable-input np-input" id="e-np" type="number" value="${npValue}" min="1" max="999"><span class="np-display-hint">Affiché ${npRead}</span></div></div><div class="np-types-row">${npProfileMarkup}</div></div>`:`<div class="np-detail-row np-two-row"><div class="np-topline">${npIcon()}<b>${npRead}</b></div><div class="np-types-row">${npProfileMarkup}</div></div>`;
  const grailCount=Number(s.grail)||0;
  const skillHtml=(s.skills||[null,null,null]).map((v,i)=>can?`<div class="level-cell"><span>SKILL ${i+1}</span><input id="skill-${i}" type="number" min="1" max="10" value="${v??''}"></div>`:`<div class="level-cell"><span>SKILL ${i+1}</span><div class="level-read">${v??'—'}</div></div>`).join('');
  const appendHtml=(s.appendSkills||[null,null,null,null,null]).map((v,i)=>can?`<div class="level-cell"><span>APPEND ${i+1}</span><input id="append-${i}" type="number" min="0" max="10" value="${v??''}"></div>`:`<div class="level-cell"><span>APPEND ${i+1}</span><div class="level-read">${v??'—'}</div></div>`).join('');

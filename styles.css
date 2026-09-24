@@ -380,3 +380,17 @@ main.main{position:relative;overflow:visible;isolation:isolate}
 .np-detail-row{display:grid;gap:7px;align-items:start}
 #toggleNpOverlay.active{background:#eef4fb;color:#557ba5;border-color:#c4d4e3}
 #toggleNpOverlay{min-width:112px}
+
+/* V104 — NP detail cleanup, centered type row, smooth multi-card overlay */
+.np-two-row .np-topline{justify-content:flex-start}
+.np-two-row .np-types-row{border-top:1px solid var(--line);padding-top:8px;margin-top:2px;display:flex;justify-content:center;width:100%}
+.np-profile-list{justify-content:center;align-items:center;gap:14px;width:100%;margin-top:0}
+.np-profile{padding:0;border:0;background:transparent;box-shadow:none}
+.np-profile-types{justify-content:center;align-items:center}
+.np-profile-card{min-width:24px}
+.np-profile-card img{width:26px;height:32px}
+.np-profile-types b{font-size:10px;color:#586a7d}
+.np-overlay-fade-out{opacity:.1!important;transform:scale(.94);transition:opacity .16s ease,transform .16s ease}
+.np-type-overlay{transition:opacity .16s ease,transform .16s ease}
+#toggleNpOverlay{min-width:0}
+#toggleNpOverlay.active{background:#25374a;border-color:#25374a;color:#fff}

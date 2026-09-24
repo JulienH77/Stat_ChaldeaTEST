@@ -4,7 +4,7 @@
 <meta name="theme-color" content="#eef2f6"><title>Chaldea Command</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=101.0">
+<link rel="stylesheet" href="styles.css?v=104.0">
 <link rel="icon" href="chaldea.ico">
 </head><body>
 <div class="app-shell">
@@ -42,7 +42,7 @@
     <label class="search-field"><span>⌕</span><input id="searchInput" type="search" placeholder="Rechercher un Servant…" autocomplete="off"></label>
     <div class="pop-wrap"><button class="filter-btn" data-pop="classPop">Classes <b id="classFilterCount"></b>⌄</button><div class="filter-pop" id="classPop"></div></div>
     <div class="pop-wrap"><button class="filter-btn" data-pop="rarityPop">Raretés <b id="rarityFilterCount"></b>⌄</button><div class="filter-pop" id="rarityPop"></div></div>
-    <div class="pop-wrap"><button class="filter-btn" data-pop="npPop">Type NP <b id="npFilterCount"></b>⌄</button><div class="filter-pop" id="npPop"></div></div><button id="toggleNpOverlay" class="filter-btn active" type="button">Cartes NP</button>
+    <div class="pop-wrap"><button class="filter-btn" data-pop="npPop">Type NP <b id="npFilterCount"></b>⌄</button><div class="filter-pop" id="npPop"></div></div><button id="toggleNpOverlay" class="filter-btn hide-missing-btn" type="button">NP card</button>
     <select id="sortFilter"><option value="release">Sortie</option><option value="bond">Bond level</option><option value="np">NP level</option><option value="level">Niveau</option><option value="atk">ATK</option><option value="hp">HP</option></select>
     <button class="filter-btn hide-missing-btn" id="hideMissing" type="button">Masquer les non possédés</button>
     <button class="filter-btn sort-dir" id="sortDir">↓ Descendant</button>
