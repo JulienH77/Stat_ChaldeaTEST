@@ -349,3 +349,17 @@ main.main{position:relative;overflow:visible;isolation:isolate}
 .np-detail-row .np-card-icon,.np-edit-wrap .np-card-icon{width:22px;height:22px;object-fit:contain}
 .np-edit-wrap{display:grid;grid-template-columns:22px 1fr;align-items:center;gap:8px}
 .np-edit-wrap .np-display-hint,.np-edit-wrap .np-effect-type{grid-column:2}
+
+
+/* V102 — NP multi-variant presentation */
+.np-profile-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.np-profile{display:inline-flex;align-items:center;gap:6px;padding:5px 7px;border:1px solid #dfe5eb;border-radius:8px;background:#fbfcfd}
+.np-profile-card{display:grid;place-items:center;min-width:26px}
+.np-profile-card img{width:28px;height:34px;object-fit:contain}
+.np-profile-types{display:flex;gap:4px;flex-wrap:wrap}
+.np-profile-types b{font:800 8px monospace;color:#657589;letter-spacing:.06em}
+.np-profile-empty{color:#8b97a4;font-size:9px}
+.np-edit-main{min-width:0}
+.np-value-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.np-detail-row{align-items:flex-start}
+@media(max-width:820px){.np-profile-list{max-width:100%}}
