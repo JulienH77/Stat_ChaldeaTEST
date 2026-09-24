@@ -26,7 +26,7 @@ const norm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase(
 const state=structuredClone(initialState);
 // Hide future Excel placeholders immediately; authoritative NA sync runs afterwards.
 state.roster=sanitizeRoster(state.roster);
-let currentPlayer='julien',currentView='overview',rosterMode='cards',sortDir='desc',compareFocusId=284,skillScope='gold',hideMissing=false,xpTargetClass='',supportMode='normal',showNpOverlay=false;
+let currentPlayer='julien',currentView='overview',rosterMode='cards',sortDir='desc',compareFocusId=284,skillScope='gold',hideMissing=true,xpTargetClass='',supportMode='normal',showNpOverlay=false;
 let cloud=null,session=null,currentAuth=null,cloudEnabled=false,cloudAuthError='',atlasById=new Map(),atlasFull=new Map(),atlasVariantsByName=new Map(),variantDetailCache=new Map(),renderToken=0,showdownRenderedId=null,showdownRenderToken=0,supportPlayer='julien';
 const selectedClasses=new Set(),selectedRarities=new Set(['5','4','welfare']),selectedNpTypes=new Set();
 const NP_EFFECT_ORDER=['Support','ST','AOE'];
@@ -125,7 +125,7 @@ function fillFilters(){
  $$('#npPop input').forEach(i=>i.onchange=async()=>{i.checked?selectedNpTypes.add(i.dataset.nptype):selectedNpTypes.delete(i.dataset.nptype);if(selectedNpTypes.size)await ensureNpTypeIndex();updateFilterLabels();renderRoster()});
  updateFilterLabels();
 }
-function updateFilterLabels(){$('#classFilterCount').textContent=selectedClasses.size?`(${selectedClasses.size})`:'';$('#rarityFilterCount').textContent=selectedRarities.size?`(${selectedRarities.size})`:'';$('#npFilterCount').textContent=selectedNpTypes.size?`(${selectedNpTypes.size})`:'';const b=$('#hideMissing');if(b){b.classList.toggle('active',hideMissing);b.textContent=hideMissing?'Afficher les non possédés':'Masquer les non possédés'}const n=$('#toggleNpOverlay');if(n){n.classList.toggle('active',showNpOverlay);n.textContent='NP card'}}
+function updateFilterLabels(){$('#classFilterCount').textContent=selectedClasses.size?`(${selectedClasses.size})`:'';$('#rarityFilterCount').textContent=selectedRarities.size?`(${selectedRarities.size})`:'';$('#npFilterCount').textContent=selectedNpTypes.size?`(${selectedNpTypes.size})`:'';const b=$('#hideMissing');if(b){b.classList.toggle('active',hideMissing);b.textContent='Non possédé';b.setAttribute('aria-pressed',hideMissing?'true':'false');b.title=hideMissing?'Non possédé : masqués':'Non possédé : affichés'}const n=$('#toggleNpOverlay');if(n){n.classList.toggle('active',showNpOverlay);n.textContent='NP card'}}
 function atlasCacheValue(r,kind){const d=atlasById.get(Number(r.atlasId||r.id));if(d){const s=stats(currentPlayer,r.id);if(s.level==null)return 0;const cs=currentStats(d,r,s);const v=kind==='atk'?cs.atk:cs.hp;if(Number.isFinite(Number(v)))return Number(v)}return 0}
 function sortRows(rows){const mode=$('#sortFilter').value,sg=sortDir==='asc'?1:-1;rows.sort((a,b)=>{let x,y;if(mode==='bond'){x=Number(a.s.bond)||-1;y=Number(b.s.bond)||-1}else if(mode==='np'){x=Number(a.s.np)||-1;y=Number(b.s.np)||-1}else if(mode==='level'){x=Number.isFinite(Number(a.s.level))?Number(a.s.level):defaultMaxLevel(a.r);y=Number.isFinite(Number(b.s.level))?Number(b.s.level):defaultMaxLevel(b.r)}else if(mode==='atk'||mode==='hp'){x=atlasCacheValue(a.r,mode)??-1;y=atlasCacheValue(b.r,mode)??-1}else{x=Number(a.r.releaseNo??a.r.id);y=Number(b.r.releaseNo??b.r.id)}return x===y?String(a.r.name).localeCompare(String(b.r.name))*sg:(x-y)*sg})}
 function focusValue(r,s){const mode=$('#sortFilter').value;if(mode==='bond')return `<div class="sort-focus">Bond ${s.bond??'—'}</div>`;if(mode==='np'){const n=num(s.np);return `<div class="sort-focus">NP ${n??'—'}</div>`;}if(mode==='level')return `<div class="sort-focus">Lv ${displayLevel(currentPlayer,r,s)}</div>`;if(mode==='atk')return `<div class="sort-focus">ATK ${fmtNum(atlasCacheValue(r,'atk'))}</div>`;if(mode==='hp')return `<div class="sort-focus">HP ${fmtNum(atlasCacheValue(r,'hp'))}</div>`;return''}
@@ -301,10 +301,29 @@ function npProfilesFromDetails(details,r){
  return profiles.filter(p=>{const key=`${p.card}:${p.types.join(',')}`;if(seen.has(key))return false;seen.add(key);return true});
 }
 async function fetchVariantDetail(id){const key=Number(id);if(!key)return null;if(variantDetailCache.has(key))return variantDetailCache.get(key);const p=(async()=>{try{const res=await fetch(`https://api.atlasacademy.io/nice/NA/servant/${key}`,{cache:'force-cache'});if(!res.ok)throw Error();return await res.json()}catch{return null}})();variantDetailCache.set(key,p);return p}
-async function discoverNameVariants(r){
+function treeContainsId(value,wanted){
+  if(value==null)return false;
+  if(typeof value==='number')return wanted.has(Number(value));
+  if(typeof value==='string'){const n=Number(value);return Number.isFinite(n)&&wanted.has(n)}
+  if(Array.isArray(value))return value.some(v=>treeContainsId(v,wanted));
+  if(typeof value==='object')return Object.values(value).some(v=>treeContainsId(v,wanted));
+  return false;
+}
+function variantIsLinkedToPrimary(primaryDetail,primary,variantId,variantDetail){
+  const primaryId=Number(primary?.atlasId||primary?.id);
+  const collectionNo=Number(primary?.id);
+  const targetsPrimary=new Set([primaryId,collectionNo].filter(Number.isFinite));
+  const targetVariant=new Set([Number(variantId)].filter(Number.isFinite));
+  // Atlas exposes hidden/form relationships through svtChange. Prefer these explicit links.
+  if(treeContainsId(primaryDetail?.svtChange,targetVariant))return true;
+  if(treeContainsId(variantDetail?.svtChange,targetsPrimary))return true;
+  return false;
+}
+async function discoverNameVariants(r,primaryDetail){
  const key=norm(r?.name);
  if(!key)return [];
- if(atlasVariantsByName.has(key))return atlasVariantsByName.get(key)||[];
+ const cacheKey=`${Number(r?.id)}:${Number(r?.atlasId||0)}`;
+ if(atlasVariantsByName.has(cacheKey))return atlasVariantsByName.get(cacheKey)||[];
  const known=[];
  try{
    const url=`https://api.atlasacademy.io/nice/NA/servant/search?name=${encodeURIComponent(r.name)}&lang=en&excludeCollectionNo=999999999`;
@@ -312,22 +331,36 @@ async function discoverNameVariants(r){
    if(res.ok){
      const raw=await res.json();
      const arr=Array.isArray(raw)?raw:(raw&&typeof raw==='object'?Object.values(raw):[]);
-     for(const x of arr){
+     const sameName=arr.filter(x=>norm(x?.name)===key&&Number(x?.id));
+     const primaryCount=sameName.filter(x=>Number(x?.collectionNo)>0).length;
+     for(const x of sameName){
        const id=Number(x?.id),cn=Number(x?.collectionNo);
-       if(!id||norm(x?.name)!==key)continue;
-       if(id===Number(r?.atlasId))continue;
-       if(!known.some(v=>Number(v.id)===id))known.push({id,name:x.name,collectionNo:Number.isFinite(cn)?cn:0});
+       // Only collectionNo=0 can be an in-form/hidden variant. Do not merge another playable
+       // Servant with the same display name (e.g. Gilgamesh Archer/Caster or BB 4*/5*).
+       if(cn!==0||id===Number(r?.atlasId))continue;
+       const vd=await fetchVariantDetail(id);
+       // If the name uniquely identifies one playable record, a collectionNo=0 record is
+       // its hidden/form variant. When several playable records share the name, require
+       // Atlas's explicit svtChange relationship to avoid cross-version NP contamination.
+       const explicitlyLinked=variantIsLinkedToPrimary(primaryDetail,r,id,vd);
+       if(!explicitlyLinked && primaryCount!==1)continue;
+       if(!known.some(v=>Number(v.id)===id))known.push({id,name:x.name,collectionNo:0});
      }
    }
  }catch(e){}
- // Keep any variants discovered in the lightweight export as well.
- for(const v of (atlasVariantsByName.get(key)||[])){if(!known.some(x=>Number(x.id)===Number(v.id)))known.push(v)}
- atlasVariantsByName.set(key,known);
+ // Keep only variants from the lightweight export cache that are explicitly linked as well.
+ for(const v of (atlasVariantsByName.get(key)||[])){
+   if(Number(v?.collectionNo)!==0)continue;
+   if(known.some(x=>Number(x.id)===Number(v.id)))continue;
+   const vd=await fetchVariantDetail(v.id);
+   if(variantIsLinkedToPrimary(primaryDetail,r,Number(v.id),vd))known.push(v);
+ }
+ atlasVariantsByName.set(cacheKey,known);
  return known;
 }
 async function npProfilesForServant(r,d){
  const details=[d];
- const variants=await discoverNameVariants(r);
+ const variants=await discoverNameVariants(r,d);
  for(const v of variants){if(Number(v.id)===Number(r?.atlasId))continue;const vd=await fetchVariantDetail(v.id);if(vd)details.push(vd)}
  return npProfilesFromDetails(details,r);
 }
