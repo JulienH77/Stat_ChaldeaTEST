@@ -394,3 +394,49 @@ main.main{position:relative;overflow:visible;isolation:isolate}
 .np-type-overlay{transition:opacity .16s ease,transform .16s ease}
 #toggleNpOverlay{min-width:0}
 #toggleNpOverlay.active{background:#25374a;border-color:#25374a;color:#fff}
+
+/* V106 — compact Noble Phantasm detail layout */
+.np-detail-box{
+  min-width:0;
+  overflow:hidden;
+}
+.np-detail-box .np-edit-wrap,
+.np-detail-box .np-detail-row{
+  min-width:0;
+}
+.np-detail-box .np-topline{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-height:34px;
+}
+.np-detail-box .np-types-row{
+  margin-top:8px;
+  padding-top:7px;
+  border-top:1px solid var(--line);
+  min-width:0;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scrollbar-width:thin;
+}
+.np-detail-box .np-profile-list{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-wrap:nowrap;
+  gap:14px;
+  width:max-content;
+  min-width:100%;
+  margin:0;
+}
+.np-detail-box .np-profile{
+  flex:0 0 auto;
+  white-space:nowrap;
+}
+.np-detail-box .np-profile-types{
+  flex-wrap:nowrap;
+  white-space:nowrap;
+}
+@media(max-width:1050px){
+  .np-detail-box .np-profile-list{justify-content:flex-start;}
+}
