@@ -444,7 +444,7 @@ main.main{position:relative;overflow:visible;isolation:isolate}
 
 /* V107 — keep NP detail compact; types live below the NP box */
 .detail-stats-v10{align-items:start!important;}
-.detail-stats-v10>.detail-box,.detail-stats-v10>.np-detail-stack{align-self:start;min-width:100px;}
+.detail-stats-v10>.detail-box,.detail-stats-v10>.np-detail-stack{align-self:start;min-height:100px;}
 .np-detail-stack{display:flex;flex-direction:column;min-width:0;width:100%;align-self:start;}
 .np-detail-stack .np-detail-box{width:100%;height:auto;min-height:100px;overflow:hidden;}
 .np-detail-stack .np-topline{display:flex;align-items:center;gap:9px;min-height:34px;}
