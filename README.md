@@ -660,3 +660,48 @@ Le site utilise principalement une logique de snapshot pour garantir qu'une ouve
 ```
 
 L'objectif est de conserver une **saisie simple des statistiques** tout en offrant une **interface complète de consultation, de comparaison et de suivi de progression** adaptée à FGO.
+
+
+---
+
+# V200 — Overview avancée + GSSR
+
+La V200 ajoute trois blocs importants à l'Overview et un nouvel onglet **GSSR**.
+
+## Nouvelles statistiques Overview
+
+La zone **Statistiques par catégorie** distingue :
+
+- SSR (5★) ;
+- 4★ ;
+- Welfare ;
+- 3★ ;
+- 2★ ;
+- 1★.
+
+Pour chaque catégorie, l'Overview calcule :
+
+- Servants ayant reçu au moins un Graal ;
+- nombre total de Graals attribués ;
+- nombre de Servants à NP5 ou plus ;
+- nombre de Servants à Bond 10 ou plus.
+
+Les Welfare sont comptés dans leur propre catégorie et ne doublonnent pas les 4★.
+
+Une seconde visualisation affiche la **distribution du Bond de 1 à 15**. Pour cette statistique, un Servant possédé dont le Bond est `NULL`, vide ou `0` est regroupé au niveau 1, conformément à la règle de l'interface.
+
+Le bloc **Pokédex** calcule également le pourcentage de Servants possédés dans chacune des classes présentes dans le catalogue NA.
+
+## Onglet GSSR
+
+Le nouvel onglet **GSSR** propose une timeline historique NA de 2019 à 2026, avec les événements **Nouvel An** et **Anniversaire** lorsqu'un GSSR est documenté.
+
+Chaque événement permet d'enregistrer le pavillon choisi. Les événements pour lesquels les libellés détaillés des pavillons historiques ne sont pas suffisamment vérifiables dans les sources accessibles utilisent volontairement des libellés neutres (`Pavillon 01`, `Pavillon 02`, etc.) plutôt que d'inventer une composition.
+
+À partir de l'anniversaire 2024, le tracker affiche également un module **Destiny Order** à 9 emplacements : un Servant 5★ par classe de base et deux emplacements Extra. Les choix sont enregistrés séparément pour chaque Master dans le navigateur via `localStorage`, sous la clé `chaldea-v200-gssr-choices`. Ils ne nécessitent donc aucune nouvelle table Supabase pour V200.
+
+Les données et règles reprises dans le fichier `/data/gssr.json` s'appuient notamment sur les historiques GamePress, les pages officielles FGO USA lorsque disponibles et les historiques Fate/Grand Companion. Les nombres de pavillons repris dans le fichier sont conservés séparément des libellés lorsque la composition détaillée n’est pas suffisamment exploitable. Les informations spécifiques au Destiny Order NA 2024–2026 sont documentées dans les sources liées à chaque événement.
+
+### Limitation volontaire du Destiny Order
+
+Le catalogue V200 contient les Servants NA courants mais ne stocke pas, dans `initial-state.json`, une métadonnée historique complète `limited / story-locked / permanent` ni une date de sortie par Servant. Les listes proposées par les sélecteurs Destiny Order sont donc construites à partir du roster 5★ NA courant, par classe, et ne constituent pas une reconstruction juridique des conditions d'éligibilité du jeu à la date historique de chaque bannière.

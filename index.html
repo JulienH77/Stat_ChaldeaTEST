@@ -1,10 +1,10 @@
 <!doctype html>
 <html lang="fr"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#eef2f6"><title>Chaldea Command</title>
+<meta name="theme-color" content="#eef2f6"><title>Chaldea Command · V200</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=107.0">
+<link rel="stylesheet" href="styles.css?v=200.0">
 <link rel="icon" href="chaldea.ico">
 </head><body>
 <div class="app-shell">
@@ -17,6 +17,7 @@
     <button class="nav-item" data-view="compare"><span class="nav-index">03</span><span>Compare</span></button>
     <button class="nav-item" data-view="supports"><span class="nav-index">04</span><span>Support Lists</span></button>
     <button class="nav-item" data-view="xp"><span class="nav-index">05</span><span>Calcul XP</span></button>
+    <button class="nav-item" data-view="gssr"><span class="nav-index">06</span><span>GSSR</span></button>
   </nav>
   <div class="sidebar-foot">
     <div class="sync-box"><span id="syncDot"></span><div><small>SYNCHRONISATION</small><b id="syncText">Mode local</b></div></div>
@@ -34,6 +35,25 @@
     <section class="panel markers-panel"><div class="panel-head"><div><span class="eyebrow">ACCOUNT MARKERS</span><h2>Repères de compte</h2></div></div><div id="detailStats" class="marker-grid"></div></section>
     <section class="panel trend-panel"><div class="panel-head"><div><span class="eyebrow">ACCOUNT READOUT</span><h2>Collection 4★ + 5★</h2></div><div class="ring" id="collectionRing" aria-hidden="true"></div></div><div class="trend-copy"><strong id="collectionPct">0%</strong><span>des Servants 4★ / 5★ NA obtenus</span></div><div class="mini-bars" id="miniBars"></div></section>
   </div>
+
+  <div class="overview-v200-grid">
+    <section class="panel rarity-advanced-panel">
+      <div class="panel-head"><div><span class="eyebrow">PROGRESSION / RARETÉ</span><h2>Statistiques par catégorie</h2></div><span class="panel-tag">POSSÉDÉS</span></div>
+      <div class="overview-table-wrap"><table class="rarity-stats-table"><thead><tr><th>CATÉGORIE</th><th>GRAALÉS</th><th>GRAALS</th><th>NP5+</th><th>BOND 10+</th></tr></thead><tbody id="rarityAdvancedStats"></tbody></table></div>
+      <p class="v200-note">Les Welfare sont comptés dans leur propre catégorie et ne doublonnent pas les 4★. « Graalés » = au moins 1 Graal attribué.</p>
+    </section>
+
+    <section class="panel bond-distribution-panel">
+      <div class="panel-head"><div><span class="eyebrow">BOND MASTERY</span><h2>Distribution du Bond</h2></div><span class="panel-tag">1 → 15</span></div>
+      <div id="bondDistributionBars" class="bond-distribution-bars"></div>
+      <p class="v200-note">Les Servants possédés dont le Bond est à 0 ou NULL sont regroupés au niveau 1.</p>
+    </section>
+  </div>
+
+  <section class="panel pokedex-panel">
+    <div class="panel-head"><div><span class="eyebrow">POKÉDEX</span><h2>Collection par classe</h2></div><span class="panel-tag">NA / HORS MASH</span></div>
+    <div id="pokedexGrid" class="pokedex-grid-v200"></div>
+  </section>
 </section>
 
 <section class="view" id="view-servants">
@@ -105,6 +125,21 @@
   </div>
 </section>
 
+<section class="view" id="view-gssr">
+  <div class="page-heading">
+    <div><span class="eyebrow">LUCKY BAG ARCHIVE</span><h1>GSSR</h1><p>Historique NA des Lucky Bags et Destiny Order. Choisis un événement pour préparer ton tirage.</p></div>
+    <div class="source-badge">NA / V200</div>
+  </div>
+  <section class="panel gssr-timeline-panel">
+    <div class="panel-head"><div><span class="eyebrow">TIMELINE</span><h2>Nouvel An · Anniversaire</h2></div><span class="panel-tag">2019 → 2026</span></div>
+    <div id="gssrTimeline" class="gssr-timeline" role="tablist" aria-label="Historique GSSR"></div>
+  </section>
+  <section class="panel gssr-detail-panel">
+    <div id="gssrEventDetail"></div>
+  </section>
+</section>
+
+
 <section class="view" id="view-supports">
   <div class="page-heading">
     <div><span class="eyebrow">FRIEND SYSTEM</span><h1>Support Lists</h1></div>
@@ -126,5 +161,5 @@
 </main></div>
 
 <div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modal"></div></div><div class="toast" id="toast"></div>
-<script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script type="module" src="app.js?v=107.0"></script>
+<script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script type="module" src="app.js?v=200.0"></script>
 </body></html>

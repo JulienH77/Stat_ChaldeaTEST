@@ -1,0 +1,1781 @@
+{
+  "version": "V200",
+  "region": "NA",
+  "coverage": "2019-2026",
+  "events": [
+    {
+      "id": "ny-2019",
+      "year": 2019,
+      "kind": "newyear",
+      "title": "Nouvel An 2019",
+      "poolCount": 7,
+      "pools": [
+        {
+          "id": "saber",
+          "label": "Saber",
+          "detail": "Pool de classe",
+          "class": "Saber"
+        },
+        {
+          "id": "archer",
+          "label": "Archer",
+          "detail": "Pool de classe",
+          "class": "Archer"
+        },
+        {
+          "id": "lancer",
+          "label": "Lancer",
+          "detail": "Pool de classe",
+          "class": "Lancer"
+        },
+        {
+          "id": "rider",
+          "label": "Rider",
+          "detail": "Pool de classe",
+          "class": "Rider"
+        },
+        {
+          "id": "caster",
+          "label": "Caster",
+          "detail": "Pool de classe",
+          "class": "Caster"
+        },
+        {
+          "id": "assassin",
+          "label": "Assassin",
+          "detail": "Pool de classe",
+          "class": "Assassin"
+        },
+        {
+          "id": "berserker",
+          "label": "Berserker",
+          "detail": "Pool de classe",
+          "class": "Berserker"
+        }
+      ],
+      "description": "7 choix de classe. Un seul Lucky Bag peut être tiré.",
+      "source": "https://fgo.gamepress.gg/new-year-2019-campaign-information",
+      "sourceLabel": "GamePress"
+    },
+    {
+      "id": "ann-2019",
+      "year": 2019,
+      "kind": "anniversary",
+      "title": "Anniversaire 2019",
+      "poolCount": 1,
+      "pools": [
+        {
+          "id": "pool-01",
+          "label": "GSSR anniversaire 2019",
+          "detail": "Pavillon unique"
+        }
+      ],
+      "description": "GSSR de la 2e anniversaire NA. Le catalogue historique confirme une bannière Guaranteed Gacha pour cette édition ; le détail interne du pool n’est pas repris ici.",
+      "source": "https://grandorder.gamepress.gg/summon-banner-list",
+      "sourceLabel": "GamePress"
+    },
+    {
+      "id": "ann-2020",
+      "year": 2020,
+      "kind": "anniversary",
+      "title": "Anniversaire 2020",
+      "poolCount": 9,
+      "pools": [
+        {
+          "id": "saber",
+          "label": "Saber",
+          "detail": "Pool de classe",
+          "class": "Saber"
+        },
+        {
+          "id": "archer",
+          "label": "Archer",
+          "detail": "Pool de classe",
+          "class": "Archer"
+        },
+        {
+          "id": "lancer",
+          "label": "Lancer",
+          "detail": "Pool de classe",
+          "class": "Lancer"
+        },
+        {
+          "id": "rider",
+          "label": "Rider",
+          "detail": "Pool de classe",
+          "class": "Rider"
+        },
+        {
+          "id": "caster",
+          "label": "Caster",
+          "detail": "Pool de classe",
+          "class": "Caster"
+        },
+        {
+          "id": "assassin",
+          "label": "Assassin",
+          "detail": "Pool de classe",
+          "class": "Assassin"
+        },
+        {
+          "id": "berserker",
+          "label": "Berserker",
+          "detail": "Pool de classe",
+          "class": "Berserker"
+        },
+        {
+          "id": "ruler",
+          "label": "Ruler",
+          "detail": "Pool Extra",
+          "class": "Ruler"
+        },
+        {
+          "id": "extra",
+          "label": "Extra",
+          "detail": "Pool Extra",
+          "class": "Extra"
+        }
+      ],
+      "description": "GSSR par classe, avec une séparation des classes Extra selon l'organisation de l'événement.",
+      "source": "https://grandorder.gamepress.gg/summon-banner-list",
+      "sourceLabel": "GamePress"
+    },
+    {
+      "id": "ny-2020",
+      "year": 2020,
+      "kind": "newyear",
+      "title": "Nouvel An 2020",
+      "poolCount": 7,
+      "pools": [
+        {
+          "id": "saber",
+          "label": "Saber",
+          "detail": "Pool de classe",
+          "class": "Saber"
+        },
+        {
+          "id": "archer",
+          "label": "Archer",
+          "detail": "Pool de classe",
+          "class": "Archer"
+        },
+        {
+          "id": "lancer",
+          "label": "Lancer",
+          "detail": "Pool de classe",
+          "class": "Lancer"
+        },
+        {
+          "id": "rider",
+          "label": "Rider",
+          "detail": "Pool de classe",
+          "class": "Rider"
+        },
+        {
+          "id": "caster",
+          "label": "Caster",
+          "detail": "Pool de classe",
+          "class": "Caster"
+        },
+        {
+          "id": "assassin",
+          "label": "Assassin",
+          "detail": "Pool de classe",
+          "class": "Assassin"
+        },
+        {
+          "id": "berserker",
+          "label": "Berserker",
+          "detail": "Pool de classe",
+          "class": "Berserker"
+        }
+      ],
+      "description": "Lucky Bag par classe.",
+      "source": "https://grandorder.gamepress.gg/summon-banner-list",
+      "sourceLabel": "GamePress"
+    },
+    {
+      "id": "ny-2021",
+      "year": 2021,
+      "kind": "newyear",
+      "title": "Nouvel An 2021",
+      "poolCount": 9,
+      "pools": [
+        {
+          "id": "saber",
+          "label": "Saber",
+          "detail": "Pool de classe",
+          "class": "Saber"
+        },
+        {
+          "id": "archer",
+          "label": "Archer",
+          "detail": "Pool de classe",
+          "class": "Archer"
+        },
+        {
+          "id": "lancer",
+          "label": "Lancer",
+          "detail": "Pool de classe",
+          "class": "Lancer"
+        },
+        {
+          "id": "rider",
+          "label": "Rider",
+          "detail": "Pool de classe",
+          "class": "Rider"
+        },
+        {
+          "id": "caster",
+          "label": "Caster",
+          "detail": "Pool de classe",
+          "class": "Caster"
+        },
+        {
+          "id": "assassin",
+          "label": "Assassin",
+          "detail": "Pool de classe",
+          "class": "Assassin"
+        },
+        {
+          "id": "berserker",
+          "label": "Berserker",
+          "detail": "Pool de classe",
+          "class": "Berserker"
+        },
+        {
+          "id": "ruler-avenger",
+          "label": "Ruler + Avenger",
+          "detail": "Pool Extra"
+        },
+        {
+          "id": "extra-3",
+          "label": "Alter Ego + Foreigner + Moon Cancer",
+          "detail": "Pool Extra"
+        }
+      ],
+      "description": "9 pools. Les 7 classes principales sont séparées des groupes Extra.",
+      "source": "https://grandorder.gamepress.gg/summon-banner-list",
+      "sourceLabel": "GamePress"
+    },
+    {
+      "id": "ann-2021",
+      "year": 2021,
+      "kind": "anniversary",
+      "title": "Anniversaire 2021",
+      "poolCount": 2,
+      "pools": [
+        {
+          "id": "three-knights-extra",
+          "label": "Three Knights + Ruler / Avenger / Moon Cancer / Foreigner",
+          "detail": "Pool 1"
+        },
+        {
+          "id": "four-cavalries-extra",
+          "label": "Four Cavalries + Alter Ego",
+          "detail": "Pool 2"
+        }
+      ],
+      "description": "Deux Lucky Bags de classes, avec une seule bannière sélectionnable.",
+      "source": "https://fate-go.us/4th_anniversary/guaranteed_summon/",
+      "sourceLabel": "FGO USA"
+    },
+    {
+      "id": "ny-2022",
+      "year": 2022,
+      "kind": "newyear",
+      "title": "Nouvel An 2022",
+      "poolCount": 14,
+      "pools": [
+        {
+          "id": "pool-01",
+          "label": "Pavillon 01",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-02",
+          "label": "Pavillon 02",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-03",
+          "label": "Pavillon 03",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-04",
+          "label": "Pavillon 04",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-05",
+          "label": "Pavillon 05",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-06",
+          "label": "Pavillon 06",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-07",
+          "label": "Pavillon 07",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-08",
+          "label": "Pavillon 08",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-09",
+          "label": "Pavillon 09",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-10",
+          "label": "Pavillon 10",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-11",
+          "label": "Pavillon 11",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-12",
+          "label": "Pavillon 12",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-13",
+          "label": "Pavillon 13",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-14",
+          "label": "Pavillon 14",
+          "detail": "Pool GSSR"
+        }
+      ],
+      "description": "14 pools de Lucky Bag. Le choix est exclusif : un seul pool peut être tiré.",
+      "source": "https://grandorder.gamepress.gg/summon-banner-list",
+      "sourceLabel": "GamePress"
+    },
+    {
+      "id": "ann-2022",
+      "year": 2022,
+      "kind": "anniversary",
+      "title": "Anniversaire 2022",
+      "poolCount": 5,
+      "pools": [
+        {
+          "id": "2017-2018",
+          "label": "Juillet 2017 → juillet 2018",
+          "detail": "Année de sortie"
+        },
+        {
+          "id": "2018-2019",
+          "label": "Juillet 2018 → juillet 2019",
+          "detail": "Année de sortie"
+        },
+        {
+          "id": "2019-2020",
+          "label": "Juillet 2019 → juillet 2020",
+          "detail": "Année de sortie"
+        },
+        {
+          "id": "2020-2021",
+          "label": "Juillet 2020 → juillet 2021",
+          "detail": "Année de sortie"
+        },
+        {
+          "id": "2021-2022",
+          "label": "Juillet 2021 → juillet 2022",
+          "detail": "Année de sortie"
+        }
+      ],
+      "description": "5 pools répartis par période de sortie des Servants limités.",
+      "source": "https://fgo.gamepress.gg/fategrand-order-2022-5th-anniversary",
+      "sourceLabel": "GamePress"
+    },
+    {
+      "id": "ny-2023",
+      "year": 2023,
+      "kind": "newyear",
+      "title": "Nouvel An 2023",
+      "poolCount": 20,
+      "pools": [
+        {
+          "id": "pool-01",
+          "label": "Pavillon 01",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-02",
+          "label": "Pavillon 02",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-03",
+          "label": "Pavillon 03",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-04",
+          "label": "Pavillon 04",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-05",
+          "label": "Pavillon 05",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-06",
+          "label": "Pavillon 06",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-07",
+          "label": "Pavillon 07",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-08",
+          "label": "Pavillon 08",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-09",
+          "label": "Pavillon 09",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-10",
+          "label": "Pavillon 10",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-11",
+          "label": "Pavillon 11",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-12",
+          "label": "Pavillon 12",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-13",
+          "label": "Pavillon 13",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-14",
+          "label": "Pavillon 14",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-15",
+          "label": "Pavillon 15",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-16",
+          "label": "Pavillon 16",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-17",
+          "label": "Pavillon 17",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-18",
+          "label": "Pavillon 18",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-19",
+          "label": "Pavillon 19",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-20",
+          "label": "Pavillon 20",
+          "detail": "Pool GSSR"
+        }
+      ],
+      "description": "20 pools dans la structure Three Knights / Four Cavalries / EXTRA de cette édition.",
+      "source": "https://grandorder.gamepress.gg/summon-banner-list",
+      "sourceLabel": "GamePress"
+    },
+    {
+      "id": "ann-2023",
+      "year": 2023,
+      "kind": "anniversary",
+      "title": "Anniversaire 2023",
+      "poolCount": 12,
+      "pools": [
+        {
+          "id": "three-2015-2016",
+          "label": "Three Knights · 2015 → 2016",
+          "detail": "Pool"
+        },
+        {
+          "id": "four-extra-2015-2016",
+          "label": "Four Cavalry + Extra · 2015 → 2016",
+          "detail": "Pool"
+        },
+        {
+          "id": "three-2016-2017",
+          "label": "Three Knights · 2016 → 2017",
+          "detail": "Pool"
+        },
+        {
+          "id": "four-extra-2016-2017",
+          "label": "Four Cavalry + Extra · 2016 → 2017",
+          "detail": "Pool"
+        },
+        {
+          "id": "three-extra-2017-2018",
+          "label": "Three Knights + Extra · 2017 → 2018",
+          "detail": "Pool"
+        },
+        {
+          "id": "four-2017-2018",
+          "label": "Four Cavalry · 2017 → 2018",
+          "detail": "Pool"
+        },
+        {
+          "id": "three-extra-2018-2019",
+          "label": "Three Knights + Extra · 2018 → 2019",
+          "detail": "Pool"
+        },
+        {
+          "id": "four-2018-2019",
+          "label": "Four Cavalry · 2018 → 2019",
+          "detail": "Pool"
+        },
+        {
+          "id": "three-2019-2020",
+          "label": "Three Knights · 2019 → 2020",
+          "detail": "Pool"
+        },
+        {
+          "id": "four-extra-2019-2020",
+          "label": "Four Cavalry + Extra · 2019 → 2020",
+          "detail": "Pool"
+        },
+        {
+          "id": "three-extra-2020-2021",
+          "label": "Three Knights + Extra · 2020 → 2021",
+          "detail": "Pool"
+        },
+        {
+          "id": "four-extra-2020-2021",
+          "label": "Four Cavalry + Extra · 2020 → 2021",
+          "detail": "Pool"
+        }
+      ],
+      "description": "12 Lucky Bags, répartis par groupe de classes et année de sortie.",
+      "source": "https://fgo.gamepress.gg/fategrand-order-2023-6th-anniversary",
+      "sourceLabel": "GamePress"
+    },
+    {
+      "id": "ny-2024",
+      "year": 2024,
+      "kind": "newyear",
+      "title": "Nouvel An 2024",
+      "poolCount": 29,
+      "pools": [
+        {
+          "id": "pool-01",
+          "label": "Pavillon 01",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-02",
+          "label": "Pavillon 02",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-03",
+          "label": "Pavillon 03",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-04",
+          "label": "Pavillon 04",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-05",
+          "label": "Pavillon 05",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-06",
+          "label": "Pavillon 06",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-07",
+          "label": "Pavillon 07",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-08",
+          "label": "Pavillon 08",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-09",
+          "label": "Pavillon 09",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-10",
+          "label": "Pavillon 10",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-11",
+          "label": "Pavillon 11",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-12",
+          "label": "Pavillon 12",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-13",
+          "label": "Pavillon 13",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-14",
+          "label": "Pavillon 14",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-15",
+          "label": "Pavillon 15",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-16",
+          "label": "Pavillon 16",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-17",
+          "label": "Pavillon 17",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-18",
+          "label": "Pavillon 18",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-19",
+          "label": "Pavillon 19",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-20",
+          "label": "Pavillon 20",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-21",
+          "label": "Pavillon 21",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-22",
+          "label": "Pavillon 22",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-23",
+          "label": "Pavillon 23",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-24",
+          "label": "Pavillon 24",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-25",
+          "label": "Pavillon 25",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-26",
+          "label": "Pavillon 26",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-27",
+          "label": "Pavillon 27",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-28",
+          "label": "Pavillon 28",
+          "detail": "Pool GSSR"
+        },
+        {
+          "id": "pool-29",
+          "label": "Pavillon 29",
+          "detail": "Pool GSSR"
+        }
+      ],
+      "description": "29 pools dans l'édition NP Type × Class.",
+      "source": "https://fategc.com/gssr",
+      "sourceLabel": "Fate/Grand Companion"
+    },
+    {
+      "id": "ann-2024",
+      "year": 2024,
+      "kind": "anniversary",
+      "title": "Anniversaire 2024",
+      "poolCount": 20,
+      "pools": [
+        {
+          "id": "pool-01",
+          "label": "Pavillon 01",
+          "detail": "Class × Year"
+        },
+        {
+          "id": "pool-02",
+          "label": "Pavillon 02",
+          "detail": "Class × Year"
+        },
+        {
+          "id": "pool-03",
+          "label": "Pavillon 03",
+          "detail": "Class × Year"
+        },
+        {
+          "id": "pool-04",
+          "label": "Pavillon 04",
+          "detail": "Class × Year"
+        },
+        {
+          "id": "pool-05",
+          "label": "Pavillon 05",
+          "detail": "Class × Year"
+        },
+        {
+          "id": "pool-06",
+          "label": "Pavillon 06",
+          "detail": "Class × Year"
+        },
+        {
+          "id": "pool-07",
+          "label": "Pavillon 07",
+          "detail": "Class × Year"
+        },
+        {
+          "id": "pool-08",
+          "label": "Pavillon 08",
+          "detail": "Class × Year"
+        },
+        {
+          "id": "pool-09",
+          "label": "Pavillon 09",
+          "detail": "Class × Year"
+        },
+        {
+          "id": "pool-10",
+          "label": "Pavillon 10",
+          "detail": "Class × Year"
+        },
+        {
+          "id": "pool-11",
+          "label": "Pavillon 11",
+          "detail": "Class × Year"
+        },
+        {
+          "id": "pool-12",
+          "label": "Pavillon 12",
+          "detail": "Class × Year"
+        },
+        {
+          "id": "pool-13",
+          "label": "Pavillon 13",
+          "detail": "Class × Year"
+        },
+        {
+          "id": "pool-14",
+          "label": "Pavillon 14",
+          "detail": "Class × Year"
+        },
+        {
+          "id": "pool-15",
+          "label": "Pavillon 15",
+          "detail": "Class × Year"
+        },
+        {
+          "id": "pool-16",
+          "label": "Pavillon 16",
+          "detail": "Class × Year"
+        },
+        {
+          "id": "pool-17",
+          "label": "Pavillon 17",
+          "detail": "Class × Year"
+        },
+        {
+          "id": "pool-18",
+          "label": "Pavillon 18",
+          "detail": "Class × Year"
+        },
+        {
+          "id": "pool-19",
+          "label": "Pavillon 19",
+          "detail": "Class × Year"
+        },
+        {
+          "id": "pool-20",
+          "label": "Pavillon 20",
+          "detail": "Class × Year"
+        }
+      ],
+      "description": "20 groupes dans la structure Class × Year de cette édition.",
+      "source": "https://grandorder.gamepress.gg/summon-banner-list",
+      "sourceLabel": "GamePress",
+      "destinyOrder": {
+        "enabled": true,
+        "slotCount": 9,
+        "slots": [
+          {
+            "id": "saber",
+            "label": "Saber",
+            "class": "Saber"
+          },
+          {
+            "id": "archer",
+            "label": "Archer",
+            "class": "Archer"
+          },
+          {
+            "id": "lancer",
+            "label": "Lancer",
+            "class": "Lancer"
+          },
+          {
+            "id": "rider",
+            "label": "Rider",
+            "class": "Rider"
+          },
+          {
+            "id": "caster",
+            "label": "Caster",
+            "class": "Caster"
+          },
+          {
+            "id": "assassin",
+            "label": "Assassin",
+            "class": "Assassin"
+          },
+          {
+            "id": "berserker",
+            "label": "Berserker",
+            "class": "Berserker"
+          },
+          {
+            "id": "extra-i",
+            "label": "Extra I",
+            "class": "Extra I"
+          },
+          {
+            "id": "extra-ii",
+            "label": "Extra II",
+            "class": "Extra II"
+          }
+        ],
+        "cost": "30 Quartz payants",
+        "oncePerAccount": true,
+        "guaranteed": "1 des 9 Servants choisis",
+        "note": "Les listes proposées dans le tracker sont générées depuis le roster 5★ NA de V200 ; le jeu réel applique ses propres conditions d’éligibilité à la date de l’événement."
+      },
+      "destinySource": "https://grandorder.gamepress.gg/p/fgo-7th-anniversary-campaign",
+      "destinySourceLabel": "GamePress"
+    },
+    {
+      "id": "ny-2025",
+      "year": 2025,
+      "kind": "newyear",
+      "title": "Nouvel An 2025",
+      "poolCount": 35,
+      "pools": [
+        {
+          "id": "pool-01",
+          "label": "Pavillon 01",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-02",
+          "label": "Pavillon 02",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-03",
+          "label": "Pavillon 03",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-04",
+          "label": "Pavillon 04",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-05",
+          "label": "Pavillon 05",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-06",
+          "label": "Pavillon 06",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-07",
+          "label": "Pavillon 07",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-08",
+          "label": "Pavillon 08",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-09",
+          "label": "Pavillon 09",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-10",
+          "label": "Pavillon 10",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-11",
+          "label": "Pavillon 11",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-12",
+          "label": "Pavillon 12",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-13",
+          "label": "Pavillon 13",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-14",
+          "label": "Pavillon 14",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-15",
+          "label": "Pavillon 15",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-16",
+          "label": "Pavillon 16",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-17",
+          "label": "Pavillon 17",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-18",
+          "label": "Pavillon 18",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-19",
+          "label": "Pavillon 19",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-20",
+          "label": "Pavillon 20",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-21",
+          "label": "Pavillon 21",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-22",
+          "label": "Pavillon 22",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-23",
+          "label": "Pavillon 23",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-24",
+          "label": "Pavillon 24",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-25",
+          "label": "Pavillon 25",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-26",
+          "label": "Pavillon 26",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-27",
+          "label": "Pavillon 27",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-28",
+          "label": "Pavillon 28",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-29",
+          "label": "Pavillon 29",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-30",
+          "label": "Pavillon 30",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-31",
+          "label": "Pavillon 31",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-32",
+          "label": "Pavillon 32",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-33",
+          "label": "Pavillon 33",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-34",
+          "label": "Pavillon 34",
+          "detail": "Class × NP Type"
+        },
+        {
+          "id": "pool-35",
+          "label": "Pavillon 35",
+          "detail": "Class × NP Type"
+        }
+      ],
+      "description": "35 pools organisés par classe et type de NP.",
+      "source": "https://grandorder.gamepress.gg/summon-banner-list",
+      "sourceLabel": "GamePress"
+    },
+    {
+      "id": "ann-2025",
+      "year": 2025,
+      "kind": "anniversary",
+      "title": "Anniversaire 2025",
+      "poolCount": 12,
+      "pools": [
+        {
+          "id": "pool-01",
+          "label": "Pavillon 01",
+          "detail": "Class × NP Effect"
+        },
+        {
+          "id": "pool-02",
+          "label": "Pavillon 02",
+          "detail": "Class × NP Effect"
+        },
+        {
+          "id": "pool-03",
+          "label": "Pavillon 03",
+          "detail": "Class × NP Effect"
+        },
+        {
+          "id": "pool-04",
+          "label": "Pavillon 04",
+          "detail": "Class × NP Effect"
+        },
+        {
+          "id": "pool-05",
+          "label": "Pavillon 05",
+          "detail": "Class × NP Effect"
+        },
+        {
+          "id": "pool-06",
+          "label": "Pavillon 06",
+          "detail": "Class × NP Effect"
+        },
+        {
+          "id": "pool-07",
+          "label": "Pavillon 07",
+          "detail": "Class × NP Effect"
+        },
+        {
+          "id": "pool-08",
+          "label": "Pavillon 08",
+          "detail": "Class × NP Effect"
+        },
+        {
+          "id": "pool-09",
+          "label": "Pavillon 09",
+          "detail": "Class × NP Effect"
+        },
+        {
+          "id": "pool-10",
+          "label": "Pavillon 10",
+          "detail": "Class × NP Effect"
+        },
+        {
+          "id": "pool-11",
+          "label": "Pavillon 11",
+          "detail": "Class × NP Effect"
+        },
+        {
+          "id": "pool-12",
+          "label": "Pavillon 12",
+          "detail": "Class × NP Effect"
+        }
+      ],
+      "description": "38 pools dans la structure Class × NP Effect.",
+      "source": "https://fategc.com/gssr",
+      "sourceLabel": "Fate/Grand Companion",
+      "destinyOrder": {
+        "enabled": true,
+        "slotCount": 9,
+        "slots": [
+          {
+            "id": "saber",
+            "label": "Saber",
+            "class": "Saber"
+          },
+          {
+            "id": "archer",
+            "label": "Archer",
+            "class": "Archer"
+          },
+          {
+            "id": "lancer",
+            "label": "Lancer",
+            "class": "Lancer"
+          },
+          {
+            "id": "rider",
+            "label": "Rider",
+            "class": "Rider"
+          },
+          {
+            "id": "caster",
+            "label": "Caster",
+            "class": "Caster"
+          },
+          {
+            "id": "assassin",
+            "label": "Assassin",
+            "class": "Assassin"
+          },
+          {
+            "id": "berserker",
+            "label": "Berserker",
+            "class": "Berserker"
+          },
+          {
+            "id": "extra-i",
+            "label": "Extra I",
+            "class": "Extra I"
+          },
+          {
+            "id": "extra-ii",
+            "label": "Extra II",
+            "class": "Extra II"
+          }
+        ],
+        "cost": "30 Quartz payants",
+        "oncePerAccount": true,
+        "guaranteed": "1 des 9 Servants choisis",
+        "note": "Les listes proposées dans le tracker sont générées depuis le roster 5★ NA de V200 ; le jeu réel applique ses propres conditions d’éligibilité à la date de l’événement."
+      },
+      "destinySource": "https://grandorder.gamepress.gg/p/fgo-8th-anniversary-campaign",
+      "destinySourceLabel": "GamePress"
+    },
+    {
+      "id": "ny-2026",
+      "year": 2026,
+      "kind": "newyear",
+      "title": "Nouvel An 2026",
+      "poolCount": 42,
+      "pools": [
+        {
+          "id": "saber-female-quick",
+          "label": "Saber · Femme · Quick",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Saber",
+          "gender": "female",
+          "np": "quick"
+        },
+        {
+          "id": "saber-female-arts",
+          "label": "Saber · Femme · Arts",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Saber",
+          "gender": "female",
+          "np": "arts"
+        },
+        {
+          "id": "saber-female-buster",
+          "label": "Saber · Femme · Buster",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Saber",
+          "gender": "female",
+          "np": "buster"
+        },
+        {
+          "id": "saber-male-quick",
+          "label": "Saber · Homme · Quick",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Saber",
+          "gender": "male",
+          "np": "quick"
+        },
+        {
+          "id": "saber-male-arts",
+          "label": "Saber · Homme · Arts",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Saber",
+          "gender": "male",
+          "np": "arts"
+        },
+        {
+          "id": "saber-male-buster",
+          "label": "Saber · Homme · Buster",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Saber",
+          "gender": "male",
+          "np": "buster"
+        },
+        {
+          "id": "archer-female-quick",
+          "label": "Archer · Femme · Quick",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Archer",
+          "gender": "female",
+          "np": "quick"
+        },
+        {
+          "id": "archer-female-arts",
+          "label": "Archer · Femme · Arts",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Archer",
+          "gender": "female",
+          "np": "arts"
+        },
+        {
+          "id": "archer-female-buster",
+          "label": "Archer · Femme · Buster",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Archer",
+          "gender": "female",
+          "np": "buster"
+        },
+        {
+          "id": "archer-male-quick",
+          "label": "Archer · Homme · Quick",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Archer",
+          "gender": "male",
+          "np": "quick"
+        },
+        {
+          "id": "archer-male-arts",
+          "label": "Archer · Homme · Arts",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Archer",
+          "gender": "male",
+          "np": "arts"
+        },
+        {
+          "id": "archer-male-buster",
+          "label": "Archer · Homme · Buster",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Archer",
+          "gender": "male",
+          "np": "buster"
+        },
+        {
+          "id": "lancer-female-quick",
+          "label": "Lancer · Femme · Quick",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Lancer",
+          "gender": "female",
+          "np": "quick"
+        },
+        {
+          "id": "lancer-female-arts",
+          "label": "Lancer · Femme · Arts",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Lancer",
+          "gender": "female",
+          "np": "arts"
+        },
+        {
+          "id": "lancer-female-buster",
+          "label": "Lancer · Femme · Buster",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Lancer",
+          "gender": "female",
+          "np": "buster"
+        },
+        {
+          "id": "lancer-male-quick",
+          "label": "Lancer · Homme · Quick",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Lancer",
+          "gender": "male",
+          "np": "quick"
+        },
+        {
+          "id": "lancer-male-arts",
+          "label": "Lancer · Homme · Arts",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Lancer",
+          "gender": "male",
+          "np": "arts"
+        },
+        {
+          "id": "lancer-male-buster",
+          "label": "Lancer · Homme · Buster",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Lancer",
+          "gender": "male",
+          "np": "buster"
+        },
+        {
+          "id": "rider-female-quick",
+          "label": "Rider · Femme · Quick",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Rider",
+          "gender": "female",
+          "np": "quick"
+        },
+        {
+          "id": "rider-female-arts",
+          "label": "Rider · Femme · Arts",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Rider",
+          "gender": "female",
+          "np": "arts"
+        },
+        {
+          "id": "rider-female-buster",
+          "label": "Rider · Femme · Buster",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Rider",
+          "gender": "female",
+          "np": "buster"
+        },
+        {
+          "id": "rider-male-quick",
+          "label": "Rider · Homme · Quick",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Rider",
+          "gender": "male",
+          "np": "quick"
+        },
+        {
+          "id": "rider-male-arts",
+          "label": "Rider · Homme · Arts",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Rider",
+          "gender": "male",
+          "np": "arts"
+        },
+        {
+          "id": "rider-male-buster",
+          "label": "Rider · Homme · Buster",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Rider",
+          "gender": "male",
+          "np": "buster"
+        },
+        {
+          "id": "caster-female-quick",
+          "label": "Caster · Femme · Quick",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Caster",
+          "gender": "female",
+          "np": "quick"
+        },
+        {
+          "id": "caster-female-arts",
+          "label": "Caster · Femme · Arts",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Caster",
+          "gender": "female",
+          "np": "arts"
+        },
+        {
+          "id": "caster-female-buster",
+          "label": "Caster · Femme · Buster",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Caster",
+          "gender": "female",
+          "np": "buster"
+        },
+        {
+          "id": "caster-male-quick",
+          "label": "Caster · Homme · Quick",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Caster",
+          "gender": "male",
+          "np": "quick"
+        },
+        {
+          "id": "caster-male-arts",
+          "label": "Caster · Homme · Arts",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Caster",
+          "gender": "male",
+          "np": "arts"
+        },
+        {
+          "id": "caster-male-buster",
+          "label": "Caster · Homme · Buster",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Caster",
+          "gender": "male",
+          "np": "buster"
+        },
+        {
+          "id": "assassin-female-quick",
+          "label": "Assassin · Femme · Quick",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Assassin",
+          "gender": "female",
+          "np": "quick"
+        },
+        {
+          "id": "assassin-female-arts",
+          "label": "Assassin · Femme · Arts",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Assassin",
+          "gender": "female",
+          "np": "arts"
+        },
+        {
+          "id": "assassin-female-buster",
+          "label": "Assassin · Femme · Buster",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Assassin",
+          "gender": "female",
+          "np": "buster"
+        },
+        {
+          "id": "assassin-male-quick",
+          "label": "Assassin · Homme · Quick",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Assassin",
+          "gender": "male",
+          "np": "quick"
+        },
+        {
+          "id": "assassin-male-arts",
+          "label": "Assassin · Homme · Arts",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Assassin",
+          "gender": "male",
+          "np": "arts"
+        },
+        {
+          "id": "assassin-male-buster",
+          "label": "Assassin · Homme · Buster",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Assassin",
+          "gender": "male",
+          "np": "buster"
+        },
+        {
+          "id": "berserker-female-quick",
+          "label": "Berserker · Femme · Quick",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Berserker",
+          "gender": "female",
+          "np": "quick"
+        },
+        {
+          "id": "berserker-female-arts",
+          "label": "Berserker · Femme · Arts",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Berserker",
+          "gender": "female",
+          "np": "arts"
+        },
+        {
+          "id": "berserker-female-buster",
+          "label": "Berserker · Femme · Buster",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Berserker",
+          "gender": "female",
+          "np": "buster"
+        },
+        {
+          "id": "berserker-male-quick",
+          "label": "Berserker · Homme · Quick",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Berserker",
+          "gender": "male",
+          "np": "quick"
+        },
+        {
+          "id": "berserker-male-arts",
+          "label": "Berserker · Homme · Arts",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Berserker",
+          "gender": "male",
+          "np": "arts"
+        },
+        {
+          "id": "berserker-male-buster",
+          "label": "Berserker · Homme · Buster",
+          "detail": "Classe × sexe × couleur NP",
+          "class": "Berserker",
+          "gender": "male",
+          "np": "buster"
+        }
+      ],
+      "description": "42 pools organisés par classe × sexe × couleur de NP. Un seul pool peut être sélectionné.",
+      "source": "https://grandorder.gamepress.gg/summon-banner-list",
+      "sourceLabel": "GamePress"
+    },
+    {
+      "id": "ann-2026",
+      "year": 2026,
+      "kind": "anniversary",
+      "title": "Anniversaire 2026",
+      "poolCount": 17,
+      "pools": [
+        {
+          "id": "pool-01",
+          "label": "Pavillon 01",
+          "detail": "5 Years+ · Pavilion"
+        },
+        {
+          "id": "pool-02",
+          "label": "Pavillon 02",
+          "detail": "5 Years+ · Pavilion"
+        },
+        {
+          "id": "pool-03",
+          "label": "Pavillon 03",
+          "detail": "5 Years+ · Pavilion"
+        },
+        {
+          "id": "pool-04",
+          "label": "Pavillon 04",
+          "detail": "5 Years+ · Pavilion"
+        },
+        {
+          "id": "pool-05",
+          "label": "Pavillon 05",
+          "detail": "5 Years+ · Pavilion"
+        },
+        {
+          "id": "pool-06",
+          "label": "Pavillon 06",
+          "detail": "5 Years+ · Pavilion"
+        },
+        {
+          "id": "pool-07",
+          "label": "Pavillon 07",
+          "detail": "5 Years+ · Pavilion"
+        },
+        {
+          "id": "pool-08",
+          "label": "Pavillon 08",
+          "detail": "5 Years+ · Pavilion"
+        },
+        {
+          "id": "pool-09",
+          "label": "Pavillon 09",
+          "detail": "5 Years+ · Pavilion"
+        },
+        {
+          "id": "pool-10",
+          "label": "Pavillon 10",
+          "detail": "5 Years+ · Pavilion"
+        },
+        {
+          "id": "pool-11",
+          "label": "Pavillon 11",
+          "detail": "5 Years+ · Pavilion"
+        },
+        {
+          "id": "pool-12",
+          "label": "Pavillon 12",
+          "detail": "5 Years+ · Pavilion"
+        },
+        {
+          "id": "pool-13",
+          "label": "Pavillon 13",
+          "detail": "5 Years+ · Pavilion"
+        },
+        {
+          "id": "pool-14",
+          "label": "Pavillon 14",
+          "detail": "5 Years+ · Pavilion"
+        },
+        {
+          "id": "pool-15",
+          "label": "Pavillon 15",
+          "detail": "5 Years+ · Pavilion"
+        },
+        {
+          "id": "pool-16",
+          "label": "Pavillon 16",
+          "detail": "5 Years+ · Pavilion"
+        },
+        {
+          "id": "pool-17",
+          "label": "Pavillon 17",
+          "detail": "5 Years+ · Pavilion"
+        }
+      ],
+      "description": "17 pavillons pour les Servants ayant débuté après le 5e anniversaire.",
+      "source": "https://fate-go.us/9th_anniversary/campaign/",
+      "sourceLabel": "FGO USA",
+      "destiny": {
+        "slots": [
+          {
+            "id": "saber",
+            "label": "Saber",
+            "class": "Saber"
+          },
+          {
+            "id": "archer",
+            "label": "Archer",
+            "class": "Archer"
+          },
+          {
+            "id": "lancer",
+            "label": "Lancer",
+            "class": "Lancer"
+          },
+          {
+            "id": "rider",
+            "label": "Rider",
+            "class": "Rider"
+          },
+          {
+            "id": "caster",
+            "label": "Caster",
+            "class": "Caster"
+          },
+          {
+            "id": "assassin",
+            "label": "Assassin",
+            "class": "Assassin"
+          },
+          {
+            "id": "berserker",
+            "label": "Berserker",
+            "class": "Berserker"
+          },
+          {
+            "id": "extra-1",
+            "label": "Extra 1",
+            "class": "Extra"
+          },
+          {
+            "id": "extra-2",
+            "label": "Extra 2",
+            "class": "Extra"
+          }
+        ],
+        "note": "9 emplacements : les 7 classes de base et 2 choix parmi les Extra."
+      },
+      "destinyOrder": {
+        "enabled": true,
+        "slotCount": 9,
+        "slots": [
+          {
+            "id": "saber",
+            "label": "Saber",
+            "class": "Saber"
+          },
+          {
+            "id": "archer",
+            "label": "Archer",
+            "class": "Archer"
+          },
+          {
+            "id": "lancer",
+            "label": "Lancer",
+            "class": "Lancer"
+          },
+          {
+            "id": "rider",
+            "label": "Rider",
+            "class": "Rider"
+          },
+          {
+            "id": "caster",
+            "label": "Caster",
+            "class": "Caster"
+          },
+          {
+            "id": "assassin",
+            "label": "Assassin",
+            "class": "Assassin"
+          },
+          {
+            "id": "berserker",
+            "label": "Berserker",
+            "class": "Berserker"
+          },
+          {
+            "id": "extra-i",
+            "label": "Extra I",
+            "class": "Extra I"
+          },
+          {
+            "id": "extra-ii",
+            "label": "Extra II",
+            "class": "Extra II"
+          }
+        ],
+        "cost": "30 Quartz payants",
+        "oncePerAccount": true,
+        "guaranteed": "1 des 9 Servants choisis",
+        "note": "Les listes proposées dans le tracker sont générées depuis le roster 5★ NA de V200 ; le jeu réel applique ses propres conditions d’éligibilité à la date de l’événement."
+      },
+      "destinySource": "https://fate-go.us/9th_anniversary/campaign/",
+      "destinySourceLabel": "FGO USA"
+    }
+  ]
+}

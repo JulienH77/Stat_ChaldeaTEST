@@ -1,6 +1,7 @@
 import initialState from './data/initial-state.json?v=101' with { type: 'json' };
 import welfareData from './data/welfare-ids.json?v=101' with { type: 'json' };
 import supportData from './data/support-lists.json?v=101' with { type: 'json' };
+import gssrData from './data/gssr.json?v=200' with { type: 'json' };
 const CONFIG=window.CHALDEA_CONFIG||{};
 let supportSnapshot=supportData||{players:{}};
 const SUPABASE_KEY=CONFIG.supabasePublishableKey||CONFIG.supabaseAnonKey||CONFIG.supabaseKey||'';
@@ -28,6 +29,8 @@ const state=structuredClone(initialState);
 state.roster=sanitizeRoster(state.roster);
 let currentPlayer='julien',currentView='overview',rosterMode='cards',sortDir='desc',compareFocusId=284,skillScope='gold',showMissing=true,xpTargetClass='',supportMode='normal',showNpOverlay=false;
 let cloud=null,session=null,currentAuth=null,cloudEnabled=false,cloudAuthError='',atlasById=new Map(),atlasFull=new Map(),atlasVariantsByName=new Map(),variantDetailCache=new Map(),renderToken=0,showdownRenderedId=null,showdownRenderToken=0,supportPlayer='julien';
+const GSSR_LOCAL_KEY='chaldea-v200-gssr-choices';
+let gssrEventId='ann-2026',gssrChoices={};
 const selectedClasses=new Set(),selectedRarities=new Set(['5','4','welfare']),selectedNpTypes=new Set();
 const NP_EFFECT_ORDER=['Support','ST','AOE'];
 const NP_EFFECT_LABELS={Support:'Support',ST:'ST',AOE:'AOE'};
@@ -46,6 +49,11 @@ const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const num=v=>{if(v===null||v===undefined||v==='')return null;const n=Number(v);return Number.isFinite(n)?n:null};
 const fmtNum=v=>{const n=Number(v);return Number.isFinite(n)?n.toLocaleString('fr-FR'): '—'};
 const fmtInputNumber=v=>{const n=Number(v);return Number.isFinite(n)?String(Math.trunc(n)):''};
+function gssrLocalLoad(){try{const raw=localStorage.getItem(GSSR_LOCAL_KEY);const parsed=raw?JSON.parse(raw):{};return parsed&&typeof parsed==='object'?parsed:{}}catch(e){console.warn('GSSR local storage read',e);return {}}}
+function gssrLocalSave(){try{localStorage.setItem(GSSR_LOCAL_KEY,JSON.stringify(gssrChoices))}catch(e){console.warn('GSSR local storage save',e)}}
+function gssrPlayerState(p=currentPlayer){gssrChoices[p]??={};return gssrChoices[p]}
+function gssrEventById(id=gssrEventId){return (gssrData.events||[]).find(e=>e.id===id)||(gssrData.events||[]).at(-1)}
+function gssrAllEvents(){return [...(gssrData.events||[])].sort((a,b)=>a.year-b.year||((a.kind==='newyear'?0:1)-(b.kind==='newyear'?0:1)))}
 const toast=m=>{const e=$('#toast');e.textContent=m;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),2000)};
 const WELFARE_IDS=new Set((welfareData.ids||[]).map(Number));
 const localKey='chaldea-v23-cloud-authoritative';
@@ -79,6 +87,52 @@ function goldUniverse(){return state.roster.filter(r=>isCounted(r)&&(rarityNum(r
 function goldOwned(p){return goldUniverse().filter(r=>isOwned(p,r)).length}
 function np5Count(p){return goldUniverse().filter(r=>isOwned(p,r)&&Number(stats(p,r.id).np)>=5).length}
 function np5Pct(p){const den=goldUniverse().length;return den?np5Count(p)/den*100:0}
+const RARITY_STAT_GROUPS=[
+  {key:'5',label:'SSR',sub:'5★',predicate:r=>rarityNum(r.rarity)===5&&!isWelfare(r)},
+  {key:'4',label:'4★',sub:'★★★★',predicate:r=>rarityNum(r.rarity)===4&&!isWelfare(r)},
+  {key:'welfare',label:'Welfare',sub:'FREE',predicate:r=>isWelfare(r)},
+  {key:'3',label:'3★',sub:'★★★',predicate:r=>rarityNum(r.rarity)===3},
+  {key:'2',label:'2★',sub:'★★',predicate:r=>rarityNum(r.rarity)===2},
+  {key:'1',label:'1★',sub:'★',predicate:r=>rarityNum(r.rarity)===1}
+];
+function rarityAdvancedStats(p){return RARITY_STAT_GROUPS.map(g=>{const all=state.roster.filter(r=>isVisible(r)&&isCounted(r)&&g.predicate(r));const owned=all.filter(r=>isOwned(p,r));const grailed=owned.filter(r=>(Number(stats(p,r.id).grail)||0)>0);const grails=owned.reduce((sum,r)=>sum+Math.max(0,Number(stats(p,r.id).grail)||0),0);const np5=owned.filter(r=>Number(stats(p,r.id).np)>=5).length;const bond10=owned.filter(r=>Number(stats(p,r.id).bond)>=10).length;return{...g,total:all.length,owned:owned.length,grailed:grailed.length,grails,np5,bond10}})}
+function bondDistribution(p){const d=Array(16).fill(0);state.roster.filter(r=>isVisible(r)&&isCounted(r)&&isOwned(p,r)).forEach(r=>{const raw=Number(stats(p,r.id).bond);const level=!Number.isFinite(raw)||raw<=0?1:Math.min(15,Math.floor(raw));d[level]++});return d}
+function classPokedex(p){return CLASS_ORDER.map(c=>{const all=state.roster.filter(r=>isVisible(r)&&isCounted(r)&&classKey(r.class)===c);if(!all.length)return null;const owned=all.filter(r=>isOwned(p,r)).length;return{className:c,total:all.length,owned,pct:all.length?owned/all.length*100:0}}).filter(Boolean)}
+function esc(v){return String(v??'').replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]))}
+function renderOverviewV200(p){
+ const rows=rarityAdvancedStats(p);
+ $('#rarityAdvancedStats').innerHTML=rows.map(r=>`<tr><td><strong>${esc(r.label)}</strong><span>${esc(r.sub)} · ${r.owned}/${r.total}</span></td><td>${fmtNum(r.grailed)}</td><td>${fmtNum(r.grails)}</td><td>${fmtNum(r.np5)}</td><td>${fmtNum(r.bond10)}</td></tr>`).join('');
+ const bd=bondDistribution(p),maxBond=Math.max(...bd.slice(1),1);
+ $('#bondDistributionBars').innerHTML=bd.slice(1).map((n,lvl)=>`<div class="bond-row-v200"><span class="bond-level-v200">${lvl}</span><div class="bond-track-v200"><div class="bond-fill-v200" style="width:${n/maxBond*100}%"></div></div><b>${n}</b></div>`).join('');
+ const pd=classPokedex(p),maxPct=Math.max(...pd.map(x=>x.pct),1);
+ $('#pokedexGrid').innerHTML=pd.map(x=>`<div class="pokedex-card-v200"><div class="pokedex-card-head">${classImg(x.className)}<div><strong>${esc(x.className)}</strong><span>${x.owned} / ${x.total} possédés</span></div><b>${x.pct.toFixed(1)}%</b></div><div class="pokedex-track-v200"><div class="pokedex-fill-v200" style="width:${x.pct/maxPct*100}%"></div></div></div>`).join('');
+}
+function gssrChoice(p,eventId){const stateByPlayer=gssrPlayerState(p);stateByPlayer[eventId]??={poolId:null,destiny:{}};return stateByPlayer[eventId]}
+function gssrSetPool(eventId,poolId){const c=gssrChoice(currentPlayer,eventId);c.poolId=poolId;gssrLocalSave()}
+function gssrSetDestiny(eventId,slotId,servantId){const c=gssrChoice(currentPlayer,eventId);c.destiny??={};if(servantId)c.destiny[slotId]=Number(servantId);else delete c.destiny[slotId];gssrLocalSave()}
+function gssrDestinyCandidates(slot){
+ const five=state.roster.filter(r=>isVisible(r)&&isCounted(r)&&rarityNum(r.rarity)===5&&!isWelfare(r));
+ const basic=new Set(['Saber','Archer','Lancer','Rider','Caster','Assassin','Berserker']);
+ if(basic.has(slot.class))return five.filter(r=>classKey(r.class)===slot.class);
+ return five.filter(r=>!basic.has(classKey(r.class)));
+}
+function gssrRenderTimeline(){
+ const events=gssrAllEvents();
+ $('#gssrTimeline').innerHTML=events.map(e=>`<button type="button" class="gssr-time-event ${e.id===gssrEventId?'active':''}" data-gssr-event="${esc(e.id)}"><span class="gssr-time-dot"></span><span class="gssr-time-year">${e.year}</span><span class="gssr-time-kind">${e.kind==='newyear'?'NOUVEL AN':'ANNIVERSAIRE'}</span></button>`).join('');
+ $$('[data-gssr-event]').forEach(b=>b.onclick=()=>{gssrEventId=b.dataset.gssrEvent;renderGssr()});
+}
+function gssrRenderEvent(){
+ const e=gssrEventById(),c=gssrChoice(currentPlayer,e.id),selectedPool=c.poolId;
+ const source=e.source?`<a class="gssr-source-link" href="${esc(e.source)}" target="_blank" rel="noopener noreferrer">Source GSSR</a>`:'';
+ const destiny=e.destinyOrder;
+ $('#gssrEventDetail').innerHTML=`<div class="gssr-event-head"><div><span class="eyebrow">${e.kind==='newyear'?'NOUVEL AN':'ANNIVERSAIRE'} · ${e.year}</span><h2>${esc(e.title)}</h2><p>${esc(e.description||'')}</p></div><div class="gssr-event-meta"><strong>${e.poolCount||e.pools?.length||0}</strong><span>pavillons</span>${source}</div></div><div class="gssr-section-head"><div><span class="eyebrow">LUCKY BAG</span><h3>Choisis ton GSSR</h3></div><span class="gssr-choice-status">${selectedPool?`Choisi · ${esc((e.pools||[]).find(x=>x.id===selectedPool)?.label||selectedPool)}`:'Aucun choix enregistré'}</span></div><div class="gssr-pool-grid">${(e.pools||[]).map(pool=>`<button type="button" class="gssr-pool-card ${selectedPool===pool.id?'selected':''}" data-gssr-pool="${esc(pool.id)}"><span class="gssr-pool-no">${esc(pool.id.replace('pool-','').replace('pavillon-','').toUpperCase())}</span><strong>${esc(pool.label)}</strong><small>${esc(pool.detail||'Pool GSSR')}</small><span class="gssr-pool-check">${selectedPool===pool.id?'CHOISI':'CHOISIR'}</span></button>`).join('')}</div>${destiny?`<div class="gssr-destiny"><div class="gssr-section-head"><div><span class="eyebrow">DESTINY ORDER</span><h3>Prépare tes 9 choix</h3></div><span class="gssr-choice-status">${Object.values(c.destiny||{}).filter(Boolean).length} / ${destiny.slotCount||9}</span></div><p class="gssr-destiny-copy">${esc(destiny.guaranteed||'1 des Servants sélectionnés est garanti')} · ${esc(destiny.cost||'')} · ${destiny.oncePerAccount?'une seule fois par compte.':''}</p><div class="gssr-destiny-grid">${(destiny.slots||[]).map(slot=>{const val=Number(c.destiny?.[slot.id])||0;const candidates=gssrDestinyCandidates(slot);return `<label class="gssr-destiny-slot"><span>${esc(slot.label)}</span><select data-gssr-destiny="${esc(slot.id)}"><option value="">Choisir un SSR…</option>${candidates.map(r=>{const chosenElsewhere=Object.entries(c.destiny||{}).some(([sid,v])=>sid!==slot.id&&Number(v)===Number(r.id));return `<option value="${Number(r.id)}" ${val===Number(r.id)?'selected':''} ${chosenElsewhere?'disabled':''}>${esc(r.name)}</option>`}).join('')}</select></label>`}).join('')}</div><div class="gssr-destiny-foot"><span>Les deux cases Extra peuvent contenir tous les SSR Extra disponibles dans V200.</span>${destinySourceLink(e)}</div></div>`:''}<div class="gssr-reset-row"><button type="button" id="gssrResetEvent" class="filter-btn">Réinitialiser cet événement</button></div>`;
+ $$('[data-gssr-pool]').forEach(b=>b.onclick=()=>{gssrSetPool(e.id,b.dataset.gssrPool);gssrRenderEvent();gssrRenderTimeline()});
+ $$('[data-gssr-destiny]').forEach(s=>s.onchange=()=>{gssrSetDestiny(e.id,s.dataset.gssrDestiny,s.value);gssrRenderEvent();gssrRenderTimeline()});
+ $('#gssrResetEvent').onclick=()=>{delete gssrPlayerState(currentPlayer)[e.id];gssrLocalSave();gssrRenderEvent()};
+}
+function destinySourceLink(e){return e.destinySource?`<a class="gssr-source-link" href="${esc(e.destinySource)}" target="_blank" rel="noopener noreferrer">Source Destiny Order</a>`:''}
+function renderGssr(){gssrRenderTimeline();gssrRenderEvent()}
+
 function coinEstimate(r,s){if(rarityNum(r.rarity)<4||!isOwned(currentPlayer,r))return null;if(s.servantCoins!=null)return{value:s.servantCoins,estimated:false};let n=Math.max(1,Number(s.np)||1),base=rarityNum(r.rarity)===5?90:50;let copy=Math.max(0,n-1)*base;let bond=Math.max(0,Number(s.bond)||0);let bondCoins=[0,0,0,0,0,30,45,60,75,90,105][Math.min(10,bond)]||0;let app=(s.appendSkills||[]).filter(validSkill).length*20;return{value:copy+base+bondCoins+app,estimated:true}}
 function clampNP(s){return s.np==null?'—':Math.min(5,Math.max(0,Number(s.np)))}
 function npDisplay(v,small=true){const n=num(v);if(n==null)return '—';const c=Math.max(0,Math.min(5,n));return n>5?`NP ${c}${small?` <small>(${n})</small>`:` (${n})`}`:`NP ${c}`}
@@ -114,6 +168,7 @@ function renderOverview(){
  $('#detailStats').innerHTML=markers.map(([l,v,c])=>`<div class="marker"><small>${l}</small><strong>${v}</strong>${c?`<span class="scope-caption">${c}</span>`:''}</div>`).join('');
  const pct=collectionPct(p),pctStr=pct.toFixed(1).replace('.0','');$('#collectionPct').textContent=pctStr+'%';$('#collectionRing').style.background=`conic-gradient(#5f89bc 0 ${pct}%,#edf1f5 ${pct}% 100%)`;
  const totals=categoryTotals(),bars=[['5★',five,totals.five],['4★',four,totals.four],['Welfare',wf,totals.welfare]];$('#miniBars').innerHTML=bars.map(([l,v,t])=>{const pct=t?Math.min(100,v/t*100):0;return `<div class="mini-bar"><span>${l}</span><div class="mini-track"><div class="mini-fill" style="width:${pct}%"></div></div><b>${v} / ${t}</b></div>`}).join('');
+ renderOverviewV200(p);
 }
 function fillFilters(){
  const classes=[...new Set(state.roster.filter(isVisible).map(r=>classKey(r.class)).filter(Boolean))].sort((a,b)=>CLASS_ORDER.indexOf(a)-CLASS_ORDER.indexOf(b));
@@ -621,8 +676,8 @@ function renderXp(){
   updateXpComputed();
 }
 
-function navigate(v){currentView=v;$$('.view').forEach(x=>x.classList.toggle('active',x.id==='view-'+v));$$('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.view===v));$('#pageName').textContent={overview:'Overview',servants:'Servants',compare:'Compare',supports:'Support Lists',xp:'Calcul XP'}[v];$('#sidebar').classList.remove('open');renderAll()}
-function renderAll(){renderMasterSwitch();if(currentView==='overview')renderOverview();if(currentView==='servants'){fillFilters();renderRoster()}if(currentView==='compare')renderCompare();if(currentView==='supports')renderSupports();if(currentView==='xp')renderXp()}
+function navigate(v){currentView=v;$$('.view').forEach(x=>x.classList.toggle('active',x.id==='view-'+v));$$('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.view===v));$('#pageName').textContent={overview:'Overview',servants:'Servants',compare:'Compare',supports:'Support Lists',xp:'Calcul XP',gssr:'GSSR'}[v];$('#sidebar').classList.remove('open');renderAll()}
+function renderAll(){renderMasterSwitch();if(currentView==='overview')renderOverview();if(currentView==='servants'){fillFilters();renderRoster()}if(currentView==='compare')renderCompare();if(currentView==='supports')renderSupports();if(currentView==='xp')renderXp();if(currentView==='gssr')renderGssr()}
 async function persistStat(id){
  if(!cloudEnabled||!cloud||!session||!currentCanEdit()){
    toast('Impossible de synchroniser ce Servant : compte non éditeur');
@@ -713,4 +768,4 @@ function accountUI(){
 }
 $('#modalBackdrop').onclick=e=>{if(e.target.id==='modalBackdrop')closeModal()};
 $$('.nav-item').forEach(b=>b.onclick=()=>navigate(b.dataset.view));$('#mobileMenu').onclick=()=>$('#sidebar').classList.toggle('open');$('#accountBtn').onclick=accountUI;$('#searchInput').oninput=renderRoster;$('#sortFilter').onchange=renderRoster;$('#hideMissing').onclick=()=>{showMissing=!showMissing;updateFilterLabels();renderRoster()};const toggleNp=$('#toggleNpOverlay');if(toggleNp)toggleNp.onclick=()=>{showNpOverlay=!showNpOverlay;updateFilterLabels();renderRoster()};$('#xpCurrentLevel').oninput=updateXpComputed;$('#xpCurrentLevel').onblur=()=>{const e=$('#xpCurrentLevel');e.value=Math.max(1,Math.min(120,Number(e.value)||1));updateXpComputed()};$('#xpTargetLevel').oninput=()=>{updateXpComputed();$$('[data-xp-goal]').forEach(x=>x.classList.toggle('active',x.dataset.xpGoal===$('#xpTargetLevel').value))};$$('[data-skill-scope]').forEach(b=>b.onclick=()=>{skillScope=b.dataset.skillScope;renderOverview()});$$('[data-xp-goal]').forEach(b=>b.onclick=()=>{const e=$('#xpTargetLevel');e.value=b.dataset.xpGoal;updateXpComputed()});$('#sortDir').onclick=()=>{sortDir=sortDir==='desc'?'asc':'desc';$('#sortDir').textContent=sortDir==='asc'?'↑ Ascendant':'↓ Descendant';renderRoster()};const xpClassHidden=$('#xpClassSelect'),xpClassGrid=$('#xpClassGrid');const xpClasses=['Saber','Archer','Lancer','Rider','Caster','Assassin','Berserker'];if(xpClassGrid&&!xpClassGrid.children.length)xpClassGrid.innerHTML=xpClasses.map(c=>`<button type="button" class="xp-class-option" data-xp-class-value="${c}" aria-label="${c}" title="${c}">${classImg(c)}</button>`).join('');if(xpClassHidden){$$('[data-xp-class-value]').forEach(b=>b.onclick=()=>{const c=b.dataset.xpClassValue;xpTargetClass=xpTargetClass===c?'':c;xpClassHidden.value=xpTargetClass;$$('[data-xp-class-value]').forEach(x=>x.classList.toggle('active',x.dataset.xpClassValue===xpTargetClass));const hint=$('#xpClassHint');if(hint)hint.textContent=xpTargetClass?`Bonus de classe · ${xpTargetClass}`:'Aucun bonus · clique sur une classe pour l’activer';updateXpComputed();});}$$('[data-support-mode]').forEach(b=>b.onclick=()=>{supportMode=b.dataset.supportMode;renderSupports();});$$('[data-pop]').forEach(b=>b.onclick=e=>{$$('.filter-pop.open').forEach(x=>x.classList.remove('open'));$('#'+b.dataset.pop).classList.toggle('open');e.stopPropagation()});document.addEventListener('click',e=>{$$('.filter-pop.open').forEach(p=>{if(!p.parentElement.contains(e.target))p.classList.remove('open')})});const chooseCompare=()=>{const q=norm($('#compareSearch').value);const exact=state.roster.find(r=>isVisible(r)&&norm(r.name)===q)||state.roster.find(r=>isVisible(r)&&norm(r.name).startsWith(q));if(exact){compareFocusId=exact.id;renderShowdown(true)}};$('#compareSearch').onchange=chooseCompare;$('#compareSearch').onkeydown=e=>{if(e.key==='Enter')chooseCompare()};
-localCacheLoad();state.roster=sanitizeRoster([...state.roster, ...NA_FORCE_INCLUDE]).filter(r=>!NA_BLOCKED_IDS.has(Number(r.id))&&norm(r.name)!=='solomon');if(!state.roster.some(r=>Number(r.id)===417))state.roster.push({...NA_FORCE_INCLUDE[0]});PLAYERS.forEach(p=>{state.players[p]??={displayName:PLAYER_LABELS[p],stats:{}};state.players[p].xp??=XP_DEFAULT()});fillFilters();renderAll();setupCloud();syncRosterNA();
+gssrChoices=gssrLocalLoad();if(!gssrEventById())gssrEventId=gssrAllEvents().at(-1)?.id||'ann-2026';localCacheLoad();state.roster=sanitizeRoster([...state.roster, ...NA_FORCE_INCLUDE]).filter(r=>!NA_BLOCKED_IDS.has(Number(r.id))&&norm(r.name)!=='solomon');if(!state.roster.some(r=>Number(r.id)===417))state.roster.push({...NA_FORCE_INCLUDE[0]});PLAYERS.forEach(p=>{state.players[p]??={displayName:PLAYER_LABELS[p],stats:{}};state.players[p].xp??=XP_DEFAULT()});fillFilters();renderAll();setupCloud();syncRosterNA();
