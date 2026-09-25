@@ -46,6 +46,8 @@ Elle présente notamment :
 - la progression de collection des 4★ / 5★ ;
 - le pourcentage de Servants Gold ayant atteint NP 5.
 
+Les lignes des distributions Skills et Bond proposent au survol une ventilation par **5★, 4★, Welfare, 3★, 2★ et 1★**.
+
 La distribution des Skills peut être visualisée selon deux populations :
 
 - **ALL** : tous les Servants suivis ;
@@ -664,9 +666,9 @@ L'objectif est de conserver une **saisie simple des statistiques** tout en offra
 
 ---
 
-# V201 — Overview avancée + GSSR
+# V202 — Overview avancée + GSSR
 
-La V201 affine l'Overview avancée de la V200 et conserve l'onglet **GSSR**.
+La V202 affine l'Overview avancée : les blocs **Distribution des niveaux** et **Collection 4★ + 5★** sont inversés, et le survol des distributions révèle la répartition par rareté.
 
 ## Nouvelles statistiques Overview
 
@@ -698,7 +700,7 @@ Le nouvel onglet **GSSR** propose une timeline historique NA de 2019 à 2026, av
 
 Chaque événement permet d'enregistrer le pavillon choisi. Les événements pour lesquels les libellés détaillés des pavillons historiques ne sont pas suffisamment vérifiables dans les sources accessibles utilisent volontairement des libellés neutres (`Pavillon 01`, `Pavillon 02`, etc.) plutôt que d'inventer une composition.
 
-À partir de l'anniversaire 2024, le tracker affiche également un module **Destiny Order** à 9 emplacements : un Servant 5★ par classe de base et deux emplacements Extra. Les choix sont enregistrés séparément pour chaque Master dans le navigateur via `localStorage`, sous la clé `chaldea-v200-gssr-choices`. Ils ne nécessitent donc aucune nouvelle table Supabase pour V200.
+À partir de l'anniversaire 2024, le tracker affiche également un module **Destiny Order** à 9 emplacements : un Servant 5★ par classe de base et deux emplacements Extra. Les choix sont enregistrés séparément pour chaque Master dans le navigateur via `localStorage`, sous la clé `chaldea-v200-gssr-choices`. Ils ne nécessitent donc aucune nouvelle table Supabase pour V202.
 
 Les données et règles reprises dans le fichier `/data/gssr.json` s'appuient notamment sur les historiques GamePress, les pages officielles FGO USA lorsque disponibles et les historiques Fate/Grand Companion. Les nombres de pavillons repris dans le fichier sont conservés séparément des libellés lorsque la composition détaillée n’est pas suffisamment exploitable. Les informations spécifiques au Destiny Order NA 2024–2026 sont documentées dans les sources liées à chaque événement.
 

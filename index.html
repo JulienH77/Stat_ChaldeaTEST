@@ -31,9 +31,9 @@
   <div class="page-heading"><div><span class="eyebrow">MASTER PROFILE</span><h1 id="heroMaster">Julien</h1><p>Ta collection NA, ta progression et les chiffres qui comptent vraiment.</p></div><div class="hero-badge"><span id="introOwned">0</span><small>SERVANTS POSSÉDÉS</small><em>NA / LIVE</em></div></div>
   <div class="overview-grid">
     <section class="panel collection-panel"><div class="panel-head"><div><span class="eyebrow">COLLECTION</span><h2>Raretés possédées</h2></div><span class="panel-tag">HORS MASH</span></div><div id="rarityDisplay" class="rarity-display"></div></section>
-    <section class="panel skills-panel"><div class="panel-head"><div><span class="eyebrow">SKILL MASTERY</span><h2>Distribution des niveaux</h2></div><div class="skills-head-actions"><div class="scope-switch" id="skillScopeToggle"><button data-skill-scope="all">ALL</button><button data-skill-scope="gold" class="active">GOLD</button></div><div class="avg-pill"><strong id="skillsAverage">—</strong><span>/10</span></div></div></div><div id="skillBars" class="skill-bars"></div></section>
-    <section class="panel markers-panel"><div class="panel-head"><div><span class="eyebrow">ACCOUNT MARKERS</span><h2>Repères de compte</h2></div></div><div id="detailStats" class="marker-grid"></div></section>
     <section class="panel trend-panel"><div class="panel-head"><div><span class="eyebrow">ACCOUNT READOUT</span><h2>Collection 4★ + 5★</h2></div><div class="ring" id="collectionRing" aria-hidden="true"></div></div><div class="trend-copy"><strong id="collectionPct">0%</strong><span>des Servants 4★ / 5★ NA obtenus</span></div><div class="mini-bars" id="miniBars"></div></section>
+    <section class="panel markers-panel"><div class="panel-head"><div><span class="eyebrow">ACCOUNT MARKERS</span><h2>Repères de compte</h2></div></div><div id="detailStats" class="marker-grid"></div></section>
+    <section class="panel skills-panel"><div class="panel-head"><div><span class="eyebrow">SKILL MASTERY</span><h2>Distribution des niveaux</h2></div><div class="skills-head-actions"><div class="scope-switch" id="skillScopeToggle"><button data-skill-scope="all">ALL</button><button data-skill-scope="gold" class="active">GOLD</button></div><div class="avg-pill"><strong id="skillsAverage">—</strong><span>/10</span></div></div></div><div id="skillBars" class="skill-bars"></div><div class="distribution-legend-v202" aria-label="Répartition par rareté"><span><i class="r5"></i>5★</span><span><i class="r4"></i>4★</span><span><i class="rw"></i>Welfare</span><span><i class="r3"></i>3★</span><span><i class="r2"></i>2★</span><span><i class="r1"></i>1★</span></div></section>
   </div>
 
   <div class="overview-v200-grid">
@@ -45,7 +45,7 @@
 
     <section class="panel bond-distribution-panel">
       <div class="panel-head"><div><span class="eyebrow">BOND MASTERY</span><h2>Distribution du Bond</h2></div><div class="bond-head-actions"><div class="scope-switch" id="bondScopeToggle"><button data-bond-scope="all">ALL</button><button data-bond-scope="gold" class="active">GOLD</button></div><div class="avg-pill"><strong id="bondAverage">—</strong><span>/15</span></div></div></div>
-      <div id="bondDistributionBars" class="bond-distribution-bars"></div>
+      <div id="bondDistributionBars" class="bond-distribution-bars"></div><div class="distribution-legend-v202" aria-label="Répartition par rareté"><span><i class="r5"></i>5★</span><span><i class="r4"></i>4★</span><span><i class="rw"></i>Welfare</span><span><i class="r3"></i>3★</span><span><i class="r2"></i>2★</span><span><i class="r1"></i>1★</span></div>
       <p class="v200-note">Bond 0, NULL ou 1 → niveau 1. GOLD = 4★ / 5★ + Welfare.</p>
     </section>
   </div>
@@ -128,7 +128,7 @@
 <section class="view" id="view-gssr">
   <div class="page-heading">
     <div><span class="eyebrow">LUCKY BAG ARCHIVE</span><h1>GSSR</h1><p>Historique NA des Lucky Bags et Destiny Order. Choisis un événement pour préparer ton tirage.</p></div>
-    <div class="source-badge">NA / V200</div>
+    <div class="source-badge">NA / V202</div>
   </div>
   <section class="panel gssr-timeline-panel">
     <div class="panel-head"><div><span class="eyebrow">TIMELINE</span><h2>Nouvel An · Anniversaire</h2></div><span class="panel-tag">2019 → 2026</span></div>
@@ -161,5 +161,5 @@
 </main></div>
 
 <div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modal"></div></div><div class="toast" id="toast"></div>
-<script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script type="module" src="app.js?v=200.0"></script>
+<script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script type="module" src="app.js?v=202.0"></script>
 </body></html>

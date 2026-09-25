@@ -95,6 +95,42 @@ const RARITY_STAT_GROUPS=[
   {key:'2',label:'2★',sub:'★★',predicate:r=>rarityNum(r.rarity)===2},
   {key:'1',label:'1★',sub:'★',predicate:r=>rarityNum(r.rarity)===1}
 ];
+const DIST_RARITY_GROUPS=[
+  {key:'5',label:'5★',className:'r5',predicate:r=>rarityNum(r.rarity)===5&&!isWelfare(r)},
+  {key:'4',label:'4★',className:'r4',predicate:r=>rarityNum(r.rarity)===4&&!isWelfare(r)},
+  {key:'welfare',label:'Welfare',className:'rw',predicate:r=>isWelfare(r)},
+  {key:'3',label:'3★',className:'r3',predicate:r=>rarityNum(r.rarity)===3},
+  {key:'2',label:'2★',className:'r2',predicate:r=>rarityNum(r.rarity)===2},
+  {key:'1',label:'1★',className:'r1',predicate:r=>rarityNum(r.rarity)===1}
+];
+function distributionBucket(r){return DIST_RARITY_GROUPS.findIndex(g=>g.predicate(r))}
+function distributionSegments(counts,total){
+  if(!total)return '';
+  return `<div class="distribution-segments-v202">${DIST_RARITY_GROUPS.map((g,i)=>{const n=counts[i]||0;return n?`<span class="distribution-segment-v202 ${g.className}" style="width:${n/total*100}%" title="${g.label} : ${n}"></span>`:''}).join('')}</div>`;
+}
+function skillDistributionBreakdown(p,level){
+  const counts=Array(DIST_RARITY_GROUPS.length).fill(0);
+  for(const r of state.roster){
+    if(!isCounted(r)||!skillInScope(r))continue;
+    const vals=stats(p,r.id).skills||[];
+    vals.forEach(v=>{if(validSkill(v)&&Number(v)===level){const i=distributionBucket(r);if(i>=0)counts[i]++}});
+  }
+  return counts;
+}
+function bondDistributionBreakdown(p,level){
+  const counts=Array(DIST_RARITY_GROUPS.length).fill(0);
+  for(const r of state.roster){
+    if(!isVisible(r)||!isCounted(r)||!bondInScope(r)||!isOwned(p,r))continue;
+    if(normalizedBond(r,p)!==level)continue;
+    const i=distributionBucket(r);if(i>=0)counts[i]++;
+  }
+  return counts;
+}
+function distributionRowHtml(level,count,max,counts,rowClass,labelClass,trackClass,fillClass){
+  const pct=count/max*100;
+  return `<div class="${rowClass} distribution-row-v202" title="Survolez pour voir la répartition par rareté"><span class="${labelClass}">${level}</span><div class="${trackClass} distribution-track-v202"><div class="${fillClass} distribution-fill-v202" style="width:${pct}%"><div class="distribution-base-v202"></div>${distributionSegments(counts,count)}</div></div><b>${count}</b></div>`;
+}
+
 function rarityAdvancedStats(p){return RARITY_STAT_GROUPS.map(g=>{const all=state.roster.filter(r=>isVisible(r)&&isCounted(r)&&g.predicate(r));const owned=all.filter(r=>isOwned(p,r));const grailed=owned.filter(r=>(Number(stats(p,r.id).grail)||0)>0);const grails=owned.reduce((sum,r)=>sum+Math.max(0,Number(stats(p,r.id).grail)||0),0);const np5=owned.filter(r=>Number(stats(p,r.id).np)>=5).length;const bond10=owned.filter(r=>Number(stats(p,r.id).bond)>=10).length;return{...g,total:all.length,owned:owned.length,grailed:grailed.length,grails,np5,bond10}})}
 function bondInScope(r){return bondScope==='all'||isWelfare(r)||rarityNum(r.rarity)>=4}
 function normalizedBond(r,p){const raw=Number(stats(p,r.id).bond);return !Number.isFinite(raw)||raw<=1?1:Math.min(15,Math.floor(raw))}
@@ -110,7 +146,7 @@ function renderOverviewV200(p){
  $$('[data-bond-scope]').forEach(b=>b.classList.toggle('active',b.dataset.bondScope===bondScope));
  const bd=bondDistribution(p),maxBond=Math.max(...bd.slice(1),1);
  $('#bondAverage').textContent=bondAverage(p).toFixed(1);
- $('#bondDistributionBars').innerHTML=Array.from({length:15},(_,i)=>15-i).map(lvl=>{const n=bd[lvl];return `<div class="bond-row-v200"><span class="bond-level-v200">${lvl}</span><div class="bond-track-v200"><div class="bond-fill-v200" style="width:${n/maxBond*100}%"></div></div><b>${n}</b></div>`}).join('');
+ $('#bondDistributionBars').innerHTML=Array.from({length:15},(_,i)=>15-i).map(lvl=>{const n=bd[lvl],parts=bondDistributionBreakdown(p,lvl);return distributionRowHtml(lvl,n,maxBond,parts,'bond-row-v200','bond-level-v200','bond-track-v200','bond-fill-v200')}).join('');
  const pd=classPokedex(p);
  $('#pokedexGrid').innerHTML=pd.map(x=>`<div class="pokedex-card-v200"><div class="pokedex-card-head">${classImg(x.className)}<div><strong>${esc(x.className)}</strong><span>${x.owned} / ${x.total} possédés</span></div><b>${x.pct.toFixed(1)}%</b></div><div class="pokedex-track-v200"><div class="pokedex-fill-v200" style="width:${Math.min(100,x.pct)}%"></div></div></div>`).join('');
 }
@@ -169,7 +205,7 @@ function renderOverview(){
  $('#introOwned').title=skillScope==='gold'?'Servants Gold possédés':'Servants possédés';
  $('#rarityDisplay').innerHTML=`<div class="rarity-card"><span class="label">5 STAR</span><span class="stars">★★★★★</span><span class="value">${five}</span></div><div class="rarity-card"><span class="label">4 STAR</span><span class="stars">★★★★</span><span class="value">${four}</span></div><div class="rarity-card welfare"><span class="label">WELFARE</span><span class="stars">FREE</span><span class="value">${wf}</span></div>`;
  $$('[data-skill-scope]').forEach(b=>b.classList.toggle('active',b.dataset.skillScope===skillScope));
- const dist=skillDist(p),mx=Math.max(...dist.slice(1),1);$('#skillsAverage').textContent=average(p).toFixed(1);$('#skillBars').innerHTML=Array.from({length:10},(_,i)=>10-i).map(l=>`<div class="skill-row"><span class="skill-level">${l}</span><div class="skill-track"><div class="skill-fill" style="width:${dist[l]/mx*100}%"></div></div><b>${dist[l]}</b></div>`).join('');
+ const dist=skillDist(p),mx=Math.max(...dist.slice(1),1);$('#skillsAverage').textContent=average(p).toFixed(1);$('#skillBars').innerHTML=Array.from({length:10},(_,i)=>10-i).map(l=>{const n=dist[l],parts=skillDistributionBreakdown(p,l);return distributionRowHtml(l,n,mx,parts,'skill-row','skill-level','skill-track','skill-fill')}).join('');
  const scopeLabel=skillScope==='gold'?'GOLD':'ALL';
  const markers=[['MOYENNE SKILL 1',average(p,0).toFixed(1),scopeLabel],['MOYENNE SKILL 2',average(p,1).toFixed(1),scopeLabel],['MOYENNE SKILL 3',average(p,2).toFixed(1),scopeLabel],['BOND 10+',bond10(p),''],['NIVEAU 120',countLevel(p,120),''],['% NP 5',np5Pct(p).toFixed(1)+'%','']];
  $('#detailStats').innerHTML=markers.map(([l,v,c])=>`<div class="marker"><small>${l}</small><strong>${v}</strong>${c?`<span class="scope-caption">${c}</span>`:''}</div>`).join('');
