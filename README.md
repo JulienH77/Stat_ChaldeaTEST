@@ -734,3 +734,9 @@ La galerie peut maintenant regrouper, lorsque les données Atlas Academy les fou
 Les catégories sont séparées par des onglets dans la galerie et les boutons de navigation restent limités à la catégorie active. Les vidéos NP ne sont pas lancées automatiquement : elles utilisent le lecteur natif avec contrôles.
 
 Atlas Academy documente notamment les assets `charaGraph` des quatre ascensions, les `charaFigure`, les assets de costumes et le pattern `movie` dans son schéma d'assets. citeturn798630view0turn275395view0turn246558view0
+
+
+### V205
+- Gallery: keep the V204 gallery buttons unchanged.
+- Remove the NP video tab completely.
+- Replace the previous story/dialogue `charaFigure` assets in `SPRITES` with Atlas Academy `extraAssets.spriteModel` assets, using ascensions 1–3 and one asset per costume.

@@ -398,30 +398,22 @@ function galleryItems(d,r){
     .sort((a,b)=>Number(a.key)-Number(b.key));
   costumeGraphs.forEach((x,i)=>items.push({kind:'costume-splash',url:x.url,key:x.key,label:`${names.get(x.key)||'Costume'} · Splash`,group:'ASCENSIONS'}));
 
-  // Combat sprites: exactly ascensions 1–3; final ascension has no combat sprite here.
-  const combat=galleryAssetEntries(ea?.charaFigure?.ascension)
+  // Battle sprites: use Atlas Academy\'s dedicated `spriteModel` assets.
+  // `charaFigure` is the story/dialogue figure sheet (heads/expressions), not the battle sprite.
+  // We intentionally expose only ascensions 1–3; FGO has no separate battle sprite slot for final ascension here.
+  const combat=galleryAssetEntries(ea?.spriteModel?.ascension)
     .sort((a,b)=>Number(a.key)-Number(b.key))
     .filter(x=>[1,2,3].includes(Number(x.key)))
     .slice(0,3);
   pushMany(combat,'combat-sprite','SPRITES',(_,i)=>`Ascension ${i+1}`);
 
-  const costumeFigures=galleryAssetEntries(ea?.charaFigure?.costume)
+  // One battle sprite per unlocked costume.
+  const costumeSprites=galleryAssetEntries(ea?.spriteModel?.costume)
     .sort((a,b)=>Number(a.key)-Number(b.key));
-  costumeFigures.forEach((x,i)=>items.push({kind:'costume-sprite',url:x.url,key:x.key,label:`${names.get(x.key)||'Costume'} · Sprite`,group:'SPRITES'}));
+  costumeSprites.forEach((x)=>items.push({kind:'costume-sprite',url:x.url,key:x.key,label:`${names.get(x.key)||'Costume'} · Sprite`,group:'SPRITES'}));
 
-  // Only show a video tab when the API actually exposes a video URL for the servant/NP.
-  const explicitVideos=[];
-  const collectVideoValue=(value,label='NP')=>{
-    if(typeof value==='string'&&/^https?:\/\//.test(value)&&/\.mp4(?:[?#].*)?$/i.test(value))explicitVideos.push({url:value,label});
-    else if(Array.isArray(value))value.forEach((v,i)=>collectVideoValue(v,`${label} ${i+1}`));
-    else if(value&&typeof value==='object')Object.entries(value).forEach(([k,v])=>collectVideoValue(v,`${label} ${k}`));
-  };
-  // Keep this deliberately narrow: story/movie assets must never be mistaken for NP videos.
-  d?.noblePhantasms?.forEach?.((np,i)=>collectVideoValue(np?.movie,np?.name?String(np.name):`NP ${i+1}`));
-  collectVideoValue(d?.movie,'NP');
-  const videos=galleryUnique(explicitVideos);
-  videos.forEach((x,i)=>items.push({kind:'video',url:x.url,label:x.label||`NP ${i+1}`,group:'NP'}));
-
+  // NP videos intentionally removed: Atlas' generic Movie assets are not reliable enough to
+  // distinguish the actual NP video(s), so the gallery should not expose a misleading video tab.
   return items;
 }
 function imageList(d){return galleryItems(d,null).filter(x=>x.kind==='ascension').map(x=>x.url)}
@@ -578,7 +570,7 @@ function openModalBase(r,d,urls,idx,profiles=[]){
  const skillHtml=(s.skills||[null,null,null]).map((v,i)=>can?`<div class="level-cell"><span>SKILL ${i+1}</span><input id="skill-${i}" type="number" min="1" max="10" value="${v??''}"></div>`:`<div class="level-cell"><span>SKILL ${i+1}</span><div class="level-read">${v??'—'}</div></div>`).join('');
  const appendHtml=(s.appendSkills||[null,null,null,null,null]).map((v,i)=>can?`<div class="level-cell"><span>APPEND ${i+1}</span><input id="append-${i}" type="number" min="0" max="10" value="${v??''}"></div>`:`<div class="level-cell"><span>APPEND ${i+1}</span><div class="level-read">${v??'—'}</div></div>`).join('');
  const groupCounts={};galleryItemsAll.forEach(g=>{groupCounts[g.group]=(groupCounts[g.group]||0)+1});
- const galleryGroups=[['ASCENSIONS','ASCENSIONS'],['SPRITES','SPRITES'],['NP','VIDÉO NP']].filter(([key])=>groupCounts[key]);
+ const galleryGroups=[['ASCENSIONS','ASCENSIONS'],['SPRITES','SPRITES']].filter(([key])=>groupCounts[key]);
  const initialGroup=galleryItemsAll[initialItem]?.group||galleryGroups[0]?.[0]||'ASCENSIONS';
  const galleryTabs=galleryGroups.map(([key,label])=>`<button type="button" class="gallery-group-tab ${key===initialGroup?'active':''}" data-gallery-group="${key}">${label}</button>`).join('');
  const galleryThumbs=(group)=>galleryItemsAll.map((item,i)=>({item,i})).filter(x=>x.item.group===group).map(x=>`<button type="button" class="art-thumb ${x.i===initialItem?'active':''}" data-art="${x.i}" title="${esc(x.item.label)}">${x.item.kind==='video'?'<span class="art-thumb-video">▶</span>':`<img src="${x.item.url}" alt="" loading="lazy">`}</button>`).join('');
