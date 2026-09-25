@@ -350,12 +350,54 @@ async function syncRosterNA(){
 function normalizeClass(c){const s=String(c||'').toLowerCase().replace(/[^a-z]/g,'');const m={saber:'Saber',archer:'Archer',lancer:'Lancer',rider:'Rider',caster:'Caster',assassin:'Assassin',berserker:'Berserker',ruler:'Ruler',avenger:'Avenger',alterego:'Alter Ego',mooncancer:'Moon Cancer',foreigner:'Foreigner',pretender:'Pretender',shielder:'Shielder',beast:'Beast'};return m[s]||'Extra'}
 function atlasRarity(x){return Number(x.rarity)>=5?'SSR':Number(x.rarity)===4?'SR':Number(x.rarity)===3?'R':Number(x.rarity)===2?'UC':'C'}
 async function atlasDetail(r){const key=Number(r.atlasId||r.id);if(!key)return null;if(atlasFull.has(key))return atlasFull.get(key);const p=(async()=>{try{const res=await fetch(`https://api.atlasacademy.io/nice/NA/servant/${key}`,{cache:'force-cache'});if(!res.ok)throw Error();const d=await res.json();atlasById.set(Number(key),d);if(d?.collectionNo!=null)atlasById.set(Number(d.collectionNo),d);return d}catch{return null}})();atlasFull.set(key,p);return p}
-function imageList(d){
-  if(!d?.extraAssets) return [];
-  const obj=d.extraAssets?.charaGraph?.ascension || {};
-  return Object.entries(obj).sort(([a],[b])=>Number(a)-Number(b)).map(([,v])=>v)
-    .filter(v=>typeof v==='string'&&/^https?:\/\//.test(v)).slice(0,4);
+function galleryHttpUrl(v){return typeof v==='string'&&/^https?:\/\//.test(v)?v:null}
+function collectGalleryUrls(value,path=[],out=[]){
+  if(typeof value==='string'){const url=galleryHttpUrl(value);if(url)out.push({url,path:path.join('.').toLowerCase()});return out}
+  if(Array.isArray(value)){value.forEach((v,i)=>collectGalleryUrls(v,[...path,String(i)],out));return out}
+  if(value&&typeof value==='object'){Object.entries(value).forEach(([k,v])=>collectGalleryUrls(v,[...path,k],out))}
+  return out
 }
+function galleryUnique(items){const seen=new Set();return items.filter(item=>{const key=String(item?.url||'');if(!key||seen.has(key))return false;seen.add(key);return true})}
+function costumeRecords(d){
+  const raw=d?.costume;
+  const list=Array.isArray(raw)?raw:Object.values(raw&&typeof raw==='object'?raw:{});
+  return list.filter(c=>Number(c?.costumeCollectionNo||0)>=11);
+}
+function costumeIds(c){return [c?.id,c?.battleCharaId,c?.costumeCollectionNo].map(Number).filter(Number.isFinite).map(String)}
+function galleryItems(d,r){
+  const entries=collectGalleryUrls(d?.extraAssets||{});
+  const items=[];
+  const asc=Object.entries(d?.extraAssets?.charaGraph?.ascension||{}).sort(([a],[b])=>Number(a)-Number(b)).map(([,v])=>galleryHttpUrl(v)).filter(Boolean).slice(0,4);
+  asc.forEach((url,i)=>items.push({kind:'ascension',url,label:`Ascension ${i+1}`,group:'ASCENSIONS'}));
+  const sprites=galleryUnique(entries.filter(x=>/charaf(id|igure)|figure/.test(x.path)&&!/costume/.test(x.path)&&/\.(png|webp|jpg|jpeg)$/i.test(x.url)));
+  sprites.forEach((x,i)=>items.push({kind:'sprite',url:x.url,label:sprites.length>1?`Sprite ${i+1}`:'Sprite',group:'SPRITES'}));
+  const costumes=costumeRecords(d);
+  costumes.forEach((c,index)=>{
+    const ids=costumeIds(c);
+    const matched=galleryUnique(entries.filter(x=>{
+      if(!/chara(graph|figure)|costume|sprite|figure/.test(x.path))return false;
+      const hay=`${x.url} ${x.path}`.toLowerCase();
+      return ids.some(id=>hay.includes(id.toLowerCase()));
+    }));
+    const graph=matched.filter(x=>/charagraph/.test(x.path)&&/\.(png|webp|jpg|jpeg)$/i.test(x.url));
+    const figure=matched.filter(x=>/charaf(id|igure)|figure|sprite/.test(x.path)&&/\.(png|webp|jpg|jpeg)$/i.test(x.url));
+    const name=String(c?.name||c?.shortName||`Costume ${index+1}`);
+    if(graph.length)graph.forEach((x,j)=>items.push({kind:'costume',url:x.url,label:`${name} · Splash${graph.length>1?` ${j+1}`:''}`,group:'COSTUMES'}));
+    else if(Number(c?.battleCharaId)){
+      const id=Number(c.battleCharaId);
+      items.push({kind:'costume',url:`https://static.atlasacademy.io/NA/CharaGraph/CharaGraphEx/${id}/${id}a.png`,label:`${name} · Splash`,group:'COSTUMES',fallback:true});
+    }
+    if(figure.length)figure.forEach((x,j)=>items.push({kind:'costume',url:x.url,label:`${name} · Sprite${figure.length>1?` ${j+1}`:''}`,group:'COSTUMES'}));
+    else if(Number(c?.battleCharaId)){
+      const id=Number(c.battleCharaId);
+      items.push({kind:'costume',url:`https://static.atlasacademy.io/NA/CharaFigure/${id}/${id}_merged.png`,label:`${name} · Sprite`,group:'COSTUMES',fallback:true});
+    }
+  });
+  const movies=galleryUnique(entries.filter(x=>/\.mp4(?:[?#].*)?$/i.test(x.url)&&/(^|\.)(movie|movies|np|noblephantasm|noble_phantasm|td|treasuredevice)(\.|$)/.test(x.path)));
+  movies.forEach((x,i)=>items.push({kind:'video',url:x.url,label:`NP ${i+1}`,group:'NP'}));
+  return items;
+}
+function imageList(d){return galleryItems(d,null).filter(x=>x.kind==='ascension').map(x=>x.url)}
 function commandCards(d,r){
   const arr=Array.isArray(d?.cards)?d.cards:[];
   const code=v=>{
@@ -496,7 +538,10 @@ function bondDiamonds(bond,editable=false){
 function statBox(label,id,value,sub,editId,editVal,min='',max=''){return `<div class="detail-box"><label>${label}</label>${currentCanEdit()?`<input class="editable-input" id="${id}" type="number" value="${value??''}" ${min!==''?`min="${min}"`:''} ${max!==''?`max="${max}"`:''}>`:`<span class="detail-value"><strong>${value??'—'}</strong></span>`}${sub?`<div class="sub-stat">${sub}</div>`:''}${editId&&currentCanEdit()?`<input class="micro-edit" id="${editId}" type="number" min="0" max="1000" value="${editVal??0}" title="Fou 4★">`:''}</div>`}
 function openModalBase(r,d,urls,idx,profiles=[]){
  const s=stats(currentPlayer,r.id),st=currentStats(d,r,s),can=currentCanEdit(),owned=isOwned(currentPlayer,r),cards=commandCards(d,r);
- const art=urls[idx]||guessImage(r.atlasId)||'';
+ const gallery=galleryItems(d,r),fallbackAsc=urls.length?urls.map((url,i)=>({kind:'ascension',url,label:`Ascension ${i+1}`,group:'ASCENSIONS'})):[];
+ const galleryItemsAll=gallery.length?gallery:fallbackAsc;
+ const initialItem=Math.max(0,Math.min(galleryItemsAll.length-1,Number(idx)||0));
+ const art=galleryItemsAll[initialItem]?.url||guessImage(r.atlasId)||'';
  const npValue=s.np??'';
  const npRead=npDisplay(s.np,true);
  const levelHtml=can?`<input class="editable-input" id="e-level" type="number" value="${s.level??''}" min="1" max="120">`:`<span class="detail-value"><strong>${s.level??'—'}</strong></span>`;
@@ -505,9 +550,41 @@ function openModalBase(r,d,urls,idx,profiles=[]){
  const grailCount=Number(s.grail)||0;
  const skillHtml=(s.skills||[null,null,null]).map((v,i)=>can?`<div class="level-cell"><span>SKILL ${i+1}</span><input id="skill-${i}" type="number" min="1" max="10" value="${v??''}"></div>`:`<div class="level-cell"><span>SKILL ${i+1}</span><div class="level-read">${v??'—'}</div></div>`).join('');
  const appendHtml=(s.appendSkills||[null,null,null,null,null]).map((v,i)=>can?`<div class="level-cell"><span>APPEND ${i+1}</span><input id="append-${i}" type="number" min="0" max="10" value="${v??''}"></div>`:`<div class="level-cell"><span>APPEND ${i+1}</span><div class="level-read">${v??'—'}</div></div>`).join('');
- $('#modal').innerHTML=`<div class="detail-layout ${can?'editor':''}"><div class="detail-gallery"><div class="detail-main-art">${art?`<img id="detailMainImg" src="${art}" alt="${r.name}">`:'<div class="image-fallback">ART<br><small>indisponible</small></div>'}</div><div class="art-strip" id="artStrip">${urls.map((u,i)=>`<button class="art-thumb ${i===idx?'active':''}" data-art="${i}"><img src="${u}" alt=""></button>`).join('')}</div><div class="art-controls"><button id="artPrev">←</button><span id="artCounter">${urls.length?`${idx+1} / ${urls.length}`:'0 art'}</span><button id="artNext">→</button></div></div><div class="detail-content">${can&&owned?'<button id="unownServant" class="danger danger-quiet detail-danger-corner" title="Retirer ce Servant de ma collection" aria-label="Retirer ce Servant de ma collection">×</button>':''}<div class="detail-title-row"><div class="detail-class">${classImg(r.class)}</div><div class="detail-title"><h2>${r.name}</h2><div class="detail-rarity">${rarityNum(r.rarity)}★${isWelfare(r)?' · WELFARE':''}</div></div></div><div class="detail-stats detail-stats-v10"><div class="detail-box detail-level-box"><label>NIVEAU</label>${levelHtml}<div class="grail-detail grail-v10">${grailImg()}<strong>${grailCount}</strong>${can?`<input class="micro-edit" id="e-grail" type="number" min="0" max="15" value="${s.grail??0}" title="Nombre de Graals">`:''}</div></div>${statBox('ATK','e-atk',st.atk,`Fou 4★ : +${fmtNum(st.fouAtk)} / +1000`,'e-fouatk',st.fouAtk)}${statBox('HP','e-hp',st.hp,`Fou 4★ : +${fmtNum(st.fouHp)} / +1000`,'e-fouhp',st.fouHp)}<div class="detail-box np-detail-box"><label>NOBLE PHANTASM</label>${npHtml}</div><div class="bond-block"><div class="command-title">BOND</div>${bondDiamonds(s.bond,can)}${can?`<input id="e-bond" type="number" min="0" max="15" value="${s.bond??''}" hidden>`:''}</div><div class="np-types-underbox">${npProfileMarkup}</div></div><div class="command-title">COMMAND CARDS</div><div class="cards-row v10-cards-row">${cards.length?cards.map(c=>`<div class="command-card-item">${cardImg(c)}</div>`).join(''):'<span class="card-data-missing">Données Atlas indisponibles</span>'}</div><div class="levels-title">SKILLS</div><div class="levels-row">${skillHtml}</div><div class="levels-title">APPEND SKILLS</div><div class="levels-row">${appendHtml}</div><div class="modal-footer">${can?`<span class="readonly-note">Édition · ${PLAYER_LABELS[currentPlayer]}</span><div class="modal-footer-actions"><button id="modalCancel">Annuler</button><button class="save" id="saveServant">Enregistrer</button></div>`:`<span class="readonly-note">Lecture seule</span><button id="modalCancel">Fermer</button>`}</div></div></div>`;
+ const groupCounts={};galleryItemsAll.forEach(g=>{groupCounts[g.group]=(groupCounts[g.group]||0)+1});
+ const galleryGroups=[['ASCENSIONS','ASCENSIONS'],['SPRITES','SPRITES'],['COSTUMES','COSTUMES'],['NP','NP']].filter(([key])=>groupCounts[key]);
+ const initialGroup=galleryItemsAll[initialItem]?.group||galleryGroups[0]?.[0]||'ASCENSIONS';
+ const galleryTabs=galleryGroups.map(([key,label])=>`<button type="button" class="gallery-group-tab ${key===initialGroup?'active':''}" data-gallery-group="${key}">${label}<span>${groupCounts[key]}</span></button>`).join('');
+ const galleryThumbs=(group)=>galleryItemsAll.map((item,i)=>({item,i})).filter(x=>x.item.group===group).map(x=>`<button type="button" class="art-thumb ${x.i===initialItem?'active':''}" data-art="${x.i}" title="${esc(x.item.label)}"><span class="art-thumb-kind">${x.item.kind==='video'?'VIDEO':''}</span>${x.item.kind==='video'?'<span class="art-thumb-video">▶</span>':`<img src="${x.item.url}" alt="">`}<span class="art-thumb-label">${esc(x.item.label)}</span></button>`).join('');
+ $('#modal').innerHTML=`<div class="detail-layout ${can?'editor':''}"><div class="detail-gallery"><div class="gallery-group-tabs" id="galleryGroupTabs">${galleryTabs}</div><div class="detail-main-art gallery-kind-${galleryItemsAll[initialItem]?.kind||'ascension'}" id="detailMainArt">${galleryItemsAll[initialItem]?.kind==='video'?`<video id="detailMainVideo" controls playsinline preload="metadata" src="${art}" aria-label="${esc(galleryItemsAll[initialItem]?.label||'NP')}"></video>`:(art?`<img id="detailMainImg" src="${art}" alt="${r.name}">`:'<div class="image-fallback">ART<br><small>indisponible</small></div>')}</div><div class="art-strip" id="artStrip">${galleryThumbs(initialGroup)}</div><div class="art-controls"><button id="artPrev" type="button">←</button><span id="artCounter">${groupCounts[initialGroup]?`1 / ${groupCounts[initialGroup]}`:'0 art'}</span><button id="artNext" type="button">→</button></div></div><div class="detail-content">${can&&owned?'<button id="unownServant" class="danger danger-quiet detail-danger-corner" title="Retirer ce Servant de ma collection" aria-label="Retirer ce Servant de ma collection">×</button>':''}<div class="detail-title-row"><div class="detail-class">${classImg(r.class)}</div><div class="detail-title"><h2>${r.name}</h2><div class="detail-rarity">${rarityNum(r.rarity)}★${isWelfare(r)?' · WELFARE':''}</div></div></div><div class="detail-stats detail-stats-v10"><div class="detail-box detail-level-box"><label>NIVEAU</label>${levelHtml}<div class="grail-detail grail-v10">${grailImg()}<strong>${grailCount}</strong>${can?`<input class="micro-edit" id="e-grail" type="number" min="0" max="15" value="${s.grail??0}" title="Nombre de Graals">`:''}</div></div>${statBox('ATK','e-atk',st.atk,`Fou 4★ : +${fmtNum(st.fouAtk)} / +1000`,'e-fouatk',st.fouAtk)}${statBox('HP','e-hp',st.hp,`Fou 4★ : +${fmtNum(st.fouHp)} / +1000`,'e-fouhp',st.fouHp)}<div class="detail-box np-detail-box"><label>NOBLE PHANTASM</label>${npHtml}</div><div class="bond-block"><div class="command-title">BOND</div>${bondDiamonds(s.bond,can)}${can?`<input id="e-bond" type="number" min="0" max="15" value="${s.bond??''}" hidden>`:''}</div><div class="np-types-underbox">${npProfileMarkup}</div></div><div class="command-title">COMMAND CARDS</div><div class="cards-row v10-cards-row">${cards.length?cards.map(c=>`<div class="command-card-item">${cardImg(c)}</div>`).join(''):'<span class="card-data-missing">Données Atlas indisponibles</span>'}</div><div class="levels-title">SKILLS</div><div class="levels-row">${skillHtml}</div><div class="levels-title">APPEND SKILLS</div><div class="levels-row">${appendHtml}</div><div class="modal-footer">${can?`<span class="readonly-note">Édition · ${PLAYER_LABELS[currentPlayer]}</span><div class="modal-footer-actions"><button id="modalCancel">Annuler</button><button class="save" id="saveServant">Enregistrer</button></div>`:`<span class="readonly-note">Lecture seule</span><button id="modalCancel">Fermer</button>`}</div></div></div>`;
  $('#modalCancel').onclick=closeModal;
- let current=idx;function show(i){if(!urls.length)return;current=(i+urls.length)%urls.length;if($('#detailMainImg'))$('#detailMainImg').src=urls[current];$('#artCounter').textContent=`${current+1} / ${urls.length}`;$$('.art-thumb').forEach((b,j)=>b.classList.toggle('active',j===current))}$('#artPrev').onclick=()=>show(current-1);$('#artNext').onclick=()=>show(current+1);$$('.art-thumb').forEach(b=>b.onclick=()=>show(Number(b.dataset.art)));
+ let currentIndex=initialItem,currentGroup=initialGroup;
+ function itemsForGroup(group){return galleryItemsAll.map((item,i)=>({item,i})).filter(x=>x.item.group===group)}
+ function paint(i){
+   const scoped=itemsForGroup(currentGroup);if(!scoped.length)return;
+   const pos=(i+scoped.length)%scoped.length;const entry=scoped[pos];currentIndex=entry.i;
+   const holder=$('#detailMainArt');if(!holder)return;
+   const item=entry.item;
+   holder.className=`detail-main-art gallery-kind-${item.kind}`;
+   if(item.kind==='video')holder.innerHTML=`<video id="detailMainVideo" controls playsinline preload="metadata" src="${item.url}" aria-label="${esc(item.label)}"></video>`;
+   else holder.innerHTML=`<img id="detailMainImg" src="${item.url}" alt="${r.name}">`;
+   const counter=$('#artCounter');if(counter)counter.textContent=`${pos+1} / ${scoped.length}`;
+   $$('.art-thumb').forEach((b,j)=>b.classList.toggle('active',Number(b.dataset.art)===entry.i));
+ }
+ function renderGroup(group,preferredIndex=0){
+   currentGroup=group;const scoped=itemsForGroup(group);if(!scoped.length)return;
+   const local=Math.max(0,scoped.findIndex(x=>x.i===preferredIndex));
+   const entry=scoped[local];currentIndex=entry.i;
+   $('#artStrip').innerHTML=scoped.map(x=>`<button type="button" class="art-thumb ${x.i===entry.i?'active':''}" data-art="${x.i}" title="${esc(x.item.label)}"><span class="art-thumb-kind">${x.item.kind==='video'?'VIDEO':''}</span>${x.item.kind==='video'?'<span class="art-thumb-video">▶</span>':`<img src="${x.item.url}" alt="">`}<span class="art-thumb-label">${esc(x.item.label)}</span></button>`).join('');
+   $('#artCounter').textContent=`${local+1} / ${scoped.length}`;
+   $$('.gallery-group-tab').forEach(b=>b.classList.toggle('active',b.dataset.galleryGroup===group));
+   const item=entry.item;const holder=$('#detailMainArt');holder.className=`detail-main-art gallery-kind-${item.kind}`;
+   if(item.kind==='video')holder.innerHTML=`<video id="detailMainVideo" controls playsinline preload="metadata" src="${item.url}" aria-label="${esc(item.label)}"></video>`;else holder.innerHTML=`<img id="detailMainImg" src="${item.url}" alt="${r.name}">`;
+   $$('.art-thumb').forEach(b=>b.onclick=()=>{const hit=galleryItemsAll.findIndex((x,j)=>j===Number(b.dataset.art));if(hit>=0)paint(itemsForGroup(currentGroup).findIndex(x=>x.i===hit))});
+ }
+ $('#artPrev').onclick=()=>{const scoped=itemsForGroup(currentGroup);if(scoped.length){const pos=scoped.findIndex(x=>x.i===currentIndex);paint(pos-1)}};
+ $('#artNext').onclick=()=>{const scoped=itemsForGroup(currentGroup);if(scoped.length){const pos=scoped.findIndex(x=>x.i===currentIndex);paint(pos+1)}};
+ $$('.gallery-group-tab').forEach(b=>b.onclick=()=>renderGroup(b.dataset.galleryGroup, currentIndex));
+ $$('.art-thumb').forEach(b=>b.onclick=()=>{const scoped=itemsForGroup(currentGroup);const hit=Number(b.dataset.art);const pos=scoped.findIndex(x=>x.i===hit);if(pos>=0)paint(pos)});
  if(can){
    const bondInput=$('#e-bond'), bondCaption=$('#bondCaption');
    let bondHoverTimer=null;
@@ -516,7 +593,7 @@ function openModalBase(r,d,urls,idx,profiles=[]){
    btn.onmouseleave=()=>{clearTimeout(bondHoverTimer);bondHoverTimer=setTimeout(()=>$$('[data-bond]').forEach(x=>x.classList.remove('hovered')),220);};
    btn.onclick=()=>{const value=Number(btn.dataset.bond);bondInput.value=value;$$('[data-bond]').forEach(x=>x.classList.toggle('filled',Number(x.dataset.bond)<=value));if(bondCaption)bondCaption.textContent=`Bond ${value} / 15 · cliquez sur un losange`;};
  });
-$('#saveServant').onclick=()=>saveModal(Number(r.id));if($('#unownServant'))$('#unownServant').onclick=()=>{if(confirm('Retirer ce Servant de ta collection ? Toutes ses statistiques personnelles seront vidées.'))unownServant(Number(r.id));};}
+ $('#saveServant').onclick=()=>saveModal(Number(r.id));if($('#unownServant'))$('#unownServant').onclick=()=>{if(confirm('Retirer ce Servant de ta collection ? Toutes ses statistiques personnelles seront vidées.'))unownServant(Number(r.id));};}
 }
 function idNormalize(id){return Number(id)}
 async function openServant(id){const r=state.roster.find(x=>Number(x.id)===id);if(!r)return;$('#modal').innerHTML='<div class="modal-loading">CHARGEMENT ATLAS…</div>';$('#modalBackdrop').classList.add('open');const d=await atlasDetail(r),urls=imageList(d),profiles=await npProfilesForServant(r,d);openModalBase(r,d,urls,0,profiles);}

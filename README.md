@@ -707,3 +707,18 @@ Les données et règles reprises dans le fichier `/data/gssr.json` s'appuient no
 ### Limitation volontaire du Destiny Order
 
 Le catalogue V200 contient les Servants NA courants mais ne stocke pas, dans `initial-state.json`, une métadonnée historique complète `limited / story-locked / permanent` ni une date de sortie par Servant. Les listes proposées par les sélecteurs Destiny Order sont donc construites à partir du roster 5★ NA courant, par classe, et ne constituent pas une reconstruction juridique des conditions d'éligibilité du jeu à la date historique de chaque bannière.
+
+# V203 — Galerie multi-assets
+
+La V203 étend la galerie du détail d'un Servant sans supprimer les quatre ascensions existantes.
+
+La galerie peut maintenant regrouper, lorsque les données Atlas Academy les fournissent :
+
+- **ASCENSIONS** : les quatre illustrations d'ascension habituelles ;
+- **SPRITES** : les `CharaFigure` du Servant ;
+- **COSTUMES** : pour chaque costume disponible, son splash art et son sprite lorsqu'ils sont exposés par les assets Atlas Academy ;
+- **NP** : les vidéos `.mp4` rattachées aux assets de type Movie/NP disponibles dans la réponse Atlas Academy. Cette catégorie n'est affichée que lorsqu'au moins une vidéo réellement référencée est disponible.
+
+Les catégories sont séparées par des onglets dans la galerie et les boutons de navigation restent limités à la catégorie active. Les vidéos NP ne sont pas lancées automatiquement : elles utilisent le lecteur natif avec contrôles.
+
+Atlas Academy documente notamment les assets `charaGraph` des quatre ascensions, les `charaFigure`, les assets de costumes et le pattern `movie` dans son schéma d'assets. citeturn798630view0turn275395view0turn246558view0
