@@ -57,6 +57,18 @@ Les moyennes des trois Skills suivent le même filtre ALL/GOLD.
 
 ---
 
+## Detail Servant
+
+La galerie du détail d’un Servant affiche :
+
+- les 4 ascensions ;
+- les splasharts des costumes, placés après les 4 ascensions ;
+- les 3 sprites de combat correspondant aux trois premières ascensions ;
+- les sprites de combat des costumes ;
+- une section vidéo NP uniquement lorsqu’une véritable URL vidéo NP est fournie par les données du Servant.
+
+Les sélecteurs de galerie sont placés directement sous l’image principale. Les compteurs ne sont pas affichés sur ces sélecteurs.
+
 ## Servants
 
 Cet onglet constitue le catalogue principal.

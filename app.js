@@ -364,37 +364,64 @@ function costumeRecords(d){
   return list.filter(c=>Number(c?.costumeCollectionNo||0)>=11);
 }
 function costumeIds(c){return [c?.id,c?.battleCharaId,c?.costumeCollectionNo].map(Number).filter(Number.isFinite).map(String)}
+function galleryAssetEntries(block){
+  if(!block||typeof block!=='object')return [];
+  const out=[];
+  for(const [key,value] of Object.entries(block)){
+    const url=galleryHttpUrl(value);
+    if(url)out.push({key:String(key),url});
+  }
+  return out;
+}
+function costumeNameMap(d){
+  const map=new Map();
+  for(const c of costumeRecords(d)){
+    const name=String(c?.name||c?.shortName||'Costume');
+    [c?.id,c?.costumeCollectionNo,c?.battleCharaId].forEach(v=>{const n=Number(v);if(Number.isFinite(n))map.set(String(n),name);});
+  }
+  return map;
+}
 function galleryItems(d,r){
-  const entries=collectGalleryUrls(d?.extraAssets||{});
+  const ea=d?.extraAssets||{};
   const items=[];
-  const asc=Object.entries(d?.extraAssets?.charaGraph?.ascension||{}).sort(([a],[b])=>Number(a)-Number(b)).map(([,v])=>galleryHttpUrl(v)).filter(Boolean).slice(0,4);
-  asc.forEach((url,i)=>items.push({kind:'ascension',url,label:`Ascension ${i+1}`,group:'ASCENSIONS'}));
-  const sprites=galleryUnique(entries.filter(x=>/charaf(id|igure)|figure/.test(x.path)&&!/costume/.test(x.path)&&/\.(png|webp|jpg|jpeg)$/i.test(x.url)));
-  sprites.forEach((x,i)=>items.push({kind:'sprite',url:x.url,label:sprites.length>1?`Sprite ${i+1}`:'Sprite',group:'SPRITES'}));
-  const costumes=costumeRecords(d);
-  costumes.forEach((c,index)=>{
-    const ids=costumeIds(c);
-    const matched=galleryUnique(entries.filter(x=>{
-      if(!/chara(graph|figure)|costume|sprite|figure/.test(x.path))return false;
-      const hay=`${x.url} ${x.path}`.toLowerCase();
-      return ids.some(id=>hay.includes(id.toLowerCase()));
-    }));
-    const graph=matched.filter(x=>/charagraph/.test(x.path)&&/\.(png|webp|jpg|jpeg)$/i.test(x.url));
-    const figure=matched.filter(x=>/charaf(id|igure)|figure|sprite/.test(x.path)&&/\.(png|webp|jpg|jpeg)$/i.test(x.url));
-    const name=String(c?.name||c?.shortName||`Costume ${index+1}`);
-    if(graph.length)graph.forEach((x,j)=>items.push({kind:'costume',url:x.url,label:`${name} · Splash${graph.length>1?` ${j+1}`:''}`,group:'COSTUMES'}));
-    else if(Number(c?.battleCharaId)){
-      const id=Number(c.battleCharaId);
-      items.push({kind:'costume',url:`https://static.atlasacademy.io/NA/CharaGraph/CharaGraphEx/${id}/${id}a.png`,label:`${name} · Splash`,group:'COSTUMES',fallback:true});
-    }
-    if(figure.length)figure.forEach((x,j)=>items.push({kind:'costume',url:x.url,label:`${name} · Sprite${figure.length>1?` ${j+1}`:''}`,group:'COSTUMES'}));
-    else if(Number(c?.battleCharaId)){
-      const id=Number(c.battleCharaId);
-      items.push({kind:'costume',url:`https://static.atlasacademy.io/NA/CharaFigure/${id}/${id}_merged.png`,label:`${name} · Sprite`,group:'COSTUMES',fallback:true});
-    }
-  });
-  const movies=galleryUnique(entries.filter(x=>/\.mp4(?:[?#].*)?$/i.test(x.url)&&/(^|\.)(movie|movies|np|noblephantasm|noble_phantasm|td|treasuredevice)(\.|$)/.test(x.path)));
-  movies.forEach((x,i)=>items.push({kind:'video',url:x.url,label:`NP ${i+1}`,group:'NP'}));
+  const pushMany=(entries,kind,group,makeLabel)=>entries.forEach((x,i)=>items.push({kind,url:x.url,key:x.key,label:makeLabel(x,i),group}));
+
+  // Spirit Origin splash arts: 4 ascensions first, then costume splash arts.
+  const asc=galleryAssetEntries(ea?.charaGraph?.ascension)
+    .sort((a,b)=>Number(a.key)-Number(b.key))
+    .filter(x=>Number(x.key)>=1&&Number(x.key)<=4)
+    .slice(0,4);
+  pushMany(asc,'ascension','ASCENSIONS',(_,i)=>`Ascension ${i+1}`);
+
+  const names=costumeNameMap(d);
+  const costumeGraphs=galleryAssetEntries(ea?.charaGraphEx?.costume||ea?.charaGraph?.costume)
+    .sort((a,b)=>Number(a.key)-Number(b.key));
+  costumeGraphs.forEach((x,i)=>items.push({kind:'costume-splash',url:x.url,key:x.key,label:`${names.get(x.key)||'Costume'} · Splash`,group:'ASCENSIONS'}));
+
+  // Combat sprites: exactly ascensions 1–3; final ascension has no combat sprite here.
+  const combat=galleryAssetEntries(ea?.charaFigure?.ascension)
+    .sort((a,b)=>Number(a.key)-Number(b.key))
+    .filter(x=>[1,2,3].includes(Number(x.key)))
+    .slice(0,3);
+  pushMany(combat,'combat-sprite','SPRITES',(_,i)=>`Ascension ${i+1}`);
+
+  const costumeFigures=galleryAssetEntries(ea?.charaFigure?.costume)
+    .sort((a,b)=>Number(a.key)-Number(b.key));
+  costumeFigures.forEach((x,i)=>items.push({kind:'costume-sprite',url:x.url,key:x.key,label:`${names.get(x.key)||'Costume'} · Sprite`,group:'SPRITES'}));
+
+  // Only show a video tab when the API actually exposes a video URL for the servant/NP.
+  const explicitVideos=[];
+  const collectVideoValue=(value,label='NP')=>{
+    if(typeof value==='string'&&/^https?:\/\//.test(value)&&/\.mp4(?:[?#].*)?$/i.test(value))explicitVideos.push({url:value,label});
+    else if(Array.isArray(value))value.forEach((v,i)=>collectVideoValue(v,`${label} ${i+1}`));
+    else if(value&&typeof value==='object')Object.entries(value).forEach(([k,v])=>collectVideoValue(v,`${label} ${k}`));
+  };
+  // Keep this deliberately narrow: story/movie assets must never be mistaken for NP videos.
+  d?.noblePhantasms?.forEach?.((np,i)=>collectVideoValue(np?.movie,np?.name?String(np.name):`NP ${i+1}`));
+  collectVideoValue(d?.movie,'NP');
+  const videos=galleryUnique(explicitVideos);
+  videos.forEach((x,i)=>items.push({kind:'video',url:x.url,label:x.label||`NP ${i+1}`,group:'NP'}));
+
   return items;
 }
 function imageList(d){return galleryItems(d,null).filter(x=>x.kind==='ascension').map(x=>x.url)}
@@ -551,11 +578,11 @@ function openModalBase(r,d,urls,idx,profiles=[]){
  const skillHtml=(s.skills||[null,null,null]).map((v,i)=>can?`<div class="level-cell"><span>SKILL ${i+1}</span><input id="skill-${i}" type="number" min="1" max="10" value="${v??''}"></div>`:`<div class="level-cell"><span>SKILL ${i+1}</span><div class="level-read">${v??'—'}</div></div>`).join('');
  const appendHtml=(s.appendSkills||[null,null,null,null,null]).map((v,i)=>can?`<div class="level-cell"><span>APPEND ${i+1}</span><input id="append-${i}" type="number" min="0" max="10" value="${v??''}"></div>`:`<div class="level-cell"><span>APPEND ${i+1}</span><div class="level-read">${v??'—'}</div></div>`).join('');
  const groupCounts={};galleryItemsAll.forEach(g=>{groupCounts[g.group]=(groupCounts[g.group]||0)+1});
- const galleryGroups=[['ASCENSIONS','ASCENSIONS'],['SPRITES','SPRITES'],['COSTUMES','COSTUMES'],['NP','NP']].filter(([key])=>groupCounts[key]);
+ const galleryGroups=[['ASCENSIONS','ASCENSIONS'],['SPRITES','SPRITES'],['NP','VIDÉO NP']].filter(([key])=>groupCounts[key]);
  const initialGroup=galleryItemsAll[initialItem]?.group||galleryGroups[0]?.[0]||'ASCENSIONS';
- const galleryTabs=galleryGroups.map(([key,label])=>`<button type="button" class="gallery-group-tab ${key===initialGroup?'active':''}" data-gallery-group="${key}">${label}<span>${groupCounts[key]}</span></button>`).join('');
- const galleryThumbs=(group)=>galleryItemsAll.map((item,i)=>({item,i})).filter(x=>x.item.group===group).map(x=>`<button type="button" class="art-thumb ${x.i===initialItem?'active':''}" data-art="${x.i}" title="${esc(x.item.label)}"><span class="art-thumb-kind">${x.item.kind==='video'?'VIDEO':''}</span>${x.item.kind==='video'?'<span class="art-thumb-video">▶</span>':`<img src="${x.item.url}" alt="">`}<span class="art-thumb-label">${esc(x.item.label)}</span></button>`).join('');
- $('#modal').innerHTML=`<div class="detail-layout ${can?'editor':''}"><div class="detail-gallery"><div class="gallery-group-tabs" id="galleryGroupTabs">${galleryTabs}</div><div class="detail-main-art gallery-kind-${galleryItemsAll[initialItem]?.kind||'ascension'}" id="detailMainArt">${galleryItemsAll[initialItem]?.kind==='video'?`<video id="detailMainVideo" controls playsinline preload="metadata" src="${art}" aria-label="${esc(galleryItemsAll[initialItem]?.label||'NP')}"></video>`:(art?`<img id="detailMainImg" src="${art}" alt="${r.name}">`:'<div class="image-fallback">ART<br><small>indisponible</small></div>')}</div><div class="art-strip" id="artStrip">${galleryThumbs(initialGroup)}</div><div class="art-controls"><button id="artPrev" type="button">←</button><span id="artCounter">${groupCounts[initialGroup]?`1 / ${groupCounts[initialGroup]}`:'0 art'}</span><button id="artNext" type="button">→</button></div></div><div class="detail-content">${can&&owned?'<button id="unownServant" class="danger danger-quiet detail-danger-corner" title="Retirer ce Servant de ma collection" aria-label="Retirer ce Servant de ma collection">×</button>':''}<div class="detail-title-row"><div class="detail-class">${classImg(r.class)}</div><div class="detail-title"><h2>${r.name}</h2><div class="detail-rarity">${rarityNum(r.rarity)}★${isWelfare(r)?' · WELFARE':''}</div></div></div><div class="detail-stats detail-stats-v10"><div class="detail-box detail-level-box"><label>NIVEAU</label>${levelHtml}<div class="grail-detail grail-v10">${grailImg()}<strong>${grailCount}</strong>${can?`<input class="micro-edit" id="e-grail" type="number" min="0" max="15" value="${s.grail??0}" title="Nombre de Graals">`:''}</div></div>${statBox('ATK','e-atk',st.atk,`Fou 4★ : +${fmtNum(st.fouAtk)} / +1000`,'e-fouatk',st.fouAtk)}${statBox('HP','e-hp',st.hp,`Fou 4★ : +${fmtNum(st.fouHp)} / +1000`,'e-fouhp',st.fouHp)}<div class="detail-box np-detail-box"><label>NOBLE PHANTASM</label>${npHtml}</div><div class="bond-block"><div class="command-title">BOND</div>${bondDiamonds(s.bond,can)}${can?`<input id="e-bond" type="number" min="0" max="15" value="${s.bond??''}" hidden>`:''}</div><div class="np-types-underbox">${npProfileMarkup}</div></div><div class="command-title">COMMAND CARDS</div><div class="cards-row v10-cards-row">${cards.length?cards.map(c=>`<div class="command-card-item">${cardImg(c)}</div>`).join(''):'<span class="card-data-missing">Données Atlas indisponibles</span>'}</div><div class="levels-title">SKILLS</div><div class="levels-row">${skillHtml}</div><div class="levels-title">APPEND SKILLS</div><div class="levels-row">${appendHtml}</div><div class="modal-footer">${can?`<span class="readonly-note">Édition · ${PLAYER_LABELS[currentPlayer]}</span><div class="modal-footer-actions"><button id="modalCancel">Annuler</button><button class="save" id="saveServant">Enregistrer</button></div>`:`<span class="readonly-note">Lecture seule</span><button id="modalCancel">Fermer</button>`}</div></div></div>`;
+ const galleryTabs=galleryGroups.map(([key,label])=>`<button type="button" class="gallery-group-tab ${key===initialGroup?'active':''}" data-gallery-group="${key}">${label}</button>`).join('');
+ const galleryThumbs=(group)=>galleryItemsAll.map((item,i)=>({item,i})).filter(x=>x.item.group===group).map(x=>`<button type="button" class="art-thumb ${x.i===initialItem?'active':''}" data-art="${x.i}" title="${esc(x.item.label)}">${x.item.kind==='video'?'<span class="art-thumb-video">▶</span>':`<img src="${x.item.url}" alt="" loading="lazy">`}</button>`).join('');
+ $('#modal').innerHTML=`<div class="detail-layout ${can?'editor':''}"><div class="detail-gallery"><div class="detail-main-art gallery-kind-${galleryItemsAll[initialItem]?.kind||'ascension'}" id="detailMainArt">${galleryItemsAll[initialItem]?.kind==='video'?`<video id="detailMainVideo" controls playsinline preload="metadata" src="${art}" aria-label="${esc(galleryItemsAll[initialItem]?.label||'NP')}"></video>`:(art?`<img id="detailMainImg" src="${art}" alt="${r.name}">`:'<div class="image-fallback">ART<br><small>indisponible</small></div>')}</div><div class="gallery-group-tabs" id="galleryGroupTabs">${galleryTabs}</div><div class="art-strip" id="artStrip">${galleryThumbs(initialGroup)}</div><div class="art-controls"><button id="artPrev" type="button">←</button><span id="artCounter">${groupCounts[initialGroup]?`1 / ${groupCounts[initialGroup]}`:'0 art'}</span><button id="artNext" type="button">→</button></div></div><div class="detail-content">${can&&owned?'<button id="unownServant" class="danger danger-quiet detail-danger-corner" title="Retirer ce Servant de ma collection" aria-label="Retirer ce Servant de ma collection">×</button>':''}<div class="detail-title-row"><div class="detail-class">${classImg(r.class)}</div><div class="detail-title"><h2>${r.name}</h2><div class="detail-rarity">${rarityNum(r.rarity)}★${isWelfare(r)?' · WELFARE':''}</div></div></div><div class="detail-stats detail-stats-v10"><div class="detail-box detail-level-box"><label>NIVEAU</label>${levelHtml}<div class="grail-detail grail-v10">${grailImg()}<strong>${grailCount}</strong>${can?`<input class="micro-edit" id="e-grail" type="number" min="0" max="15" value="${s.grail??0}" title="Nombre de Graals">`:''}</div></div>${statBox('ATK','e-atk',st.atk,`Fou 4★ : +${fmtNum(st.fouAtk)} / +1000`,'e-fouatk',st.fouAtk)}${statBox('HP','e-hp',st.hp,`Fou 4★ : +${fmtNum(st.fouHp)} / +1000`,'e-fouhp',st.fouHp)}<div class="detail-box np-detail-box"><label>NOBLE PHANTASM</label>${npHtml}</div><div class="bond-block"><div class="command-title">BOND</div>${bondDiamonds(s.bond,can)}${can?`<input id="e-bond" type="number" min="0" max="15" value="${s.bond??''}" hidden>`:''}</div><div class="np-types-underbox">${npProfileMarkup}</div></div><div class="command-title">COMMAND CARDS</div><div class="cards-row v10-cards-row">${cards.length?cards.map(c=>`<div class="command-card-item">${cardImg(c)}</div>`).join(''):'<span class="card-data-missing">Données Atlas indisponibles</span>'}</div><div class="levels-title">SKILLS</div><div class="levels-row">${skillHtml}</div><div class="levels-title">APPEND SKILLS</div><div class="levels-row">${appendHtml}</div><div class="modal-footer">${can?`<span class="readonly-note">Édition · ${PLAYER_LABELS[currentPlayer]}</span><div class="modal-footer-actions"><button id="modalCancel">Annuler</button><button class="save" id="saveServant">Enregistrer</button></div>`:`<span class="readonly-note">Lecture seule</span><button id="modalCancel">Fermer</button>`}</div></div></div>`;
  $('#modalCancel').onclick=closeModal;
  let currentIndex=initialItem,currentGroup=initialGroup;
  function itemsForGroup(group){return galleryItemsAll.map((item,i)=>({item,i})).filter(x=>x.item.group===group)}
@@ -574,7 +601,7 @@ function openModalBase(r,d,urls,idx,profiles=[]){
    currentGroup=group;const scoped=itemsForGroup(group);if(!scoped.length)return;
    const local=Math.max(0,scoped.findIndex(x=>x.i===preferredIndex));
    const entry=scoped[local];currentIndex=entry.i;
-   $('#artStrip').innerHTML=scoped.map(x=>`<button type="button" class="art-thumb ${x.i===entry.i?'active':''}" data-art="${x.i}" title="${esc(x.item.label)}"><span class="art-thumb-kind">${x.item.kind==='video'?'VIDEO':''}</span>${x.item.kind==='video'?'<span class="art-thumb-video">▶</span>':`<img src="${x.item.url}" alt="">`}<span class="art-thumb-label">${esc(x.item.label)}</span></button>`).join('');
+   $('#artStrip').innerHTML=scoped.map(x=>`<button type="button" class="art-thumb ${x.i===entry.i?'active':''}" data-art="${x.i}" title="${esc(x.item.label)}">${x.item.kind==='video'?'<span class="art-thumb-video">▶</span>':`<img src="${x.item.url}" alt="" loading="lazy">`}</button>`).join('');
    $('#artCounter').textContent=`${local+1} / ${scoped.length}`;
    $$('.gallery-group-tab').forEach(b=>b.classList.toggle('active',b.dataset.galleryGroup===group));
    const item=entry.item;const holder=$('#detailMainArt');holder.className=`detail-main-art gallery-kind-${item.kind}`;
