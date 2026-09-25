@@ -149,7 +149,7 @@
 
 
 /* V17 */
-.skills-head-actions{display:flex;align-items:center;gap:10px}.scope-switch{display:flex;gap:3px;padding:3px;border:1px solid #dce3ea;background:#f7f9fb;border-radius:999px}.scope-switch button{border:0;background:transparent;color:#7a8794;padding:6px 10px;border-radius:999px;font:800 9px monospace;letter-spacing:.08em;cursor:pointer}.scope-switch button.active{background:#25374a;color:#fff;box-shadow:0 3px 10px rgba(30,45,60,.12)}.scope-caption{display:block;font:700 8px monospace;letter-spacing:.1em;color:#a18850;margin-top:3px}.person-label{display:block;color:#8995a2;font-size:9px;letter-spacing:.08em}.account-actions{align-items:center}.account-action-group{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.person-meta{grid-template-columns:repeat(3,1fr)}.duel-card.duel-missing{filter:saturate(.4)}.duel-hero{position:relative}.duel-hero .missing-ribbon{top:10px;left:10px}.append-squares{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:8px}.append-squares .square{font-size:10px}.xp-level-card.target .xp-input{font-variant-numeric:tabular-nums}@media(max-width:900px){.person-meta{grid-template-columns:repeat(2,1fr)}}@media(max-width:580px){.skills-head-actions{flex-direction:column;align-items:flex-end}.append-squares{grid-template-columns:repeat(3,1fr)}}
+.skills-head-actions{display:flex;align-items:center;gap:10px}.scope-switch{display:flex;gap:3px;padding:3px;border:1px solid #dce3ea;background:#f7f9fb;border-radius:999px}.scope-switch button{border:0;background:transparent;color:#7a8794;padding:6px 10px;border-radius:999px;font:800 9px monospace;letter-spacing:.08em;cursor:pointer}.scope-switch button.active{background:#25374a;color:#fff;box-shadow:0 3px 10px rgba(30,45,60,.12)}.scope-caption{display:block;font:700 8px monospace;letter-spacing:.1em;color:#a18850;margin-top:3px}.person-label{display:block;color:#8995a2;font-size:9px;letter-spacing:.08em}.account-actions{align-items:center}.account-action-group{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.person-meta{grid-template-columns:repeat(3,1fr)}.duel-card.duel-missing{filter:saturate(.4)}.duel-hero{position:relative}.duel-hero .missing-ribbon{top:10px;left:10px}.append-squares{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:8px}.append-squares .square{font-size:10px}.xp-level-card.target .xp-input{font-variant-numeric:tabular-nums}@media(max-width:900px){.person-meta{grid-template-columns:repeat(2,1fr)}}@media(max-width:580px){.skills-head-actions,.bond-head-actions{flex-direction:column;align-items:flex-end}.append-squares{grid-template-columns:repeat(3,1fr)}}
 
 
 /* V18 — clean background, stable navigation, clearer comparison and XP planner */
@@ -498,19 +498,19 @@ main.main{position:relative;overflow:visible;isolation:isolate}
 /* V108 — NP types share the second detail row with Bond; 3–4 NP profiles per line. */
 
 /* V200 — Overview advanced statistics + GSSR archive */
-.overview-v200-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(300px,.7fr);gap:18px;margin-top:18px}
+.overview-v200-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(360px,.85fr);gap:18px;margin-top:18px}
 .rarity-stats-table{width:100%;border-collapse:collapse;margin-top:18px;font-size:11px}
 .overview-table-wrap{overflow:auto}
 .rarity-stats-table th{padding:9px 10px;text-align:right;color:#8a97a6;font:800 8px monospace;letter-spacing:.12em;border-bottom:1px solid var(--line);white-space:nowrap}
 .rarity-stats-table th:first-child{text-align:left}
 .rarity-stats-table td{padding:12px 10px;text-align:right;border-bottom:1px solid #edf1f4;white-space:nowrap}
-.rarity-stats-table td:first-child{text-align:left;min-width:140px}
+.rarity-stats-table td:first-child{text-align:left;width:112px;min-width:112px}
 .rarity-stats-table td strong{display:block;font:700 12px 'Space Grotesk';color:var(--ink)}
 .rarity-stats-table td span{display:block;margin-top:3px;color:#8b97a5;font-size:9px}
 .rarity-stats-table tbody tr:last-child td{border-bottom:0}
 .rarity-stats-table tbody tr:hover td{background:#fafbfd}
 .v200-note{margin:12px 2px 0;color:#8a96a4;font-size:9px;line-height:1.55}
-.bond-distribution-bars{margin-top:18px;display:grid;gap:6px}
+.bond-head-actions{display:flex;align-items:center;gap:10px}.bond-distribution-bars{margin-top:18px;display:grid;gap:6px}
 .bond-row-v200{display:grid;grid-template-columns:24px 1fr 30px;align-items:center;gap:8px}
 .bond-level-v200{font:800 9px monospace;color:#687687;text-align:right}
 .bond-track-v200{height:12px;background:#edf1f5;border-radius:999px;overflow:hidden}
@@ -574,7 +574,7 @@ main.main{position:relative;overflow:visible;isolation:isolate}
   .overview-v200-grid,.pokedex-panel,.gssr-detail-panel,.gssr-timeline-panel{border-radius:14px}
   .rarity-stats-table{font-size:10px}
   .rarity-stats-table th,.rarity-stats-table td{padding:9px 7px}
-  .rarity-stats-table td:first-child{min-width:118px}
+  .rarity-stats-table td:first-child{width:100px;min-width:100px}
   .pokedex-grid-v200{grid-template-columns:1fr}
   .gssr-event-head{flex-direction:column;gap:10px}
   .gssr-event-meta{text-align:left;display:flex;align-items:baseline;gap:8px}

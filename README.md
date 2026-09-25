@@ -664,9 +664,9 @@ L'objectif est de conserver une **saisie simple des statistiques** tout en offra
 
 ---
 
-# V200 — Overview avancée + GSSR
+# V201 — Overview avancée + GSSR
 
-La V200 ajoute trois blocs importants à l'Overview et un nouvel onglet **GSSR**.
+La V201 affine l'Overview avancée de la V200 et conserve l'onglet **GSSR**.
 
 ## Nouvelles statistiques Overview
 
@@ -688,9 +688,9 @@ Pour chaque catégorie, l'Overview calcule :
 
 Les Welfare sont comptés dans leur propre catégorie et ne doublonnent pas les 4★.
 
-Une seconde visualisation affiche la **distribution du Bond de 1 à 15**. Pour cette statistique, un Servant possédé dont le Bond est `NULL`, vide ou `0` est regroupé au niveau 1, conformément à la règle de l'interface.
+Une seconde visualisation affiche la **distribution du Bond de 1 à 15**, avec le niveau 15 en haut et le niveau 1 en bas. Pour cette statistique, un Servant possédé dont le Bond est `NULL`, vide, `0` ou `1` est regroupé au niveau 1. Le bloc possède désormais un filtre **ALL / GOLD** identique à celui des Skills et affiche la moyenne du Bond sur 15.
 
-Le bloc **Pokédex** calcule également le pourcentage de Servants possédés dans chacune des classes présentes dans le catalogue NA.
+Le bloc **Pokédex** ne prend en compte que les Servants **4★, 5★ et Welfare 4★/5★**. Le pourcentage de chaque classe est directement appliqué à la barre bleue, donc une collection à 66 % occupe 66 % de la largeur disponible.
 
 ## Onglet GSSR
 
