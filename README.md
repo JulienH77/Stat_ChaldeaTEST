@@ -736,7 +736,10 @@ Les catégories sont séparées par des onglets dans la galerie et les boutons d
 Atlas Academy documente notamment les assets `charaGraph` des quatre ascensions, les `charaFigure`, les assets de costumes et le pattern `movie` dans son schéma d'assets. citeturn798630view0turn275395view0turn246558view0
 
 
-### V205
+### V206
 - Gallery: keep the V204 gallery buttons unchanged.
 - Remove the NP video tab completely.
-- Replace the previous story/dialogue `charaFigure` assets in `SPRITES` with Atlas Academy `extraAssets.spriteModel` assets, using ascensions 1–3 and one asset per costume.
+- `SPRITES` now targets the actual in-battle standing sprites: ascensions 1–3 only, plus one sprite per costume.
+- Atlas Academy remains the source of truth for the Servant and costume records, while the displayed PNGs use the extracted FGO in-battle sprite naming convention from Fandom (`Sxxx Sprite VerN Stage1/2/3` and `CostumeN`).
+- The gallery tries current extracted sprite versions first (Ver3, then Ver2/Ver1, with Ver4/Ver5 as fallback) so a missing file does not leave a broken thumbnail.
+- `spriteModel` is intentionally not inserted directly into `<img>`: Atlas exposes it as a Unity AssetBundle/manifest rather than a web-ready PNG, and FateViewer loads that bundle as a Unity `AssetBundle` and instantiates its `chr` GameObject.

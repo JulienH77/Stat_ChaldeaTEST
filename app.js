@@ -29,6 +29,8 @@ const state=structuredClone(initialState);
 state.roster=sanitizeRoster(state.roster);
 let currentPlayer='julien',currentView='overview',rosterMode='cards',sortDir='desc',compareFocusId=284,skillScope='gold',bondScope='gold',showMissing=true,xpTargetClass='',supportMode='normal',showNpOverlay=false;
 let cloud=null,session=null,currentAuth=null,cloudEnabled=false,cloudAuthError='',atlasById=new Map(),atlasFull=new Map(),atlasVariantsByName=new Map(),variantDetailCache=new Map(),renderToken=0,showdownRenderedId=null,showdownRenderToken=0,supportPlayer='julien';
+const galleryFallbackMap=new Map();
+let galleryFallbackSeq=0;
 const GSSR_LOCAL_KEY='chaldea-v200-gssr-choices';
 let gssrEventId='ann-2026',gssrChoices={};
 const selectedClasses=new Set(),selectedRarities=new Set(['5','4','welfare']),selectedNpTypes=new Set();
@@ -381,6 +383,49 @@ function costumeNameMap(d){
   }
   return map;
 }
+function fandomSpriteUrl(filename){return `https://fategrandorder.fandom.com/wiki/Special:Redirect/file/${encodeURIComponent(filename)}`;}
+function battleSpriteCandidates(collectionNo,kind,number){
+  const code=`S${String(collectionNo).padStart(3,'0')}`;
+  const versions=[3,2,1,4,5];
+  const label=kind==='stage'?`Stage${number}`:`Costume${number}`;
+  return versions.map(v=>fandomSpriteUrl(`${code} Sprite Ver${v} ${label}.png`));
+}
+function battleSpriteEntries(d,r){
+  const collectionNo=Number(r?.id||d?.collectionNo);
+  if(!Number.isFinite(collectionNo)||collectionNo<=0)return [];
+  const items=[];
+  // FGO's visible in-battle character uses one sprite per ascension for stages 1–3.
+  for(let stage=1;stage<=3;stage++){
+    const urls=battleSpriteCandidates(collectionNo,'stage',stage);
+    items.push({kind:'combat-sprite',url:urls[0],fallbacks:urls.slice(1),key:String(stage),label:`Ascension ${stage}`,group:'SPRITES'});
+  }
+  // Atlas supplies the authoritative costume list; Fandom's extracted in-battle files use Costume1, Costume2…
+  const costumes=costumeRecords(d).sort((a,b)=>Number(a?.costumeCollectionNo||a?.id||0)-Number(b?.costumeCollectionNo||b?.id||0));
+  costumes.forEach((c,i)=>{
+    const n=i+1, urls=battleSpriteCandidates(collectionNo,'costume',n);
+    items.push({kind:'costume-sprite',url:urls[0],fallbacks:urls.slice(1),key:String(c?.costumeCollectionNo||c?.id||n),label:`${c?.name||c?.shortName||`Costume ${n}`} · Sprite`,group:'SPRITES'});
+  });
+  return items;
+}
+function galleryImgHtml(item,alt='',loading='lazy'){
+  const urls=[item?.url,...(Array.isArray(item?.fallbacks)?item.fallbacks:[])].filter(Boolean);
+  if(!urls.length)return '';
+  const key=`gallery-${++galleryFallbackSeq}`;
+  galleryFallbackMap.set(key,urls.slice(1));
+  return `<img src="${esc(urls[0])}" alt="${esc(alt)}" loading="${loading}" data-gallery-fallback="${key}">`;
+}
+function bindGalleryImageFallbacks(root=document){
+  root.querySelectorAll?.('img[data-gallery-fallback]').forEach(img=>{
+    if(img.dataset.galleryFallbackBound==='1')return;
+    img.dataset.galleryFallbackBound='1';
+    img.addEventListener('error',()=>{
+      const key=img.dataset.galleryFallback, list=galleryFallbackMap.get(key)||[];
+      const next=list.shift();
+      if(next){img.src=next;return;}
+      galleryFallbackMap.delete(key);
+    });
+  });
+}
 function galleryItems(d,r){
   const ea=d?.extraAssets||{};
   const items=[];
@@ -396,24 +441,12 @@ function galleryItems(d,r){
   const names=costumeNameMap(d);
   const costumeGraphs=galleryAssetEntries(ea?.charaGraphEx?.costume||ea?.charaGraph?.costume)
     .sort((a,b)=>Number(a.key)-Number(b.key));
-  costumeGraphs.forEach((x,i)=>items.push({kind:'costume-splash',url:x.url,key:x.key,label:`${names.get(x.key)||'Costume'} · Splash`,group:'ASCENSIONS'}));
+  costumeGraphs.forEach((x)=>items.push({kind:'costume-splash',url:x.url,key:x.key,label:`${names.get(x.key)||'Costume'} · Splash`,group:'ASCENSIONS'}));
 
-  // Battle sprites: use Atlas Academy\'s dedicated `spriteModel` assets.
-  // `charaFigure` is the story/dialogue figure sheet (heads/expressions), not the battle sprite.
-  // We intentionally expose only ascensions 1–3; FGO has no separate battle sprite slot for final ascension here.
-  const combat=galleryAssetEntries(ea?.spriteModel?.ascension)
-    .sort((a,b)=>Number(a.key)-Number(b.key))
-    .filter(x=>[1,2,3].includes(Number(x.key)))
-    .slice(0,3);
-  pushMany(combat,'combat-sprite','SPRITES',(_,i)=>`Ascension ${i+1}`);
-
-  // One battle sprite per unlocked costume.
-  const costumeSprites=galleryAssetEntries(ea?.spriteModel?.costume)
-    .sort((a,b)=>Number(a.key)-Number(b.key));
-  costumeSprites.forEach((x)=>items.push({kind:'costume-sprite',url:x.url,key:x.key,label:`${names.get(x.key)||'Costume'} · Sprite`,group:'SPRITES'}));
-
-  // NP videos intentionally removed: Atlas' generic Movie assets are not reliable enough to
-  // distinguish the actual NP video(s), so the gallery should not expose a misleading video tab.
+  // Atlas Academy's spriteModel points to a Unity AssetBundle/manifest, not to a web-ready PNG.
+  // For the static gallery we display the extracted in-battle PNGs from Fandom, while Atlas remains
+  // the source of truth for the Servant/costume list.
+  items.push(...battleSpriteEntries(d,r));
   return items;
 }
 function imageList(d){return galleryItems(d,null).filter(x=>x.kind==='ascension').map(x=>x.url)}
@@ -555,9 +588,14 @@ function bondDiamonds(bond,editable=false){
  return `<div class="bond-diamonds ${editable?'bond-editable':''}" id="bondDiamonds"><div class="bond-row bond-row-1">${row(0,10)}</div><div class="bond-row bond-row-2">${row(10,5)}</div></div><small class="bond-caption" id="bondCaption">Bond ${n||'—'} / 15${editable?' · cliquez sur un losange':''}</small>`;
 }
 function statBox(label,id,value,sub,editId,editVal,min='',max=''){return `<div class="detail-box"><label>${label}</label>${currentCanEdit()?`<input class="editable-input" id="${id}" type="number" value="${value??''}" ${min!==''?`min="${min}"`:''} ${max!==''?`max="${max}"`:''}>`:`<span class="detail-value"><strong>${value??'—'}</strong></span>`}${sub?`<div class="sub-stat">${sub}</div>`:''}${editId&&currentCanEdit()?`<input class="micro-edit" id="${editId}" type="number" min="0" max="1000" value="${editVal??0}" title="Fou 4★">`:''}</div>`}
-function openModalBase(r,d,urls,idx,profiles=[]){
+function galleryItemsWithBattleItems(d,r,battleItems){
+  const all=galleryItems(d,r);
+  const withoutSprites=all.filter(x=>x.group!=='SPRITES');
+  return [...withoutSprites,...(Array.isArray(battleItems)?battleItems:[])];
+}
+function openModalBase(r,d,urls,idx,profiles=[],battleItems=null){
  const s=stats(currentPlayer,r.id),st=currentStats(d,r,s),can=currentCanEdit(),owned=isOwned(currentPlayer,r),cards=commandCards(d,r);
- const gallery=galleryItems(d,r),fallbackAsc=urls.length?urls.map((url,i)=>({kind:'ascension',url,label:`Ascension ${i+1}`,group:'ASCENSIONS'})):[];
+ const gallery=battleItems ? galleryItemsWithBattleItems(d,r,battleItems) : galleryItems(d,r),fallbackAsc=urls.length?urls.map((url,i)=>({kind:'ascension',url,label:`Ascension ${i+1}`,group:'ASCENSIONS'})):[];
  const galleryItemsAll=gallery.length?gallery:fallbackAsc;
  const initialItem=Math.max(0,Math.min(galleryItemsAll.length-1,Number(idx)||0));
  const art=galleryItemsAll[initialItem]?.url||guessImage(r.atlasId)||'';
@@ -573,8 +611,9 @@ function openModalBase(r,d,urls,idx,profiles=[]){
  const galleryGroups=[['ASCENSIONS','ASCENSIONS'],['SPRITES','SPRITES']].filter(([key])=>groupCounts[key]);
  const initialGroup=galleryItemsAll[initialItem]?.group||galleryGroups[0]?.[0]||'ASCENSIONS';
  const galleryTabs=galleryGroups.map(([key,label])=>`<button type="button" class="gallery-group-tab ${key===initialGroup?'active':''}" data-gallery-group="${key}">${label}</button>`).join('');
- const galleryThumbs=(group)=>galleryItemsAll.map((item,i)=>({item,i})).filter(x=>x.item.group===group).map(x=>`<button type="button" class="art-thumb ${x.i===initialItem?'active':''}" data-art="${x.i}" title="${esc(x.item.label)}">${x.item.kind==='video'?'<span class="art-thumb-video">▶</span>':`<img src="${x.item.url}" alt="" loading="lazy">`}</button>`).join('');
- $('#modal').innerHTML=`<div class="detail-layout ${can?'editor':''}"><div class="detail-gallery"><div class="detail-main-art gallery-kind-${galleryItemsAll[initialItem]?.kind||'ascension'}" id="detailMainArt">${galleryItemsAll[initialItem]?.kind==='video'?`<video id="detailMainVideo" controls playsinline preload="metadata" src="${art}" aria-label="${esc(galleryItemsAll[initialItem]?.label||'NP')}"></video>`:(art?`<img id="detailMainImg" src="${art}" alt="${r.name}">`:'<div class="image-fallback">ART<br><small>indisponible</small></div>')}</div><div class="gallery-group-tabs" id="galleryGroupTabs">${galleryTabs}</div><div class="art-strip" id="artStrip">${galleryThumbs(initialGroup)}</div><div class="art-controls"><button id="artPrev" type="button">←</button><span id="artCounter">${groupCounts[initialGroup]?`1 / ${groupCounts[initialGroup]}`:'0 art'}</span><button id="artNext" type="button">→</button></div></div><div class="detail-content">${can&&owned?'<button id="unownServant" class="danger danger-quiet detail-danger-corner" title="Retirer ce Servant de ma collection" aria-label="Retirer ce Servant de ma collection">×</button>':''}<div class="detail-title-row"><div class="detail-class">${classImg(r.class)}</div><div class="detail-title"><h2>${r.name}</h2><div class="detail-rarity">${rarityNum(r.rarity)}★${isWelfare(r)?' · WELFARE':''}</div></div></div><div class="detail-stats detail-stats-v10"><div class="detail-box detail-level-box"><label>NIVEAU</label>${levelHtml}<div class="grail-detail grail-v10">${grailImg()}<strong>${grailCount}</strong>${can?`<input class="micro-edit" id="e-grail" type="number" min="0" max="15" value="${s.grail??0}" title="Nombre de Graals">`:''}</div></div>${statBox('ATK','e-atk',st.atk,`Fou 4★ : +${fmtNum(st.fouAtk)} / +1000`,'e-fouatk',st.fouAtk)}${statBox('HP','e-hp',st.hp,`Fou 4★ : +${fmtNum(st.fouHp)} / +1000`,'e-fouhp',st.fouHp)}<div class="detail-box np-detail-box"><label>NOBLE PHANTASM</label>${npHtml}</div><div class="bond-block"><div class="command-title">BOND</div>${bondDiamonds(s.bond,can)}${can?`<input id="e-bond" type="number" min="0" max="15" value="${s.bond??''}" hidden>`:''}</div><div class="np-types-underbox">${npProfileMarkup}</div></div><div class="command-title">COMMAND CARDS</div><div class="cards-row v10-cards-row">${cards.length?cards.map(c=>`<div class="command-card-item">${cardImg(c)}</div>`).join(''):'<span class="card-data-missing">Données Atlas indisponibles</span>'}</div><div class="levels-title">SKILLS</div><div class="levels-row">${skillHtml}</div><div class="levels-title">APPEND SKILLS</div><div class="levels-row">${appendHtml}</div><div class="modal-footer">${can?`<span class="readonly-note">Édition · ${PLAYER_LABELS[currentPlayer]}</span><div class="modal-footer-actions"><button id="modalCancel">Annuler</button><button class="save" id="saveServant">Enregistrer</button></div>`:`<span class="readonly-note">Lecture seule</span><button id="modalCancel">Fermer</button>`}</div></div></div>`;
+ const galleryThumbs=(group)=>galleryItemsAll.map((item,i)=>({item,i})).filter(x=>x.item.group===group).map(x=>`<button type="button" class="art-thumb ${x.i===initialItem?'active':''}" data-art="${x.i}" title="${esc(x.item.label)}">${x.item.kind==='video'?'<span class="art-thumb-video">▶</span>':galleryImgHtml(x.item,'')}</button>`).join('');
+ $('#modal').innerHTML=`<div class="detail-layout ${can?'editor':''}"><div class="detail-gallery"><div class="detail-main-art gallery-kind-${galleryItemsAll[initialItem]?.kind||'ascension'}" id="detailMainArt">${galleryItemsAll[initialItem]?.kind==='video'?`<video id="detailMainVideo" controls playsinline preload="metadata" src="${art}" aria-label="${esc(galleryItemsAll[initialItem]?.label||'NP')}"></video>`:(art?galleryImgHtml(galleryItemsAll[initialItem],r.name,'eager').replace('<img ', '<img id=\"detailMainImg\" '):'<div class="image-fallback">ART<br><small>indisponible</small></div>')}</div><div class="gallery-group-tabs" id="galleryGroupTabs">${galleryTabs}</div><div class="art-strip" id="artStrip">${galleryThumbs(initialGroup)}</div><div class="art-controls"><button id="artPrev" type="button">←</button><span id="artCounter">${groupCounts[initialGroup]?`1 / ${groupCounts[initialGroup]}`:'0 art'}</span><button id="artNext" type="button">→</button></div></div><div class="detail-content">${can&&owned?'<button id="unownServant" class="danger danger-quiet detail-danger-corner" title="Retirer ce Servant de ma collection" aria-label="Retirer ce Servant de ma collection">×</button>':''}<div class="detail-title-row"><div class="detail-class">${classImg(r.class)}</div><div class="detail-title"><h2>${r.name}</h2><div class="detail-rarity">${rarityNum(r.rarity)}★${isWelfare(r)?' · WELFARE':''}</div></div></div><div class="detail-stats detail-stats-v10"><div class="detail-box detail-level-box"><label>NIVEAU</label>${levelHtml}<div class="grail-detail grail-v10">${grailImg()}<strong>${grailCount}</strong>${can?`<input class="micro-edit" id="e-grail" type="number" min="0" max="15" value="${s.grail??0}" title="Nombre de Graals">`:''}</div></div>${statBox('ATK','e-atk',st.atk,`Fou 4★ : +${fmtNum(st.fouAtk)} / +1000`,'e-fouatk',st.fouAtk)}${statBox('HP','e-hp',st.hp,`Fou 4★ : +${fmtNum(st.fouHp)} / +1000`,'e-fouhp',st.fouHp)}<div class="detail-box np-detail-box"><label>NOBLE PHANTASM</label>${npHtml}</div><div class="bond-block"><div class="command-title">BOND</div>${bondDiamonds(s.bond,can)}${can?`<input id="e-bond" type="number" min="0" max="15" value="${s.bond??''}" hidden>`:''}</div><div class="np-types-underbox">${npProfileMarkup}</div></div><div class="command-title">COMMAND CARDS</div><div class="cards-row v10-cards-row">${cards.length?cards.map(c=>`<div class="command-card-item">${cardImg(c)}</div>`).join(''):'<span class="card-data-missing">Données Atlas indisponibles</span>'}</div><div class="levels-title">SKILLS</div><div class="levels-row">${skillHtml}</div><div class="levels-title">APPEND SKILLS</div><div class="levels-row">${appendHtml}</div><div class="modal-footer">${can?`<span class="readonly-note">Édition · ${PLAYER_LABELS[currentPlayer]}</span><div class="modal-footer-actions"><button id="modalCancel">Annuler</button><button class="save" id="saveServant">Enregistrer</button></div>`:`<span class="readonly-note">Lecture seule</span><button id="modalCancel">Fermer</button>`}</div></div></div>`;
+ bindGalleryImageFallbacks($('#modal'));
  $('#modalCancel').onclick=closeModal;
  let currentIndex=initialItem,currentGroup=initialGroup;
  function itemsForGroup(group){return galleryItemsAll.map((item,i)=>({item,i})).filter(x=>x.item.group===group)}
@@ -585,7 +624,8 @@ function openModalBase(r,d,urls,idx,profiles=[]){
    const item=entry.item;
    holder.className=`detail-main-art gallery-kind-${item.kind}`;
    if(item.kind==='video')holder.innerHTML=`<video id="detailMainVideo" controls playsinline preload="metadata" src="${item.url}" aria-label="${esc(item.label)}"></video>`;
-   else holder.innerHTML=`<img id="detailMainImg" src="${item.url}" alt="${r.name}">`;
+   else holder.innerHTML=galleryImgHtml(item,r.name,'eager').replace('<img ', '<img id=\"detailMainImg\" ');
+   bindGalleryImageFallbacks($('#detailMainArt'));
    const counter=$('#artCounter');if(counter)counter.textContent=`${pos+1} / ${scoped.length}`;
    $$('.art-thumb').forEach((b,j)=>b.classList.toggle('active',Number(b.dataset.art)===entry.i));
  }
@@ -593,11 +633,13 @@ function openModalBase(r,d,urls,idx,profiles=[]){
    currentGroup=group;const scoped=itemsForGroup(group);if(!scoped.length)return;
    const local=Math.max(0,scoped.findIndex(x=>x.i===preferredIndex));
    const entry=scoped[local];currentIndex=entry.i;
-   $('#artStrip').innerHTML=scoped.map(x=>`<button type="button" class="art-thumb ${x.i===entry.i?'active':''}" data-art="${x.i}" title="${esc(x.item.label)}">${x.item.kind==='video'?'<span class="art-thumb-video">▶</span>':`<img src="${x.item.url}" alt="" loading="lazy">`}</button>`).join('');
+   $('#artStrip').innerHTML=scoped.map(x=>`<button type="button" class="art-thumb ${x.i===entry.i?'active':''}" data-art="${x.i}" title="${esc(x.item.label)}">${x.item.kind==='video'?'<span class="art-thumb-video">▶</span>':galleryImgHtml(x.item,'')}</button>`).join('');
+   bindGalleryImageFallbacks($('#artStrip'));
    $('#artCounter').textContent=`${local+1} / ${scoped.length}`;
    $$('.gallery-group-tab').forEach(b=>b.classList.toggle('active',b.dataset.galleryGroup===group));
    const item=entry.item;const holder=$('#detailMainArt');holder.className=`detail-main-art gallery-kind-${item.kind}`;
-   if(item.kind==='video')holder.innerHTML=`<video id="detailMainVideo" controls playsinline preload="metadata" src="${item.url}" aria-label="${esc(item.label)}"></video>`;else holder.innerHTML=`<img id="detailMainImg" src="${item.url}" alt="${r.name}">`;
+   if(item.kind==='video')holder.innerHTML=`<video id="detailMainVideo" controls playsinline preload="metadata" src="${item.url}" aria-label="${esc(item.label)}"></video>`;else holder.innerHTML=galleryImgHtml(item,r.name,'eager').replace('<img ', '<img id=\"detailMainImg\" ');
+   bindGalleryImageFallbacks($('#detailMainArt'));
    $$('.art-thumb').forEach(b=>b.onclick=()=>{const hit=galleryItemsAll.findIndex((x,j)=>j===Number(b.dataset.art));if(hit>=0)paint(itemsForGroup(currentGroup).findIndex(x=>x.i===hit))});
  }
  $('#artPrev').onclick=()=>{const scoped=itemsForGroup(currentGroup);if(scoped.length){const pos=scoped.findIndex(x=>x.i===currentIndex);paint(pos-1)}};
@@ -615,7 +657,7 @@ function openModalBase(r,d,urls,idx,profiles=[]){
  $('#saveServant').onclick=()=>saveModal(Number(r.id));if($('#unownServant'))$('#unownServant').onclick=()=>{if(confirm('Retirer ce Servant de ta collection ? Toutes ses statistiques personnelles seront vidées.'))unownServant(Number(r.id));};}
 }
 function idNormalize(id){return Number(id)}
-async function openServant(id){const r=state.roster.find(x=>Number(x.id)===id);if(!r)return;$('#modal').innerHTML='<div class="modal-loading">CHARGEMENT ATLAS…</div>';$('#modalBackdrop').classList.add('open');const d=await atlasDetail(r),urls=imageList(d),profiles=await npProfilesForServant(r,d);openModalBase(r,d,urls,0,profiles);}
+async function openServant(id){const r=state.roster.find(x=>Number(x.id)===id);if(!r)return;$('#modal').innerHTML='<div class="modal-loading">CHARGEMENT ATLAS…</div>';$('#modalBackdrop').classList.add('open');const d=await atlasDetail(r),urls=imageList(d),profiles=await npProfilesForServant(r,d);const battleItems=battleSpriteEntries(d,r);openModalBase(r,d,urls,0,profiles,battleItems);bindGalleryImageFallbacks($('#modal'));}
 async function saveModal(id){
  const s=ensureStats(currentPlayer,id);
  s.level=Math.max(1,Math.min(120,num($('#e-level')?.value)||1));
@@ -901,6 +943,7 @@ function accountUI(){
  const logged=!!session,can=currentCanEdit(),missing=logged&&!currentAuth&&!cloudAuthError;
  $('#modal').innerHTML=`<div style="padding:26px"><span class="eyebrow">CLOUD ACCESS</span><h2 style="font:700 28px 'Space Grotesk';margin:6px 0 0">${logged?'Compte Supabase':'Connexion'}</h2><p class="account-copy">${logged?`${session.user.email}<br>${can?`Éditeur · ${PLAYER_LABELS[currentAuth.playerKey]}`:cloudAuthError?`Session présente · ${cloudAuthError}`:missing?'Compte authentifié mais pas encore associé à un Master.':'Lecture seule'}`:'Connecte ton compte Supabase. Le site reste consultable sans compte.'}</p>${logged?(missing?`<div class="claim-box"><b>Compte Julien</b><span>Utilise cette action uniquement si ce compte doit devenir le compte Julien.</span><button class="save" id="claimJulien">Associer à Julien</button></div>`:`<div class="modal-footer account-actions"><span class="readonly-note">${cloudAuthError?'L’API Supabase refuse actuellement les requêtes.':'Session active.'}</span><div class="account-action-group">${can?'<button class="save" id="saveAllCloud">Enregistrer toutes mes données</button>':''}<button id="modalCancel">Fermer</button><button id="logout">${cloudAuthError?'Réinitialiser la session':'Se déconnecter'}</button></div></div>`):`<div style="display:grid;gap:10px;margin-top:18px"><input id="loginEmail" class="editable-input" type="email" placeholder="Email"><input id="loginPassword" class="editable-input" type="password" placeholder="Mot de passe"></div><div class="modal-footer"><button id="modalCancel">Annuler</button><button class="save" id="login">Se connecter</button></div>`}</div>`;
  $('#modalBackdrop').classList.add('open');
+ bindGalleryImageFallbacks($('#modal'));
  $('#modalCancel').onclick=closeModal;
  if(logged&&missing){$('#claimJulien').onclick=claimJulien}else if(logged){if($('#saveAllCloud'))$('#saveAllCloud').onclick=async()=>{const ok=await saveAllToSupabase();if(ok)closeModal()};$('#logout').onclick=async()=>{await cloud.auth.signOut();session=null;currentAuth=null;cloudAuthError='';updateSync('Cloud · lecture publique');renderAll();closeModal()}}
  else{$('#login').onclick=async()=>{const email=$('#loginEmail').value.trim(),password=$('#loginPassword').value;const {data,error}=await cloud.auth.signInWithPassword({email,password});if(error){toast(error.message);return}session=data.session;currentAuth=null;cloudAuthError='';await resolveMembership();await loadCloud();renderAll();closeModal();}}
