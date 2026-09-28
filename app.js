@@ -383,12 +383,25 @@ function costumeNameMap(d){
   }
   return map;
 }
-function fandomSpriteUrl(filename){return `https://fategrandorder.fandom.com/wiki/Special:Redirect/file/${encodeURIComponent(filename)}`;}
-function battleSpriteCandidates(collectionNo,kind,number){
+function fandomWikiSlug(name){
+  // Fandom's Servant pages use a MediaWiki title derived from the display name.
+  // Spaces become underscores; encode the rest of the path safely.
+  return encodeURIComponent(String(name||'').trim().replace(/\s+/g,'_'));
+}
+function fandomFileQuery(filename){
+  // Fandom's file query is traditionally displayed with '+' for spaces.
+  return encodeURIComponent(String(filename||'')).replace(/%20/g,'+');
+}
+function fandomSpriteUrl(filename, servantName){
+  const slug=fandomWikiSlug(servantName);
+  if(!slug)return '';
+  return `https://fategrandorder.fandom.com/wiki/${slug}?file=${fandomFileQuery(filename)}`;
+}
+function battleSpriteCandidates(collectionNo,kind,number,servantName){
   const code=`S${String(collectionNo).padStart(3,'0')}`;
   const versions=[3,2,1,4,5];
   const label=kind==='stage'?`Stage${number}`:`Costume${number}`;
-  return versions.map(v=>fandomSpriteUrl(`${code} Sprite Ver${v} ${label}.png`));
+  return versions.map(v=>fandomSpriteUrl(`${code} Sprite Ver${v} ${label}.png`,servantName));
 }
 function battleSpriteEntries(d,r){
   const collectionNo=Number(r?.id||d?.collectionNo);
@@ -396,13 +409,13 @@ function battleSpriteEntries(d,r){
   const items=[];
   // FGO's visible in-battle character uses one sprite per ascension for stages 1–3.
   for(let stage=1;stage<=3;stage++){
-    const urls=battleSpriteCandidates(collectionNo,'stage',stage);
+    const urls=battleSpriteCandidates(collectionNo,'stage',stage,r?.name||d?.name);
     items.push({kind:'combat-sprite',url:urls[0],fallbacks:urls.slice(1),key:String(stage),label:`Ascension ${stage}`,group:'SPRITES'});
   }
   // Atlas supplies the authoritative costume list; Fandom's extracted in-battle files use Costume1, Costume2…
   const costumes=costumeRecords(d).sort((a,b)=>Number(a?.costumeCollectionNo||a?.id||0)-Number(b?.costumeCollectionNo||b?.id||0));
   costumes.forEach((c,i)=>{
-    const n=i+1, urls=battleSpriteCandidates(collectionNo,'costume',n);
+    const n=i+1, urls=battleSpriteCandidates(collectionNo,'costume',n,r?.name||d?.name);
     items.push({kind:'costume-sprite',url:urls[0],fallbacks:urls.slice(1),key:String(c?.costumeCollectionNo||c?.id||n),label:`${c?.name||c?.shortName||`Costume ${n}`} · Sprite`,group:'SPRITES'});
   });
   return items;
