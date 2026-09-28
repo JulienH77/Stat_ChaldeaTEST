@@ -65,7 +65,7 @@ La galerie du détail d’un Servant affiche :
 - les splasharts des costumes, placés après les 4 ascensions ;
 - les 3 sprites de combat correspondant aux trois premières ascensions ;
 - les sprites de combat des costumes ;
-- une section vidéo NP uniquement lorsqu’une véritable URL vidéo NP est fournie par les données du Servant.
+- les sprites de combat sont résolus via l’API MediaWiki de Fandom afin d’obtenir les URLs CDN directes des PNG, en sélectionnant la version `Ver` la plus élevée disponible.
 
 Les sélecteurs de galerie sont placés directement sous l’image principale. Les compteurs ne sont pas affichés sur ces sélecteurs.
 
