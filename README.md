@@ -729,17 +729,16 @@ La galerie peut maintenant regrouper, lorsque les données Atlas Academy les fou
 - **ASCENSIONS** : les quatre illustrations d'ascension habituelles ;
 - **SPRITES** : les `CharaFigure` du Servant ;
 - **COSTUMES** : pour chaque costume disponible, son splash art et son sprite lorsqu'ils sont exposés par les assets Atlas Academy ;
-- **NP** : les vidéos `.mp4` rattachées aux assets de type Movie/NP disponibles dans la réponse Atlas Academy. Cette catégorie n'est affichée que lorsqu'au moins une vidéo réellement référencée est disponible.
-
-Les catégories sont séparées par des onglets dans la galerie et les boutons de navigation restent limités à la catégorie active. Les vidéos NP ne sont pas lancées automatiquement : elles utilisent le lecteur natif avec contrôles.
+Les catégories sont séparées par des onglets dans la galerie et les boutons de navigation restent limités à la catégorie active.
 
 Atlas Academy documente notamment les assets `charaGraph` des quatre ascensions, les `charaFigure`, les assets de costumes et le pattern `movie` dans son schéma d'assets. citeturn798630view0turn275395view0turn246558view0
 
 
-### V206
+### V209
 - Gallery: keep the V204 gallery buttons unchanged.
 - Remove the NP video tab completely.
-- `SPRITES` now targets the actual in-battle standing sprites: ascensions 1–3 only, plus one sprite per costume.
-- Atlas Academy remains the source of truth for the Servant and costume records, while the displayed PNGs use the extracted FGO in-battle sprite naming convention from Fandom (`Sxxx Sprite VerN Stage1/2/3` and `CostumeN`).
-- The gallery tries current extracted sprite versions first (Ver3, then Ver2/Ver1, with Ver4/Ver5 as fallback) so a missing file does not leave a broken thumbnail.
+- `SPRITES` targets the actual in-battle standing sprites: ascensions 1–3 only, plus every costume sprite actually present on Fandom.
+- Atlas Academy remains the source of truth for the Servant and costume records, while Fandom is queried through its MediaWiki `allimages` API using the `Sxxx Sprite ` prefix to discover the complete set of extracted PNG assets.
+- For each stage/costume slot, the highest `VerN` actually present is selected automatically, including versions higher than Ver5 if they appear later.
+- Costume sprites are no longer inferred from a sequential Atlas costume list, so gaps or a larger number of costume files are handled correctly.
 - `spriteModel` is intentionally not inserted directly into `<img>`: Atlas exposes it as a Unity AssetBundle/manifest rather than a web-ready PNG, and FateViewer loads that bundle as a Unity `AssetBundle` and instantiates its `chr` GameObject.

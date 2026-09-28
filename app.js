@@ -385,8 +385,9 @@ function costumeNameMap(d){
 }
 const FANDOM_API="https://fategrandorder.fandom.com/api.php";
 const fandomBattleCache=new Map();
+const fandomSpriteSetCache=new Map();
 function fandomFileTitle(filename){return `File:${String(filename||'').replace(/_/g,' ').trim()}`;}
-function fandomTitleKey(title){return String(title||'').replace(/_/g,' ').trim().toLowerCase();}
+function fandomTitleKey(title){return String(title||'').replace(/^File:/i,'').replace(/_/g,' ').trim().toLowerCase();}
 async function fandomResolveFiles(filenames){
   const unique=[...new Set((filenames||[]).filter(Boolean))];
   if(!unique.length)return new Map();
@@ -394,7 +395,7 @@ async function fandomResolveFiles(filenames){
   const missing=[];
   unique.forEach(name=>{
     const key=fandomTitleKey(fandomFileTitle(name));
-    if(fandomBattleCache.has(key)){result.set(name,fandomBattleCache.get(key));}
+    if(fandomBattleCache.has(key))result.set(name,fandomBattleCache.get(key));
     else missing.push(name);
   });
   if(!missing.length)return result;
@@ -431,33 +432,73 @@ async function fandomResolveFiles(filenames){
   }
   return result;
 }
-function battleSpriteFileCandidates(collectionNo,kind,number){
+async function fandomListBattleSpriteFiles(collectionNo){
   const code=`S${String(collectionNo).padStart(3,'0')}`;
-  const label=kind==='stage'?`Stage${number}`:`Costume${number}`;
-  // Highest available Ver first. Some Servants use Ver1/2/3 while others have Ver4/5.
-  return [5,4,3,2,1].map(v=>`${code} Sprite Ver${v} ${label}.png`);
+  if(fandomSpriteSetCache.has(code))return fandomSpriteSetCache.get(code);
+  const p=(async()=>{
+    const files=[];
+    let aicontinue=null;
+    try{
+      do{
+        const params={
+          action:'query',format:'json',origin:'*',list:'allimages',aisort:'name',aiprefix:`${code} Sprite `,ailimit:'max',aiprop:'url'
+        };
+        if(aicontinue)params.aicontinue=aicontinue;
+        const qs=new URLSearchParams(params);
+        const res=await fetch(`${FANDOM_API}?${qs.toString()}`,{cache:'force-cache'});
+        if(!res.ok)throw new Error(`Fandom API ${res.status}`);
+        const data=await res.json();
+        for(const item of (data?.query?.allimages||[])){
+          const name=String(item?.name||'').trim();
+          const url=String(item?.url||'').trim();
+          if(name&&url)files.push({name,url});
+        }
+        aicontinue=data?.continue?.aicontinue||null;
+      }while(aicontinue);
+    }catch(err){
+      console.warn(`Fandom battle sprite listing failed for ${code}`,err);
+    }
+    return files;
+  })();
+  fandomSpriteSetCache.set(code,p);
+  return p;
 }
-async function resolveHighestBattleSprite(collectionNo,kind,number){
-  const candidates=battleSpriteFileCandidates(collectionNo,kind,number);
-  const urls=await fandomResolveFiles(candidates);
-  for(const filename of candidates){
-    const url=urls.get(filename);
-    if(url)return {url,filename,version:Number(filename.match(/ Sprite Ver(\d+) /)?.[1]||0)};
+function battleSpriteFilenameInfo(collectionNo, name){
+  const code=`S${String(collectionNo).padStart(3,'0')}`;
+  const re=new RegExp(`^${code} Sprite Ver(\\d+) (Stage|Costume)(\\d+)\\.png$`,'i');
+  const match=String(name||'').match(re);
+  if(!match)return null;
+  return {version:Number(match[1]),type:match[2].toLowerCase(),number:Number(match[3])};
+}
+function chooseHighestBattleSprites(collectionNo,files){
+  const best=new Map();
+  for(const file of (files||[])){
+    const info=battleSpriteFilenameInfo(collectionNo,file.name);
+    if(!info)continue;
+    const key=`${info.type}:${info.number}`;
+    const prev=best.get(key);
+    if(!prev||info.version>prev.version)best.set(key,{...file,...info});
   }
-  return null;
+  return [...best.values()].sort((a,b)=>{
+    if(a.type!==b.type)return a.type==='stage'?-1:1;
+    return a.number-b.number;
+  });
 }
 async function battleSpriteEntries(d,r){
   const collectionNo=Number(d?.collectionNo||r?.id);
   if(!Number.isFinite(collectionNo)||collectionNo<=0)return [];
-  const targets=[];
-  for(let stage=1;stage<=3;stage++)targets.push({kind:'combat-sprite',type:'stage',number:stage,key:String(stage),label:`Ascension ${stage}`});
-  const costumes=costumeRecords(d).sort((a,b)=>Number(a?.costumeCollectionNo||a?.id||0)-Number(b?.costumeCollectionNo||b?.id||0));
-  costumes.forEach((c,i)=>targets.push({kind:'costume-sprite',type:'costume',number:i+1,key:String(c?.costumeCollectionNo||c?.id||i+1),label:`${c?.name||c?.shortName||`Costume ${i+1}`} · Sprite`}));
-  const resolved=await Promise.all(targets.map(async target=>{
-    const hit=await resolveHighestBattleSprite(collectionNo,target.type,target.number);
-    return hit?{...target,url:hit.url,version:hit.version,sourceFile:hit.filename,group:'SPRITES'}:null;
-  }));
-  return resolved.filter(Boolean);
+  const files=await fandomListBattleSpriteFiles(collectionNo);
+  const selected=chooseHighestBattleSprites(collectionNo,files);
+  const names=costumeNameMap(d);
+  const costumeRecordsSorted=costumeRecords(d).sort((a,b)=>Number(a?.costumeCollectionNo||a?.id||0)-Number(b?.costumeCollectionNo||b?.id||0));
+  return selected.map(item=>{
+    if(item.type==='stage'){
+      return {kind:'combat-sprite',type:'stage',number:item.number,key:String(item.number),label:`Ascension ${item.number}`,group:'SPRITES',url:item.url,version:item.version,sourceFile:item.name};
+    }
+    const costumeRecord=costumeRecordsSorted[item.number-1];
+    const labelName=String(costumeRecord?.name||costumeRecord?.shortName||`Costume ${item.number}`);
+    return {kind:'costume-sprite',type:'costume',number:item.number,key:String(item.number),label:`${labelName} · Sprite`,group:'SPRITES',url:item.url,version:item.version,sourceFile:item.name};
+  });
 }
 function galleryImgHtml(item,alt='',loading='lazy'){
   const urls=[item?.url,...(Array.isArray(item?.fallbacks)?item.fallbacks:[])].filter(Boolean);
