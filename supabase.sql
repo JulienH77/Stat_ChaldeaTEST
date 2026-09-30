@@ -110,6 +110,8 @@ create table if not exists public.chaldea_expenses(
  reason text not null,
  server text not null default 'na',
  category text not null default 'focus' check(category in ('focus','gssr','destiny','other')),
+ types text[] not null default '{}'::text[],
+ characters jsonb not null default '[]'::jsonb,
  attempts integer,
  transaction_count integer not null default 1,
  total_eur numeric(10,2) not null,
@@ -121,9 +123,25 @@ create table if not exists public.chaldea_expenses(
  transactions jsonb not null default '[]'::jsonb,
  created_at timestamptz not null default now()
 );
+
+alter table public.chaldea_expenses add column if not exists types text[] not null default '{}'::text[];
+alter table public.chaldea_expenses add column if not exists characters jsonb not null default '[]'::jsonb;
 alter table public.chaldea_expenses enable row level security;
 drop policy if exists expenses_read_julien on public.chaldea_expenses;
 create policy expenses_read_julien on public.chaldea_expenses
 for select to authenticated
 using(player_key='julien' and exists(select 1 from public.chaldea_members m where m.auth_user_id=auth.uid() and m.player_key='julien'));
-grant select on table public.chaldea_expenses to authenticated;
+drop policy if exists expenses_insert_julien on public.chaldea_expenses;
+create policy expenses_insert_julien on public.chaldea_expenses
+for insert to authenticated
+with check(player_key='julien' and exists(select 1 from public.chaldea_members m where m.auth_user_id=auth.uid() and m.player_key='julien' and m.can_edit=true));
+drop policy if exists expenses_update_julien on public.chaldea_expenses;
+create policy expenses_update_julien on public.chaldea_expenses
+for update to authenticated
+using(player_key='julien' and exists(select 1 from public.chaldea_members m where m.auth_user_id=auth.uid() and m.player_key='julien' and m.can_edit=true))
+with check(player_key='julien' and exists(select 1 from public.chaldea_members m where m.auth_user_id=auth.uid() and m.player_key='julien' and m.can_edit=true));
+drop policy if exists expenses_delete_julien on public.chaldea_expenses;
+create policy expenses_delete_julien on public.chaldea_expenses
+for delete to authenticated
+using(player_key='julien' and exists(select 1 from public.chaldea_members m where m.auth_user_id=auth.uid() and m.player_key='julien' and m.can_edit=true));
+grant select, insert, update, delete on table public.chaldea_expenses to authenticated;

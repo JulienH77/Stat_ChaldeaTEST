@@ -30,6 +30,8 @@ state.roster=sanitizeRoster(state.roster);
 let currentPlayer='julien',currentView='overview',rosterMode='cards',sortDir='desc',compareFocusId=284,skillScope='gold',bondScope='gold',showMissing=true,xpTargetClass='',supportMode='normal',showNpOverlay=false;
 let cloud=null,session=null,currentAuth=null,cloudEnabled=false,cloudAuthError='',atlasById=new Map(),atlasFull=new Map(),atlasVariantsByName=new Map(),variantDetailCache=new Map(),renderToken=0,showdownRenderedId=null,showdownRenderToken=0,supportPlayer='julien';
 let expenseRows=[],expenseLoaded=false,expenseLoadError='';
+let expenseTypeFilters=new Set(['gssr','focus','destiny']);
+const EXPENSE_TYPES=[['gssr','GSSR'],['focus','Focus'],['destiny','Destiny Order']];
 const galleryFallbackMap=new Map();
 let galleryFallbackSeq=0;
 const GSSR_LOCAL_KEY='chaldea-v200-gssr-choices';
@@ -1008,17 +1010,97 @@ function renderXp(){
 function julienPrivateAccess(){return !!session&&currentAuth?.playerKey==='julien'}
 function euros(n){const v=Number(n);return Number.isFinite(v)?v.toLocaleString('fr-FR',{style:'currency',currency:'EUR'}):'—'}
 function expenseDate(value){if(!value)return'—';const d=new Date(`${value}T12:00:00`);return Number.isNaN(d.getTime())?value:d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'})}
-function expenseCategory(row){const c=String(row.category||'').toLowerCase();if(c)return c;const reason=String(row.reason||'').toLowerCase();if(reason.includes('gssr'))return'gssr';if(reason.includes('destiny'))return'destiny';return'focus'}
+function expenseTypeLabel(type){return EXPENSE_TYPES.find(([k])=>k===type)?.[1]||String(type||'').toUpperCase()}
+function normalizeExpenseTypes(row){
+  if(Array.isArray(row?.types)&&row.types.length)return [...new Set(row.types.map(v=>String(v).toLowerCase()).filter(v=>EXPENSE_TYPES.some(([k])=>k===v)))];
+  const c=String(row?.category||'').toLowerCase();
+  const reason=String(row?.reason||'').toLowerCase();
+  const out=[];
+  if(c==='gssr'||reason.includes('gssr'))out.push('gssr');
+  if(c==='destiny'||reason.includes('destiny'))out.push('destiny');
+  const stripped=reason.replace(/gssr(?:\s+thanksgiving|\s+ny\s+\d{4})?/gi,'').replace(/destiny(?:\s+order)?/gi,'').replace(/[()]/g,'').replace(/[-+]/g,' ').replace(/\b(?:et|avec|pas|eu|summer|ruler|saber|bride|caster|berserker)\b/gi,' ').replace(/\s+/g,' ').trim();
+  if(c==='focus'||stripped||(!out.length&&reason))out.push('focus');
+  return [...new Set(out)];
+}
+function normalizeExpenseCharacters(row){
+  if(Array.isArray(row?.characters))return row.characters.filter(x=>x&&x.name).map(x=>({type:String(x.type||'focus').toLowerCase(),name:String(x.name).trim()})).filter(x=>EXPENSE_TYPES.some(([k])=>k===x.type));
+  const reason=String(row?.reason||'').trim();
+  if(!reason)return [];
+  // Legacy fallback: enough to render old rows before the migration is run.
+  const out=[];
+  const add=(type,name)=>{const n=String(name||'').trim();if(n)out.push({type,name:n});};
+  const g=reason.match(/GSSR(?:\s+thanksgiving)?\s*\(([^)]+)\)/i); if(g)add('gssr',g[1]);
+  const d=reason.match(/Destiny(?:\s+Order)?\s*\(([^)]+)\)/i); if(d)add('destiny',d[1]);
+  const after=reason.replace(/GSSR(?:\s+thanksgiving)?\s*\([^)]+\)/ig,'').replace(/Destiny(?:\s+Order)?\s*\([^)]+\)/ig,'').replace(/^\s*[+\/&]+\s*/,'').trim();
+  if(after&&after!=='GSSR'&&after!=='Destiny') add('focus',after.replace(/^\s*\+\s*/,'').trim());
+  return out;
+}
+function expenseHasType(row,type){return normalizeExpenseTypes(row).includes(type)}
+function expenseAttemptsDisplay(row){
+  const types=normalizeExpenseTypes(row);
+  if(types.length&&types.every(t=>t==='gssr'||t==='destiny'))return '';
+  const n=Number(row?.attempts);return Number.isFinite(n)&&n>0?String(n):'';
+}
+function expenseGameYear(dateValue){
+  const d=new Date(`${dateValue}T12:00:00`); if(Number.isNaN(d.getTime()))return null;
+  const y=d.getFullYear(),m=d.getMonth()+1; return m>=9?y-2018:y-2019;
+}
+function expenseFilterActive(row){return normalizeExpenseTypes(row).some(t=>expenseTypeFilters.has(t))}
+function expenseCharactersHtml(row){
+  const chars=normalizeExpenseCharacters(row); if(!chars.length)return '<span class="expense-empty">—</span>';
+  return chars.map(c=>`<span class="expense-character"><b>${esc(c.name)}</b><small class="expense-type-pill ${esc(c.type)}">${esc(expenseTypeLabel(c.type))}</small></span>`).join('');
+}
+function expenseTypesHtml(row){
+  const types=normalizeExpenseTypes(row); if(!types.length)return '<span class="expense-empty">—</span>';
+  return types.map(t=>`<span class="expense-tag ${t}">${esc(expenseTypeLabel(t))}</span>`).join('');
+}
+function expenseTypeToggleHtml(types){return EXPENSE_TYPES.map(([k,l])=>`<button type="button" class="filter-btn expense-form-type ${types.has(k)?'active':''}" data-expense-form-type="${k}" aria-pressed="${types.has(k)}">${l}</button>`).join('')}
+function renderExpenseCharacterInputs(types,values={}){
+  const box=$('#expenseCharacterFields'); if(!box)return;
+  box.innerHTML=[...types].map(type=>`<div class="expense-character-group"><label>${expenseTypeLabel(type)}</label><textarea data-expense-chars="${type}" rows="2" placeholder="${type==='gssr'?'ex. Brynhildr, Sherlock':type==='focus'?'ex. Morgan, Kama':'ex. Dantes, Astolfo Saber'}">${esc((values[type]||[]).join(', '))}</textarea><small>Un ou plusieurs noms, séparés par des virgules.</small></div>`).join('')||'<div class="expense-form-hint">Sélectionne au moins un type.</div>';
+}
+function updateExpenseFormVisibility(){
+  const types=new Set($$('[data-expense-form-type].active').map(b=>b.dataset.expenseFormType));
+  $('#expenseAttemptsWrap')?.classList.toggle('hidden',!types.has('focus'));
+  renderExpenseCharacterInputs(types);
+}
+function openExpenseEditor(){
+  if(!julienPrivateAccess()||!currentAuth?.canEdit){toast('Le compte Julien doit être connecté avec les droits d’édition.');return}
+  const today=new Date().toISOString().slice(0,10), types=new Set(['focus']);
+  $('#modal').innerHTML=`<div class="expense-editor"><div class="expense-editor-head"><div><span class="eyebrow">PRIVATE LEDGER</span><h2>Ajouter une dépense</h2><p>Une ligne peut contenir plusieurs types et plusieurs personnages. Chaque personnage reste associé à son type.</p></div><button type="button" id="expenseEditorClose" class="modal-close" aria-label="Fermer">×</button></div><div class="expense-form-grid"><label>Date<input id="expenseDate" type="date" value="${today}" required></label><label>Serveur<select id="expenseServer"><option value="na">NA</option><option value="jp">JP</option></select></label><label>Total €<input id="expenseTotal" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0,00" required></label><label>Achats<input id="expenseTransactions" type="number" min="1" step="1" value="1" required></label></div><div class="expense-form-section"><div class="command-title">TYPE</div><div class="expense-form-types" id="expenseFormTypes">${expenseTypeToggleHtml(types)}</div></div><div class="expense-form-section" id="expenseAttemptsWrap"><div class="command-title">TENTATIVES</div><label class="expense-full-field"><span>Nombre de tentatives</span><input id="expenseAttempts" type="number" min="1" step="1" value="1"></label></div><div class="expense-form-section"><div class="command-title">PERSONNAGE OBTENU</div><div id="expenseCharacterFields"></div></div><div class="expense-form-actions"><button type="button" id="expenseEditorCancel" class="modal-btn">Annuler</button><button type="button" id="expenseEditorSave" class="modal-btn save">Ajouter la dépense</button></div></div>`;
+  $('#modalBackdrop').classList.add('open');
+  renderExpenseCharacterInputs(types);
+  $$('#expenseFormTypes [data-expense-form-type]').forEach(b=>b.onclick=()=>{b.classList.toggle('active');b.setAttribute('aria-pressed',b.classList.contains('active')?'true':'false');const current={};$$('[data-expense-chars]').forEach(t=>current[t.dataset.expenseChars]=t.value.split(',').map(x=>x.trim()).filter(Boolean));const selected=new Set($$('#expenseFormTypes .expense-form-type.active').map(x=>x.dataset.expenseFormType));$('#expenseAttemptsWrap')?.classList.toggle('hidden',!selected.has('focus'));renderExpenseCharacterInputs(selected,current)});
+  $('#expenseEditorClose').onclick=closeModal;$('#expenseEditorCancel').onclick=closeModal;
+  $('#expenseEditorSave').onclick=async()=>{
+    const types=[...$$('#expenseFormTypes .expense-form-type.active')].map(b=>b.dataset.expenseFormType);
+    const date=$('#expenseDate')?.value,total=Number($('#expenseTotal')?.value),transactions=Math.max(1,Math.floor(Number($('#expenseTransactions')?.value)||0)),attempts=types.includes('focus')?Math.max(1,Math.floor(Number($('#expenseAttempts')?.value)||0)):null,server=$('#expenseServer')?.value;
+    if(!date||!(total>=0)||!transactions||!types.length){toast('Complète la date, le total, les achats et au moins un type.');return}
+    const characters=[];$$('[data-expense-chars]').forEach(t=>t.value.split(',').map(x=>x.trim()).filter(Boolean).forEach(name=>characters.push({type:t.dataset.expenseChars,name})));
+    const reason=characters.map(c=>`${expenseTypeLabel(c.type)}: ${c.name}`).join(' · ')||types.map(expenseTypeLabel).join(' + ');
+    if(characters.length===0){toast('Ajoute au moins un personnage obtenu.');return}
+    if(!cloudEnabled||!cloud||!session||!currentAuth?.canEdit||currentAuth.playerKey!=='julien'){toast('Compte Julien non autorisé.');return}
+    const payload={player_key:'julien',event_date:date,reason,server,category:types.includes('gssr')?'gssr':types.includes('destiny')?'destiny':'focus',types,characters,attempts,transaction_count:transactions,total_eur:Number(total.toFixed(2)),game_year:expenseGameYear(date)};
+    const btn=$('#expenseEditorSave');btn.disabled=true;btn.textContent='Enregistrement…';
+    const {data,error}=await cloud.from('chaldea_expenses').insert(payload).select().single();
+    btn.disabled=false;btn.textContent='Ajouter la dépense';
+    if(error){toast('Erreur Supabase : '+error.message);return}
+    if(data)expenseRows.unshift(data);expenseLoaded=true;closeModal();renderExpenses();toast('Dépense ajoutée');
+  };
+}
 function renderExpenses(){
  const host=$('#expensesContent');if(!host)return;
  if(!julienPrivateAccess()){host.innerHTML='<section class="panel private-empty"><div class="panel-head"><div><span class="eyebrow">ACCESS</span><h2>Rubrique privée</h2></div></div><p>Cette page est accessible uniquement lorsque le compte Julien est connecté.</p></section>';return}
  if(expenseLoadError){host.innerHTML=`<section class="panel private-empty"><div class="panel-head"><div><span class="eyebrow">ERREUR DE LECTURE</span><h2>Données indisponibles</h2></div></div><p>${esc(expenseLoadError)}</p></section>`;return}
  if(!expenseLoaded){host.innerHTML='<section class="panel private-empty"><div class="eyebrow">PRIVATE LEDGER</div><h2>Chargement…</h2><p>Lecture des dépenses privées depuis Supabase.</p></section>';return}
- const rows=expenseRows.slice().sort((a,b)=>String(b.event_date).localeCompare(String(a.event_date)));
- const total=rows.reduce((a,r)=>a+Number(r.total_eur||0),0), na=rows.filter(r=>String(r.server||'').toLowerCase()==='na').reduce((a,r)=>a+Number(r.total_eur||0),0), jp=rows.filter(r=>String(r.server||'').toLowerCase()==='jp').reduce((a,r)=>a+Number(r.total_eur||0),0), gssr=rows.filter(r=>expenseCategory(r)==='gssr').reduce((a,r)=>a+Number(r.total_eur||0),0), focus=rows.filter(r=>expenseCategory(r)==='focus').reduce((a,r)=>a+Number(r.total_eur||0),0), attempts=rows.reduce((a,r)=>a+(Number.isFinite(Number(r.attempts))?Number(r.attempts):0),0), transactions=rows.reduce((a,r)=>a+(Number(r.transaction_count)||0),0);
- const yearMap=new Map();rows.forEach(r=>{const y=Number(r.game_year||0);if(y)yearMap.set(y,(yearMap.get(y)||0)+Number(r.total_eur||0))});const yearRows=[...yearMap.entries()].sort((a,b)=>a[0]-b[0]),maxYear=Math.max(...yearRows.map(x=>x[1]),1);
- const sourceTotals=[...new Set(rows.map(r=>String(r.year_total_note||'').trim()).filter(Boolean))];
- host.innerHTML=`<div class="expenses-kpi-grid"><div class="expense-kpi"><small>TOTAL HISTORIQUE</small><strong>${euros(total)}</strong><span>${transactions} achats regroupés</span></div><div class="expense-kpi"><small>SERVEUR NA</small><strong>${euros(na)}</strong><span>${euros(jp)} sur JP</span></div><div class="expense-kpi"><small>GSSR</small><strong>${euros(gssr)}</strong><span>${rows.filter(r=>expenseCategory(r)==='gssr').length} événements</span></div><div class="expense-kpi"><small>FOCUS</small><strong>${euros(focus)}</strong><span>${attempts} tentatives renseignées</span></div></div><section class="panel expense-summary-panel"><div class="panel-head"><div><span class="eyebrow">ACCOUNT HISTORY</span><h2>Dépenses par année de jeu</h2></div><span class="panel-tag">SOURCE PERSONNELLE</span></div><div class="expense-year-list">${yearRows.map(([y,v])=>`<div class="expense-year-row"><span>Année ${y}</span><div class="expense-year-track"><div class="expense-year-fill" style="width:${Math.max(2,v/maxYear*100)}%"></div></div><b>${euros(v)}</b></div>`).join('')}</div>${sourceTotals.length?`<p class="expense-note">Totaux annuels explicitement indiqués dans l’historique source : ${sourceTotals.join(' · ')}.</p>`:''}</section><section class="panel expense-table-panel"><div class="panel-head"><div><span class="eyebrow">SPENDING LOG</span><h2>Pourquoi l’argent a été dépensé</h2></div><div class="expense-legend"><span class="expense-tag gssr">GSSR</span><span class="expense-tag focus">FOCUS</span><span class="expense-tag destiny">DESTINY</span></div></div><div class="overview-table-wrap"><table class="expense-table"><thead><tr><th>DATE</th><th>MOTIF</th><th>SERVEUR</th><th>TENTATIVES</th><th>ACHATS</th><th>TOTAL €</th></tr></thead><tbody>${rows.map(r=>{const attemptsText=Number.isFinite(Number(r.attempts))?Number(r.attempts):'—';return `<tr><td>${expenseDate(r.event_date)}</td><td><strong>${esc(r.reason||'—')}</strong>${r.notes?`<span>${esc(r.notes)}</span>`:''}</td><td><span class="server-badge ${String(r.server||'').toLowerCase()}">${esc(String(r.server||'—').toUpperCase())}</span></td><td>${attemptsText}</td><td>${Number(r.transaction_count)||0}</td><td><strong>${euros(r.total_eur)}</strong></td></tr>`}).join('')}</tbody></table></div></section>`;
+ const rows=expenseRows.slice().sort((a,b)=>String(b.event_date).localeCompare(String(a.event_date))).filter(expenseFilterActive);
+ const allRows=expenseRows.slice();
+ const total=allRows.reduce((a,r)=>a+Number(r.total_eur||0),0),na=allRows.filter(r=>String(r.server||'').toLowerCase()==='na').reduce((a,r)=>a+Number(r.total_eur||0),0);
+ const yearMap=new Map();allRows.forEach(r=>{const y=Number(r.game_year||0);if(y)yearMap.set(y,(yearMap.get(y)||0)+Number(r.total_eur||0))});const yearRows=[...yearMap.entries()].sort((a,b)=>b[0]-a[0]),maxYear=Math.max(...yearRows.map(x=>x[1]),1);
+ const activeCount=expenseTypeFilters.size;
+ host.innerHTML=`<div class="expenses-kpi-grid expenses-kpi-grid-2"><div class="expense-kpi"><small>TOTAL HISTORIQUE</small><strong>${euros(total)}</strong><span>${allRows.length} dépenses enregistrées</span></div><div class="expense-kpi"><small>TOTAL NA</small><strong>${euros(na)}</strong><span>${allRows.filter(r=>String(r.server||'').toLowerCase()==='na').length} dépenses NA</span></div></div><section class="panel expense-summary-panel"><div class="panel-head"><div><span class="eyebrow">ACCOUNT HISTORY</span><h2>Dépenses par année de jeu</h2></div><span class="panel-tag">SOURCE PERSONNELLE</span></div><div class="expense-year-list">${yearRows.map(([y,v])=>`<div class="expense-year-row"><span>Année ${y}</span><div class="expense-year-track"><div class="expense-year-fill" style="width:${Math.max(2,v/maxYear*100)}%"></div></div><b>${euros(v)}</b></div>`).join('')}</div></section><section class="panel expense-table-panel"><div class="panel-head expense-table-head"><div><span class="eyebrow">SPENDING LOG</span><h2>Dépenses</h2></div><div class="expense-table-actions"><div class="expense-filter-buttons" role="group" aria-label="Filtrer les types">${EXPENSE_TYPES.map(([k,l])=>`<button type="button" class="filter-btn expense-filter-btn ${expenseTypeFilters.has(k)?'active':''}" data-expense-filter="${k}" aria-pressed="${expenseTypeFilters.has(k)}">${l}</button>`).join('')}</div><button type="button" class="filter-btn expense-add-btn" id="expenseAddBtn">+ Ajouter</button></div></div><div class="expense-filter-note">${activeCount?`Affichage des dépenses contenant : ${[...expenseTypeFilters].map(expenseTypeLabel).join(', ')}`:'Aucun type sélectionné'}</div><div class="overview-table-wrap"><table class="expense-table"><thead><tr><th>DATE</th><th>TYPE</th><th>PERSONNAGE OBTENU</th><th>SERVEUR</th><th>TENTATIVES</th><th>ACHATS</th><th>TOTAL €</th></tr></thead><tbody>${rows.length?rows.map(r=>{const attemptsText=expenseAttemptsDisplay(r);return `<tr><td>${expenseDate(r.event_date)}</td><td><div class="expense-type-list">${expenseTypesHtml(r)}</div></td><td><div class="expense-character-list">${expenseCharactersHtml(r)}</div></td><td><span class="server-badge ${String(r.server||'').toLowerCase()}">${esc(String(r.server||'—').toUpperCase())}</span></td><td>${attemptsText}</td><td>${Number(r.transaction_count)||0}</td><td><strong>${euros(r.total_eur)}</strong></td></tr>`}).join(''):`<tr><td colspan="7"><div class="expense-empty-state">Aucune dépense ne correspond aux filtres actifs.</div></td></tr>`}</tbody></table></div></section>`;
+ $$('#expensesContent [data-expense-filter]').forEach(b=>b.onclick=()=>{const type=b.dataset.expenseFilter;if(expenseTypeFilters.has(type))expenseTypeFilters.delete(type);else expenseTypeFilters.add(type);renderExpenses()});
+ $('#expenseAddBtn')?.addEventListener('click',openExpenseEditor);
 }
 async function loadExpenses(){
  if(!julienPrivateAccess()||!cloudEnabled||!cloud){expenseRows=[];expenseLoaded=false;expenseLoadError='';renderExpenses();return}
