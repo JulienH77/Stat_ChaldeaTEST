@@ -1,7 +1,7 @@
 import initialState from './data/initial-state.json?v=101' with { type: 'json' };
 import welfareData from './data/welfare-ids.json?v=101' with { type: 'json' };
 import supportData from './data/support-lists.json?v=101' with { type: 'json' };
-import gssrData from './data/gssr-na.json?v=213' with { type: 'json' };
+import gssrData from './data/gssr-na.json?v=214' with { type: 'json' };
 const CONFIG=window.CHALDEA_CONFIG||{};
 let supportSnapshot=supportData||{players:{}};
 const SUPABASE_KEY=CONFIG.supabasePublishableKey||CONFIG.supabaseAnonKey||CONFIG.supabaseKey||'';
@@ -35,6 +35,110 @@ const EXPENSE_TYPES=[['gssr','GSSR'],['focus','Focus'],['destiny','Destiny Order
 const galleryFallbackMap=new Map();
 let galleryFallbackSeq=0;
 let gssrEventId='ann-2026',gssrResults={},gssrDraft={};
+const selectedClasses=new Set(),selectedRarities=new Set(['5','4','welfare']),selectedNpTypes=new Set();
+const NP_EFFECT_ORDER=['Support','ST','AOE'];
+const NP_EFFECT_LABELS={Support:'Support',ST:'ST',AOE:'AOE'};
+const NP_FILTERS=[['Q:Support','Support'],['Q:ST','ST'],['Q:AOE','AOE'],['A:Support','Support'],['A:ST','ST'],['A:AOE','AOE'],['B:Support','Support'],['B:ST','ST'],['B:AOE','AOE']];
+const npTypeCache=new Map();
+let npTypeIndexPromise=null;
+const npOverlayTimers=new Map();
+const supportLocal={julien:{friendId:supportSnapshot.players?.julien?.code||'939739133'},yanis:{friendId:supportSnapshot.players?.yanis?.code||''},attmann:{friendId:supportSnapshot.players?.attmann?.code||'921819502'}};
+const XP_CLASSES=['Saber','Archer','Lancer','Rider','Caster','Assassin','Berserker','Autre'];
+const XP_CARD_VALUE={5:81000,4:27000,3:9000};
+const XP_CARD_CLASS_VALUE={5:97200,4:32400,3:10800};
+const XP_TO_LEVEL=[0, 0, 100, 400, 1000, 2000, 3500, 5600, 8400, 12000, 16500, 22000, 28600, 36400, 45500, 56000, 68000, 81600, 96900, 114000, 133000, 154000, 177100, 202400, 230000, 260000, 292500, 327600, 365400, 406000, 449500, 496000, 545600, 598400, 654500, 714000, 777000, 843600, 913900, 988000, 1066000, 1148000, 1234100, 1324400, 1419000, 1518000, 1621500, 1729600, 1842400, 1960000, 2082500, 2210000, 2342600, 2480400, 2623500, 2772000, 2926000, 3085600, 3250900, 3422000, 3599000, 3782000, 3971100, 4166400, 4368000, 4576000, 4790500, 5011600, 5239400, 5474000, 5715500, 5964000, 6219600, 6482400, 6752500, 7030000, 7315000, 7607600, 7907900, 8216000, 8532000, 8856000, 9188100, 9528400, 9877000, 10234000, 10599500, 10973600, 11356400, 11748000, 12148500, 12567000, 13021900, 13532000, 14116500, 14795000, 15587500, 16514400, 17596500, 18855000, 20311500, 40623000, 60934500, 81246000, 101557500, 121869000, 142180500, 162492000, 182803500, 203115000, 223426500, 243738000, 264049500, 284361000, 304672500, 324984000, 345295500, 365607000, 385918500, 406230000, 426541500];
+const XP_DEFAULT=()=>Object.fromEntries(XP_CLASSES.map(c=>[c,{5:0,4:0,3:0}]));
+PLAYERS.forEach(p=>{state.players[p]??={displayName:PLAYER_LABELS[p],stats:{}};state.players[p].xp??=XP_DEFAULT()});
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const num=v=>{if(v===null||v===undefined||v==='')return null;const n=Number(v);return Number.isFinite(n)?n:null};
+const fmtNum=v=>{const n=Number(v);return Number.isFinite(n)?n.toLocaleString('fr-FR'): '—'};
+const fmtInputNumber=v=>{const n=Number(v);return Number.isFinite(n)?String(Math.trunc(n)):''};
+const toast=m=>{const e=$('#toast');e.textContent=m;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),2000)};
+const WELFARE_IDS=new Set((welfareData.ids||[]).map(Number));
+const localKey='chaldea-v23-cloud-authoritative';
+function rarityNum(r){return r==='SSR'?5:r==='SR'?4:r==='R'?3:r==='UC'?2:1}
+function classKey(c){const s=String(c||'').replace(/\n/g,' ').trim();return s==='Moon'?'Moon Cancer':s}
+function localAsset(name){return IMG_BASE+encodeURIComponent(name)}
+function classImg(c){const k=classKey(c);const f=IMG[k]||IMG.Saber;return `<img class="class-icon-img" src="${localAsset(f)}" alt="${k}" loading="eager">`}
+function cardImg(t){const f=IMG[t];return f?`<img class="command-icon-img" src="${localAsset(f)}" alt="${t}" loading="eager">`:''}
+function grailImg(){return `<img class="grail-thumb" src="${localAsset(IMG.grail)}" alt="Graal" loading="eager">`}
+function isWelfare(r){return WELFARE_IDS.has(Number(r.id))||r.isWelfare===true}
+function isMash(r){return MASH_IDS.has(Number(r.id))||MASH_NAMES.has(norm(r.name))}
+function isCounted(r){return !isMash(r)&&!r.nonCounted&&!NON_VISIBLE_CLASSES.has(classKey(r.class))}
+function isVisible(r){return !isBlockedRecord(r)&&!NON_VISIBLE_CLASSES.has(classKey(r.class))&&!FUTURE_NAMES.has(norm(r.name))}
+function stats(p,id){return state.players[p]?.stats?.[String(id)]||{level:null,np:null,bond:null,grail:null,fouHp:null,fouAtk:null,servantCoins:null,skills:[null,null,null],appendSkills:[null,null,null,null,null]}}
+function defaultMaxLevel(r){const rr=rarityNum(r.rarity);return rr===5?90:rr===4?80:rr===3?70:rr===2?65:60}
+function displayLevel(p,r,s){const n=Number(s.level);if(Number.isFinite(n)&&n>0)return n;return (p==='yanis'||p==='attmann')&&isOwned(p,r)?defaultMaxLevel(r):'—'}
+function ensureStats(p,id){state.players[p]??={displayName:PLAYER_LABELS[p],stats:{}};state.players[p].stats??={};state.players[p].stats[String(id)]??={level:null,np:null,bond:null,grail:null,fouHp:null,fouAtk:null,servantCoins:null,skills:[null,null,null],appendSkills:[null,null,null,null,null]};return state.players[p].stats[String(id)]}
+function isOwned(p,r){if(!isCounted(r))return true;const s=stats(p,r.id);return ['level','np','bond','grail','fouHp','fouAtk','servantCoins'].some(k=>s[k]!=null)||[...(s.skills||[]),...(s.appendSkills||[])].some(v=>v!=null)}
+function validSkill(v){return Number.isFinite(v)&&v>=1&&v<=10}
+function skillInScope(r){if(skillScope==='all')return true;return isWelfare(r)||rarityNum(r.rarity)>=4}
+function values(p,idx=null){const a=[];for(const r of state.roster){if(!isCounted(r)||!skillInScope(r))continue;const st=stats(p,r.id);const vals=idx===null?(st.skills||[]):[st.skills?.[idx]];for(const v of vals)if(validSkill(v))a.push(Number(v))}return a}
+function average(p,idx=null){const a=values(p,idx);return a.length?a.reduce((x,y)=>x+y,0)/a.length:0}
+function skillDist(p){const d=Array(11).fill(0);values(p).forEach(v=>d[v]++);return d}
+function countOwned(p,pred=()=>true){return state.roster.filter(r=>isVisible(r)&&pred(r)&&isOwned(p,r)).length}
+function countLevel(p,level){return countOwned(p,r=>Number(stats(p,r.id).level)===level)}
+function bond10(p){return countOwned(p,r=>Number(stats(p,r.id).bond)>=10)}
+function fourFiveUniverse(){return state.roster.filter(r=>isCounted(r)&&(rarityNum(r.rarity)>=4))}
+function fourFiveOwned(p){return fourFiveUniverse().filter(r=>isOwned(p,r)).length}
+function collectionPct(p){const den=fourFiveUniverse().length;return den?fourFiveOwned(p)/den*100:0}
+function goldUniverse(){return state.roster.filter(r=>isCounted(r)&&(rarityNum(r.rarity)>=4||isWelfare(r)));}
+function goldOwned(p){return goldUniverse().filter(r=>isOwned(p,r)).length}
+function np5Count(p){return goldUniverse().filter(r=>isOwned(p,r)&&Number(stats(p,r.id).np)>=5).length}
+function np5Pct(p){const den=goldUniverse().length;return den?np5Count(p)/den*100:0}
+const RARITY_STAT_GROUPS=[
+  {key:'5',label:'SSR',sub:'5★',predicate:r=>rarityNum(r.rarity)===5&&!isWelfare(r)},
+  {key:'4',label:'4★',sub:'★★★★',predicate:r=>rarityNum(r.rarity)===4&&!isWelfare(r)},
+  {key:'welfare',label:'Welfare',sub:'FREE',predicate:r=>isWelfare(r)},
+  {key:'3',label:'3★',sub:'★★★',predicate:r=>rarityNum(r.rarity)===3},
+  {key:'2',label:'2★',sub:'★★',predicate:r=>rarityNum(r.rarity)===2},
+  {key:'1',label:'1★',sub:'★',predicate:r=>rarityNum(r.rarity)===1}
+];
+const DIST_RARITY_GROUPS=[
+  {key:'5',label:'5★',className:'r5',predicate:r=>rarityNum(r.rarity)===5&&!isWelfare(r)},
+  {key:'4',label:'4★',className:'r4',predicate:r=>rarityNum(r.rarity)===4&&!isWelfare(r)},
+  {key:'welfare',label:'Welfare',className:'rw',predicate:r=>isWelfare(r)},
+  {key:'3',label:'3★',className:'r3',predicate:r=>rarityNum(r.rarity)===3},
+  {key:'2',label:'2★',className:'r2',predicate:r=>rarityNum(r.rarity)===2},
+  {key:'1',label:'1★',className:'r1',predicate:r=>rarityNum(r.rarity)===1}
+];
+function distributionBucket(r){return DIST_RARITY_GROUPS.findIndex(g=>g.predicate(r))}
+function distributionSegments(counts,total){
+  if(!total)return '';
+  return `<div class="distribution-segments-v202">${DIST_RARITY_GROUPS.map((g,i)=>{const n=counts[i]||0;return n?`<span class="distribution-segment-v202 ${g.className}" style="width:${n/total*100}%" title="${g.label} : ${n}"></span>`:''}).join('')}</div>`;
+}
+function skillDistributionBreakdown(p,level){
+  const counts=Array(DIST_RARITY_GROUPS.length).fill(0);
+  for(const r of state.roster){
+    if(!isCounted(r)||!skillInScope(r))continue;
+    const vals=stats(p,r.id).skills||[];
+    vals.forEach(v=>{if(validSkill(v)&&Number(v)===level){const i=distributionBucket(r);if(i>=0)counts[i]++}});
+  }
+  return counts;
+}
+function bondDistributionBreakdown(p,level){
+  const counts=Array(DIST_RARITY_GROUPS.length).fill(0);
+  for(const r of state.roster){
+    if(!isVisible(r)||!isCounted(r)||!bondInScope(r)||!isOwned(p,r))continue;
+    if(normalizedBond(r,p)!==level)continue;
+    const i=distributionBucket(r);if(i>=0)counts[i]++;
+  }
+  return counts;
+}
+function distributionRowHtml(level,count,max,counts,rowClass,labelClass,trackClass,fillClass){
+  const pct=count/max*100;
+  return `<div class="${rowClass} distribution-row-v202" title="Survolez pour voir la répartition par rareté"><span class="${labelClass}">${level}</span><div class="${trackClass} distribution-track-v202"><div class="${fillClass} distribution-fill-v202" style="width:${pct}%"><div class="distribution-base-v202"></div>${distributionSegments(counts,count)}</div></div><b>${count}</b></div>`;
+}
+
+function rarityAdvancedStats(p){return RARITY_STAT_GROUPS.map(g=>{const all=state.roster.filter(r=>isVisible(r)&&isCounted(r)&&g.predicate(r));const owned=all.filter(r=>isOwned(p,r));const grailed=owned.filter(r=>(Number(stats(p,r.id).grail)||0)>0);const grails=owned.reduce((sum,r)=>sum+Math.max(0,Number(stats(p,r.id).grail)||0),0);const np5=owned.filter(r=>Number(stats(p,r.id).np)>=5).length;const bond10=owned.filter(r=>Number(stats(p,r.id).bond)>=10).length;return{...g,total:all.length,owned:owned.length,grailed:grailed.length,grails,np5,bond10}})}
+function bondInScope(r){return bondScope==='all'||isWelfare(r)||rarityNum(r.rarity)>=4}
+function normalizedBond(r,p){const raw=Number(stats(p,r.id).bond);return !Number.isFinite(raw)||raw<=1?1:Math.min(15,Math.floor(raw))}
+function bondValues(p){return state.roster.filter(r=>isVisible(r)&&isCounted(r)&&bondInScope(r)&&isOwned(p,r)).map(r=>normalizedBond(r,p))}
+function bondAverage(p){const a=bondValues(p);return a.length?a.reduce((x,y)=>x+y,0)/a.length:0}
+function bondDistribution(p){const d=Array(16).fill(0);bondValues(p).forEach(level=>d[level]++);return d}
+function isPokedexEligible(r){return isVisible(r)&&isCounted(r)&&(rarityNum(r.rarity)>=4)}
+function classPokedex(p){return CLASS_ORDER.map(c=>{const all=state.roster.filter(r=>isPokedexEligible(r)&&classKey(r.class)===c);if(!all.length)return null;const owned=all.filter(r=>isOwned(p,r)).length;return{className:c,total:all.length,owned,pct:all.length?owned/all.length*100:0}}).filter(Boolean)}
+function esc(v){return String(v??'').replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]))}
 function gssrEventById(id=gssrEventId){return (gssrData.events||[]).find(e=>e.id===id)||(gssrData.events||[]).at(-1)}
 function gssrAllEvents(){return [...(gssrData.events||[])].sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')))}
 function gssrDestinyCandidates(slot){

@@ -721,7 +721,7 @@ Chaque événement permet d'enregistrer le pavillon choisi. Les événements pou
 
 À partir de l'anniversaire 2024, le tracker affiche également un module **Destiny Order** à 9 emplacements : un Servant 5★ par classe de base et deux emplacements Extra. Les choix sont enregistrés séparément pour chaque Master dans le navigateur via `localStorage`, sous la clé `chaldea-v200-gssr-choices`. Ils ne nécessitent donc aucune nouvelle table Supabase pour V202.
 
-Les données et règles reprises dans le fichier `/data/gssr.json` s'appuient notamment sur les historiques GamePress, les pages officielles FGO USA lorsque disponibles et les historiques Fate/Grand Companion. Les nombres de pavillons repris dans le fichier sont conservés séparément des libellés lorsque la composition détaillée n’est pas suffisamment exploitable. Les informations spécifiques au Destiny Order NA 2024–2026 sont documentées dans les sources liées à chaque événement.
+Les données et règles reprises dans le fichier `/data/gssr-na.json` s'appuient notamment sur les historiques GamePress, les pages officielles FGO USA lorsque disponibles et les historiques Fate/Grand Companion. Les nombres de pavillons repris dans le fichier sont conservés séparément des libellés lorsque la composition détaillée n’est pas suffisamment exploitable. Les informations spécifiques au Destiny Order NA 2024–2026 sont documentées dans les sources liées à chaque événement.
 
 ### Limitation volontaire du Destiny Order
 
