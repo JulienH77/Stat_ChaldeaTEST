@@ -29,6 +29,13 @@ Les autres utilisateurs peuvent consulter ces données sans pouvoir les modifier
 
 ---
 
+
+## Dépenses — Julien uniquement
+
+Un onglet **Dépenses** est affiché uniquement lorsqu’une session Supabase authentifiée est associée au compte **Julien**. Il lit la table privée `chaldea_expenses` via le client Supabase côté navigateur. La sécurité ne repose pas sur le bouton masqué : la table est protégée par une policy RLS qui ne laisse lire que le compte Julien.
+
+Les montants personnels ne doivent pas être ajoutés dans `data/*.json`, `app.js` ou un autre fichier publié par GitHub Pages. Le seed de l’historique est fourni séparément et ne doit pas être commité dans le dépôt public.
+
 # Les différents onglets
 
 ## Overview

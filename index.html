@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="fr"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#eef2f6"><title>Chaldea Command · V203</title>
+<meta name="theme-color" content="#eef2f6"><meta name="description" content="Chaldea Command : suivi personnel d'un compte Fate/Grand Order NA, collection, progression, GSSR et outils XP."><meta name="robots" content="noindex,nofollow"><title>Chaldea Command — FGO NA</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css?v=201.0">
@@ -18,6 +18,7 @@
     <button class="nav-item" data-view="supports"><span class="nav-index">04</span><span>Support Lists</span></button>
     <button class="nav-item" data-view="xp"><span class="nav-index">05</span><span>Calcul XP</span></button>
     <button class="nav-item" data-view="gssr"><span class="nav-index">06</span><span>GSSR</span></button>
+    <button class="nav-item julien-only-nav hidden" data-view="expenses"><span class="nav-index">07</span><span>Dépenses</span></button>
   </nav>
   <div class="sidebar-foot">
     <div class="sync-box"><span id="syncDot"></span><div><small>SYNCHRONISATION</small><b id="syncText">Mode local</b></div></div>
@@ -139,6 +140,14 @@
   </section>
 </section>
 
+
+<section class="view" id="view-expenses">
+  <div class="page-heading">
+    <div><span class="eyebrow">PRIVATE LEDGER</span><h1>Dépenses</h1><p>Historique personnel de tes dépenses FGO et raison de chaque tentative. Cette vue est réservée au compte Julien.</p></div>
+    <div class="source-badge">SUPABASE / JULIEN</div>
+  </div>
+  <div id="expensesContent"></div>
+</section>
 
 <section class="view" id="view-supports">
   <div class="page-heading">
