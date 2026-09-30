@@ -1,0 +1,1807 @@
+{
+  "version": "V213",
+  "region": "NA",
+  "events": [
+    {
+      "id": "ny-2023",
+      "year": 2023,
+      "kind": "newyear",
+      "date": "2022-12-31",
+      "title": "Nouvel An 2023",
+      "description": "20 pavillons · Lucky Bag NA",
+      "pools": [
+        {
+          "id": "pool-01",
+          "label": "Saber · Simple cible",
+          "detail": "Classe × effet NP",
+          "servants": [
+            "Okita Souji",
+            "Nero Claudius (Bride)",
+            "Miyamoto Musashi",
+            "Sigurd",
+            "Beni-Enma",
+            "Astolfo",
+            "Hai Bà Trưng"
+          ]
+        },
+        {
+          "id": "pool-02",
+          "label": "Saber · Zone",
+          "detail": "Classe × effet NP",
+          "servants": [
+            "Ryougi Shiki",
+            "Arthur Pendragon (Prototype)",
+            "Ibuki-Douji",
+            "Senji Muramasa",
+            "Okita Souji (Alter)",
+            "Charlemagne"
+          ]
+        },
+        {
+          "id": "pool-03",
+          "label": "Archer · Simple cible",
+          "detail": "Classe × effet NP",
+          "servants": [
+            "Artoria Pendragon",
+            "James Moriarty",
+            "Super Orion"
+          ]
+        },
+        {
+          "id": "pool-04",
+          "label": "Archer · Zone",
+          "detail": "Classe × effet NP",
+          "servants": [
+            "Gilgamesh",
+            "Ishtar",
+            "Jeanne d'Arc",
+            "Sei Shounagon"
+          ]
+        },
+        {
+          "id": "pool-05",
+          "label": "Lancer · Simple cible",
+          "detail": "Classe × effet NP",
+          "servants": [
+            "Scáthach",
+            "Brynhild",
+            "Tamamo-no-Mae",
+            "Mélusine"
+          ]
+        },
+        {
+          "id": "pool-06",
+          "label": "Lancer · Zone",
+          "detail": "Classe × effet NP",
+          "servants": [
+            "Ereshkigal",
+            "Romulus=Quirinus",
+            "Mélusine",
+            "Sakamoto Ryouma",
+            "Britomart"
+          ]
+        },
+        {
+          "id": "pool-07",
+          "label": "Rider · Simple cible",
+          "detail": "Classe × effet NP",
+          "servants": [
+            "Artoria Pendragon (Alter)",
+            "Sima Yi (Reines)",
+            "Kōnstantînos XI"
+          ]
+        },
+        {
+          "id": "pool-08",
+          "label": "Rider · Zone",
+          "detail": "Classe × effet NP",
+          "servants": [
+            "Iskandar",
+            "Ivan the Terrible",
+            "Leonardo da Vinci",
+            "Kyokutei Bakin"
+          ]
+        },
+        {
+          "id": "pool-09",
+          "label": "Caster · Simple cible",
+          "detail": "Classe × effet NP",
+          "servants": [
+            "Illyasviel von Einzbern",
+            "Merlin",
+            "Scáthach-Skadi",
+            "Artoria Caster",
+            "Miss Crane",
+            "Izumo-no-Okuni"
+          ]
+        },
+        {
+          "id": "pool-10",
+          "label": "Caster · Zone",
+          "detail": "Classe × effet NP",
+          "servants": [
+            "Leonardo da Vinci",
+            "Nero Claudius",
+            "Murasaki Shikibu"
+          ]
+        },
+        {
+          "id": "pool-11",
+          "label": "Assassin · Simple cible",
+          "detail": "Classe × effet NP",
+          "servants": [
+            "Mysterious Heroine X",
+            "\"First Hassan\"",
+            "Kama"
+          ]
+        },
+        {
+          "id": "pool-12",
+          "label": "Assassin · Zone",
+          "detail": "Classe × effet NP",
+          "servants": [
+            "Shuten-Douji",
+            "Cleopatra",
+            "Semiramis",
+            "Koyanskaya of Light",
+            "Huyan Zhuo"
+          ]
+        },
+        {
+          "id": "pool-13",
+          "label": "Berserker · Simple cible",
+          "detail": "Classe × effet NP",
+          "servants": [
+            "Sakata Kintoki",
+            "Mysterious Heroine X (Alter)",
+            "Hijikata Toshizo"
+          ]
+        },
+        {
+          "id": "pool-14",
+          "label": "Berserker · Zone",
+          "detail": "Classe × effet NP",
+          "servants": [
+            "Minamoto-no-Raikou",
+            "Arjuna (Alter)",
+            "Miyamoto Musashi",
+            "Morgan",
+            "Ibuki-Douji",
+            "Sen-no-Rikyu"
+          ]
+        },
+        {
+          "id": "pool-15",
+          "label": "EXTRA · Simple cible",
+          "detail": "Classe × effet NP",
+          "servants": [
+            "Jeanne d'Arc (Alter)",
+            "Meltryllis",
+            "Abigail Williams",
+            "Yang Guifei",
+            "Taira-no-Kagekiyo",
+            "Super Bunyan"
+          ]
+        },
+        {
+          "id": "pool-16",
+          "label": "EXTRA · Spécial",
+          "detail": "Classe × effet NP",
+          "servants": [
+            "Sherlock Holmes",
+            "Qin Shi Huang",
+            "Himiko",
+            "Van Gogh",
+            "Manannán mac Lir (Bazett)",
+            "Lady Avalon"
+          ]
+        },
+        {
+          "id": "pool-17",
+          "label": "EXTRA · AoE Quick",
+          "detail": "Classe × effet NP",
+          "servants": [
+            "Edmond Dantès",
+            "Voyager",
+            "Ashiya Douman",
+            "Amor (Caren)",
+            "Jacques de Molay",
+            "Scáthach-Skadi"
+          ]
+        },
+        {
+          "id": "pool-18",
+          "label": "EXTRA · AoE Arts",
+          "detail": "Classe × effet NP",
+          "servants": [
+            "Sessyoin Kiara",
+            "Katsushika Hokusai",
+            "Space Ishtar",
+            "Sessyoin Kiara",
+            "Kama",
+            "James Moriarty"
+          ]
+        },
+        {
+          "id": "pool-19",
+          "label": "EXTRA · AoE Buster I",
+          "detail": "Classe × effet NP",
+          "servants": [
+            "Okita Souji (Alter)",
+            "BB",
+            "Abigail Williams (Summer)",
+            "Oberon",
+            "Koyanskaya of Dark"
+          ]
+        },
+        {
+          "id": "pool-20",
+          "label": "EXTRA · AoE Buster II",
+          "detail": "Classe × effet NP",
+          "servants": [
+            "Amakusa Shirou",
+            "Kingprotea",
+            "Demon King Nobunaga",
+            "Artoria Pendragon",
+            "Archetype: Earth"
+          ]
+        }
+      ],
+      "source": "https://fate-go.us/newyear2023/",
+      "sourceLabel": "FGO USA"
+    },
+    {
+      "id": "ann-2023",
+      "year": 2023,
+      "kind": "anniversary",
+      "date": "2023-07-01",
+      "title": "Anniversaire 2023",
+      "description": "12 pavillons · Lucky Bag NA",
+      "pools": [
+        {
+          "id": "pool-01",
+          "label": "Année 1 · Trois chevaliers",
+          "detail": "Année de sortie",
+          "servants": [
+            "Gilgamesh",
+            "Okita Souji",
+            "Scáthach",
+            "Brynhild",
+            "Nero Claudius (Bride)",
+            "Ryougi Shiki"
+          ]
+        },
+        {
+          "id": "pool-02",
+          "label": "Année 1 · Quatre cavaliers + EXTRA",
+          "detail": "Année de sortie",
+          "servants": [
+            "Sakata Kintoki",
+            "Mysterious Heroine X",
+            "Amakusa Shirou",
+            "Edmond Dantès",
+            "Jeanne d'Arc (Alter)",
+            "Iskandar",
+            "Shuten-Douji",
+            "Minamoto-no-Raikou"
+          ]
+        },
+        {
+          "id": "pool-03",
+          "label": "Année 2 · Trois chevaliers",
+          "detail": "Année de sortie",
+          "servants": [
+            "Tamamo-no-Mae",
+            "Artoria Pendragon",
+            "Ishtar",
+            "Miyamoto Musashi",
+            "James Moriarty",
+            "Arthur Pendragon (Prototype)"
+          ]
+        },
+        {
+          "id": "pool-04",
+          "label": "Année 2 · Quatre cavaliers + EXTRA",
+          "detail": "Année de sortie",
+          "servants": [
+            "Leonardo da Vinci",
+            "Illyasviel von Einzbern",
+            "Cleopatra",
+            "Merlin",
+            "\"First Hassan\"",
+            "Mysterious Heroine X (Alter)",
+            "Hijikata Toshizo",
+            "Meltryllis",
+            "Sessyoin Kiara"
+          ]
+        },
+        {
+          "id": "pool-05",
+          "label": "Année 3 · Trois chevaliers + EXTRA",
+          "detail": "Année de sortie",
+          "servants": [
+            "Sherlock Holmes",
+            "Abigail Williams",
+            "Ereshkigal",
+            "Katsushika Hokusai",
+            "Okita Souji (Alter)",
+            "Sigurd"
+          ]
+        },
+        {
+          "id": "pool-06",
+          "label": "Année 3 · Quatre cavaliers",
+          "detail": "Année de sortie",
+          "servants": [
+            "Nero Claudius",
+            "Artoria Pendragon (Alter)",
+            "Semiramis",
+            "Ivan the Terrible",
+            "Scáthach-Skadi"
+          ]
+        },
+        {
+          "id": "pool-07",
+          "label": "Année 4 · Trois chevaliers + EXTRA",
+          "detail": "Année de sortie",
+          "servants": [
+            "Jeanne d'Arc",
+            "BB",
+            "Qin Shi Huang",
+            "Beni-Enma",
+            "Kingprotea",
+            "Demon King Nobunaga"
+          ]
+        },
+        {
+          "id": "pool-08",
+          "label": "Année 4 · Quatre cavaliers",
+          "detail": "Année de sortie",
+          "servants": [
+            "Murasaki Shikibu",
+            "Kama",
+            "Sima Yi (Reines)",
+            "Arjuna (Alter)"
+          ]
+        },
+        {
+          "id": "pool-09",
+          "label": "Année 5 · Trois chevaliers",
+          "detail": "Année de sortie",
+          "servants": [
+            "Astolfo",
+            "Super Orion",
+            "Sei Shounagon",
+            "Romulus=Quirinus"
+          ]
+        },
+        {
+          "id": "pool-10",
+          "label": "Année 5 · Quatre cavaliers + EXTRA",
+          "detail": "Année de sortie",
+          "servants": [
+            "Leonardo da Vinci",
+            "Miyamoto Musashi",
+            "Artoria Pendragon",
+            "Space Ishtar",
+            "Yang Guifei",
+            "Voyager"
+          ]
+        },
+        {
+          "id": "pool-11",
+          "label": "Année 6 · Trois chevaliers + EXTRA",
+          "detail": "Année de sortie",
+          "servants": [
+            "Sessyoin Kiara",
+            "Abigail Williams (Summer)",
+            "Himiko",
+            "Van Gogh",
+            "Ashiya Douman",
+            "Ibuki-Douji",
+            "Senji Muramasa",
+            "Mélusine"
+          ]
+        },
+        {
+          "id": "pool-12",
+          "label": "Année 6 · Quatre cavaliers + EXTRA",
+          "detail": "Année de sortie",
+          "servants": [
+            "Artoria Caster",
+            "Taira-no-Kagekiyo",
+            "Amor (Caren)",
+            "Miss Crane",
+            "Morgan"
+          ]
+        }
+      ],
+      "source": "https://grandorder.gamepress.gg/p/fgo-6th-anniversary-campaign",
+      "sourceLabel": "GamePress"
+    },
+    {
+      "id": "ny-2024",
+      "year": 2024,
+      "kind": "newyear",
+      "date": "2023-12-31",
+      "title": "Nouvel An 2024",
+      "description": "29 pavillons · Lucky Bag NA",
+      "pools": [
+        {
+          "id": "pool-01",
+          "label": "Quick · Simple cible I",
+          "detail": "NP Quick",
+          "servants": [
+            "Mysterious Heroine X",
+            "Scáthach",
+            "Meltryllis",
+            "Mysterious Heroine X (Alter)",
+            "Okita Souji"
+          ]
+        },
+        {
+          "id": "pool-02",
+          "label": "Quick · Simple cible II",
+          "detail": "NP Quick",
+          "servants": [
+            "Taira-no-Kagekiyo",
+            "Artoria Pendragon (Alter)",
+            "Kama",
+            "Astolfo"
+          ]
+        },
+        {
+          "id": "pool-03",
+          "label": "Quick · Simple cible III",
+          "detail": "NP Quick",
+          "servants": [
+            "Medusa",
+            "Wandjina",
+            "Manannán mac Lir (Bazett)",
+            "Izumo-no-Okuni"
+          ]
+        },
+        {
+          "id": "pool-04",
+          "label": "Quick · Zone I",
+          "detail": "NP Quick",
+          "servants": [
+            "Sei Shounagon",
+            "Ashiya Douman",
+            "Jacques de Molay",
+            "Okita Souji (Alter)",
+            "Amor (Caren)"
+          ]
+        },
+        {
+          "id": "pool-05",
+          "label": "Quick · Zone II",
+          "detail": "NP Quick",
+          "servants": [
+            "Sen-no-Rikyu",
+            "Britomart",
+            "Huyan Zhuo",
+            "Scáthach-Skadi"
+          ]
+        },
+        {
+          "id": "pool-06",
+          "label": "Arts · Simple cible I",
+          "detail": "NP Arts",
+          "servants": [
+            "Beni-Enma",
+            "Artoria Pendragon",
+            "Nero Claudius (Bride)",
+            "Yang Guifei"
+          ]
+        },
+        {
+          "id": "pool-07",
+          "label": "Arts · Simple cible II",
+          "detail": "NP Arts",
+          "servants": [
+            "Hai Bà Trưng",
+            "Mélusine",
+            "Uesugi Kenshin",
+            "Artoria Caster"
+          ]
+        },
+        {
+          "id": "pool-08",
+          "label": "Arts · Spécial I",
+          "detail": "NP Arts",
+          "servants": [
+            "Artoria Caster",
+            "Sima Yi (Reines)",
+            "Scáthach-Skadi",
+            "Qin Shi Huang"
+          ]
+        },
+        {
+          "id": "pool-09",
+          "label": "Arts · Spécial II",
+          "detail": "NP Arts",
+          "servants": [
+            "Miss Crane",
+            "Lady Avalon",
+            "Van Gogh"
+          ]
+        },
+        {
+          "id": "pool-10",
+          "label": "Arts · Zone I",
+          "detail": "NP Arts",
+          "servants": [
+            "Leonardo da Vinci",
+            "Ryougi Shiki",
+            "Katsushika Hokusai",
+            "Sessyoin Kiara",
+            "Shuten-Douji"
+          ]
+        },
+        {
+          "id": "pool-11",
+          "label": "Arts · Zone II",
+          "detail": "NP Arts",
+          "servants": [
+            "Leonardo da Vinci",
+            "Miyamoto Musashi",
+            "Jeanne d'Arc",
+            "Murasaki Shikibu"
+          ]
+        },
+        {
+          "id": "pool-12",
+          "label": "Arts · Zone III",
+          "detail": "NP Arts",
+          "servants": [
+            "Sessyoin Kiara",
+            "Space Ishtar",
+            "Kama",
+            "Kyokutei Bakin"
+          ]
+        },
+        {
+          "id": "pool-13",
+          "label": "Arts · Zone IV",
+          "detail": "NP Arts",
+          "servants": [
+            "Ibuki-Douji",
+            "Durga",
+            "Mélusine",
+            "Pope Johanna"
+          ]
+        },
+        {
+          "id": "pool-14",
+          "label": "Buster · Simple cible I",
+          "detail": "NP Buster",
+          "servants": [
+            "Brynhild",
+            "Illyasviel von Einzbern",
+            "Jeanne d'Arc (Alter)",
+            "Tamamo-no-Mae"
+          ]
+        },
+        {
+          "id": "pool-15",
+          "label": "Buster · Simple cible II",
+          "detail": "NP Buster",
+          "servants": [
+            "Himiko",
+            "Abigail Williams",
+            "Super Bunyan",
+            "Miyamoto Musashi"
+          ]
+        },
+        {
+          "id": "pool-16",
+          "label": "Buster · Zone I",
+          "detail": "NP Buster",
+          "servants": [
+            "Ishtar",
+            "Cleopatra",
+            "Nero Claudius",
+            "Minamoto-no-Raikou",
+            "Ereshkigal"
+          ]
+        },
+        {
+          "id": "pool-17",
+          "label": "Buster · Zone II",
+          "detail": "NP Buster",
+          "servants": [
+            "BB",
+            "Kingprotea",
+            "Okita Souji (Alter)",
+            "Semiramis",
+            "Demon King Nobunaga"
+          ]
+        },
+        {
+          "id": "pool-18",
+          "label": "Buster · Zone III",
+          "detail": "NP Buster",
+          "servants": [
+            "Ibuki-Douji",
+            "Abigail Williams (Summer)",
+            "Romulus=Quirinus",
+            "Artoria Pendragon"
+          ]
+        },
+        {
+          "id": "pool-19",
+          "label": "Buster · Zone IV",
+          "detail": "NP Buster",
+          "servants": [
+            "Koyanskaya of Light",
+            "Mélusine",
+            "Koyanskaya of Dark",
+            "Morgan"
+          ]
+        },
+        {
+          "id": "pool-20",
+          "label": "Buster · Zone V",
+          "detail": "NP Buster",
+          "servants": [
+            "Kukulcan",
+            "Archetype: Earth",
+            "Aesc the Rain Witch",
+            "Larva/Tiamat"
+          ]
+        },
+        {
+          "id": "pool-21",
+          "label": "Quick · Blanc · Simple cible",
+          "detail": "NP Quick",
+          "servants": [
+            "Taira-no-Kagekiyo",
+            "Wandjina",
+            "Astolfo"
+          ]
+        },
+        {
+          "id": "pool-22",
+          "label": "Arts · Blanc · Spécial",
+          "detail": "NP Arts",
+          "servants": [
+            "Sherlock Holmes",
+            "Super Orion",
+            "Merlin",
+            "Qin Shi Huang"
+          ]
+        },
+        {
+          "id": "pool-23",
+          "label": "Buster · Blanc · ST/Spécial I",
+          "detail": "NP Buster",
+          "servants": [
+            "\"First Hassan\"",
+            "Hijikata Toshizo",
+            "Sakata Kintoki",
+            "James Moriarty"
+          ]
+        },
+        {
+          "id": "pool-24",
+          "label": "Buster · Blanc · ST/Spécial II",
+          "detail": "NP Buster",
+          "servants": [
+            "Sigurd",
+            "Ptolemaîos",
+            "Kōnstantînos XI"
+          ]
+        },
+        {
+          "id": "pool-25",
+          "label": "Quick · Blanc · Zone",
+          "detail": "NP Quick",
+          "servants": [
+            "Ashiya Douman",
+            "Takasugi Shinsaku",
+            "Edmond Dantès",
+            "Voyager",
+            "Charlemagne"
+          ]
+        },
+        {
+          "id": "pool-26",
+          "label": "Arts · Blanc · Zone I",
+          "detail": "NP Arts",
+          "servants": [
+            "James Moriarty",
+            "Sakamoto Ryouma",
+            "Senji Muramasa"
+          ]
+        },
+        {
+          "id": "pool-27",
+          "label": "Arts · Blanc · Zone II",
+          "detail": "NP Arts",
+          "servants": [
+            "Kotomine Kirei",
+            "Ptolemaîos",
+            "Tezcatlipoca"
+          ]
+        },
+        {
+          "id": "pool-28",
+          "label": "Buster · Blanc · Zone I",
+          "detail": "NP Buster",
+          "servants": [
+            "Ivan the Terrible",
+            "Gilgamesh",
+            "Amakusa Shirou",
+            "Arthur Pendragon (Prototype)",
+            "Iskandar"
+          ]
+        },
+        {
+          "id": "pool-29",
+          "label": "Buster · Blanc · Zone II",
+          "detail": "NP Buster",
+          "servants": [
+            "Arjuna (Alter)",
+            "Takeda Harunobu",
+            "Romulus=Quirinus",
+            "Oberon"
+          ]
+        }
+      ],
+      "source": "https://grandorder.gamepress.gg/summon-banner-list",
+      "sourceLabel": "GamePress"
+    },
+    {
+      "id": "ann-2024",
+      "year": 2024,
+      "kind": "anniversary",
+      "date": "2024-07-03",
+      "title": "Anniversaire 2024",
+      "description": "20 pavillons + Destiny Order · NA",
+      "pools": [
+        {
+          "id": "pool-01",
+          "label": "Saber 1",
+          "detail": "Classe",
+          "servants": [
+            "Okita Souji",
+            "Nero Claudius (Bride)",
+            "Ryougi Shiki",
+            "Miyamoto Musashi",
+            "Arthur Pendragon (Prototype)",
+            "Sigurd"
+          ]
+        },
+        {
+          "id": "pool-02",
+          "label": "Saber 2",
+          "detail": "Classe",
+          "servants": [
+            "Beni-Enma",
+            "Astolfo",
+            "Ibuki-Douji",
+            "Senji Muramasa",
+            "Okita Souji (Alter)",
+            "Hai Bà Trưng",
+            "Charlemagne"
+          ]
+        },
+        {
+          "id": "pool-03",
+          "label": "Archer 1",
+          "detail": "Classe",
+          "servants": [
+            "Gilgamesh",
+            "Artoria Pendragon",
+            "Ishtar",
+            "James Moriarty"
+          ]
+        },
+        {
+          "id": "pool-04",
+          "label": "Archer 2",
+          "detail": "Classe",
+          "servants": [
+            "Jeanne d'Arc",
+            "Super Orion",
+            "Sei Shounagon"
+          ]
+        },
+        {
+          "id": "pool-05",
+          "label": "Lancer 1",
+          "detail": "Classe",
+          "servants": [
+            "Scáthach",
+            "Brynhild",
+            "Tamamo-no-Mae",
+            "Ereshkigal"
+          ]
+        },
+        {
+          "id": "pool-06",
+          "label": "Lancer 2",
+          "detail": "Classe",
+          "servants": [
+            "Romulus=Quirinus",
+            "Mélusine",
+            "Sakamoto Ryouma"
+          ]
+        },
+        {
+          "id": "pool-07",
+          "label": "Rider 1",
+          "detail": "Classe",
+          "servants": [
+            "Iskandar",
+            "Artoria Pendragon (Alter)",
+            "Ivan the Terrible"
+          ]
+        },
+        {
+          "id": "pool-08",
+          "label": "Rider 2",
+          "detail": "Classe",
+          "servants": [
+            "Sima Yi (Reines)",
+            "Leonardo da Vinci",
+            "Kōnstantînos XI",
+            "Kyokutei Bakin"
+          ]
+        },
+        {
+          "id": "pool-09",
+          "label": "Caster 1",
+          "detail": "Classe",
+          "servants": [
+            "Leonardo da Vinci",
+            "Illyasviel von Einzbern",
+            "Merlin",
+            "Nero Claudius",
+            "Scáthach-Skadi"
+          ]
+        },
+        {
+          "id": "pool-10",
+          "label": "Caster 2",
+          "detail": "Classe",
+          "servants": [
+            "Murasaki Shikibu",
+            "Artoria Caster",
+            "Miss Crane",
+            "Izumo-no-Okuni"
+          ]
+        },
+        {
+          "id": "pool-11",
+          "label": "Assassin 1",
+          "detail": "Classe",
+          "servants": [
+            "Mysterious Heroine X",
+            "Shuten-Douji",
+            "Cleopatra",
+            "\"First Hassan\""
+          ]
+        },
+        {
+          "id": "pool-12",
+          "label": "Assassin 2",
+          "detail": "Classe",
+          "servants": [
+            "Semiramis",
+            "Kama",
+            "Koyanskaya of Light"
+          ]
+        },
+        {
+          "id": "pool-13",
+          "label": "Berserker 1",
+          "detail": "Classe",
+          "servants": [
+            "Sakata Kintoki",
+            "Minamoto-no-Raikou",
+            "Mysterious Heroine X (Alter)",
+            "Hijikata Toshizo"
+          ]
+        },
+        {
+          "id": "pool-14",
+          "label": "Berserker 2",
+          "detail": "Classe",
+          "servants": [
+            "Arjuna (Alter)",
+            "Miyamoto Musashi",
+            "Morgan"
+          ]
+        },
+        {
+          "id": "pool-15",
+          "label": "EXTRA 1",
+          "detail": "Classe",
+          "servants": [
+            "Amakusa Shirou",
+            "Edmond Dantès",
+            "Jeanne d'Arc (Alter)",
+            "Sherlock Holmes"
+          ]
+        },
+        {
+          "id": "pool-16",
+          "label": "EXTRA 2",
+          "detail": "Classe",
+          "servants": [
+            "BB",
+            "Qin Shi Huang",
+            "Demon King Nobunaga",
+            "Artoria Pendragon",
+            "Space Ishtar"
+          ]
+        },
+        {
+          "id": "pool-17",
+          "label": "EXTRA 3",
+          "detail": "Classe",
+          "servants": [
+            "Sessyoin Kiara",
+            "Himiko",
+            "Taira-no-Kagekiyo",
+            "Amor (Caren)",
+            "Kama",
+            "James Moriarty"
+          ]
+        },
+        {
+          "id": "pool-18",
+          "label": "EXTRA 4",
+          "detail": "Classe",
+          "servants": [
+            "Meltryllis",
+            "Sessyoin Kiara",
+            "Abigail Williams",
+            "Katsushika Hokusai",
+            "Okita Souji (Alter)"
+          ]
+        },
+        {
+          "id": "pool-19",
+          "label": "EXTRA 5",
+          "detail": "Classe",
+          "servants": [
+            "Kingprotea",
+            "Yang Guifei",
+            "Voyager",
+            "Abigail Williams (Summer)",
+            "Van Gogh"
+          ]
+        },
+        {
+          "id": "pool-20",
+          "label": "EXTRA 6",
+          "detail": "Classe",
+          "servants": [
+            "Ashiya Douman",
+            "Oberon",
+            "Jacques de Molay",
+            "Koyanskaya of Dark",
+            "Manannán mac Lir (Bazett)",
+            "Super Bunyan"
+          ]
+        }
+      ],
+      "destinyOrder": {
+        "enabled": true,
+        "slotCount": 9,
+        "slots": [
+          {
+            "id": "saber",
+            "label": "Saber",
+            "class": "Saber"
+          },
+          {
+            "id": "archer",
+            "label": "Archer",
+            "class": "Archer"
+          },
+          {
+            "id": "lancer",
+            "label": "Lancer",
+            "class": "Lancer"
+          },
+          {
+            "id": "rider",
+            "label": "Rider",
+            "class": "Rider"
+          },
+          {
+            "id": "caster",
+            "label": "Caster",
+            "class": "Caster"
+          },
+          {
+            "id": "assassin",
+            "label": "Assassin",
+            "class": "Assassin"
+          },
+          {
+            "id": "berserker",
+            "label": "Berserker",
+            "class": "Berserker"
+          },
+          {
+            "id": "extra-i",
+            "label": "Extra I",
+            "class": "Extra I"
+          },
+          {
+            "id": "extra-ii",
+            "label": "Extra II",
+            "class": "Extra II"
+          }
+        ],
+        "cost": "30 Quartz payants",
+        "oncePerAccount": true,
+        "guaranteed": "1 des 9 Servants choisis"
+      },
+      "source": "https://grandorder.gamepress.gg/p/fgo-7th-anniversary-campaign",
+      "sourceLabel": "GamePress"
+    },
+    {
+      "id": "ny-2025",
+      "year": 2025,
+      "kind": "newyear",
+      "date": "2024-12-31",
+      "title": "Nouvel An 2025",
+      "description": "20 pavillons · Lucky Bag NA",
+      "pools": [
+        {
+          "id": "pool-01",
+          "label": "Saber · Simple cible",
+          "detail": "Classe × effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-02",
+          "label": "Saber · Zone",
+          "detail": "Classe × effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-03",
+          "label": "Archer · Simple cible & Support",
+          "detail": "Classe × effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-04",
+          "label": "Archer · Zone",
+          "detail": "Classe × effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-05",
+          "label": "Lancer · Simple cible",
+          "detail": "Classe × effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-06",
+          "label": "Lancer · Zone",
+          "detail": "Classe × effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-07",
+          "label": "Rider · Simple cible & Support",
+          "detail": "Classe × effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-08",
+          "label": "Rider · Zone",
+          "detail": "Classe × effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-09",
+          "label": "Caster · Simple cible & Support",
+          "detail": "Classe × effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-10",
+          "label": "Caster · Zone",
+          "detail": "Classe × effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-11",
+          "label": "Assassin · Simple cible",
+          "detail": "Classe × effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-12",
+          "label": "Assassin · Zone",
+          "detail": "Classe × effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-13",
+          "label": "Berserker · Simple cible",
+          "detail": "Classe × effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-14",
+          "label": "Berserker · Zone",
+          "detail": "Classe × effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-15",
+          "label": "EXTRA · Simple cible",
+          "detail": "Classe × effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-16",
+          "label": "EXTRA · Support",
+          "detail": "Classe × effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-17",
+          "label": "EXTRA · Quick Zone",
+          "detail": "Classe × effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-18",
+          "label": "EXTRA · Arts Zone",
+          "detail": "Classe × effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-19",
+          "label": "EXTRA · Buster Zone I",
+          "detail": "Classe × effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-20",
+          "label": "EXTRA · Buster Zone II",
+          "detail": "Classe × effet NP",
+          "servants": []
+        }
+      ],
+      "source": "https://fate-go.us/newyear2025/",
+      "sourceLabel": "FGO USA",
+      "compositionNote": "La page officielle NA expose les 20 groupes mais pas leur composition textuelle exploitable dans une API publique ; les résultats peuvent néanmoins être enregistrés avec un champ libre."
+    },
+    {
+      "id": "ann-2025",
+      "year": 2025,
+      "kind": "anniversary",
+      "date": "2025-07-04",
+      "title": "Anniversaire 2025",
+      "description": "12 pavillons + Destiny Order · NA",
+      "pools": [
+        {
+          "id": "pool-01",
+          "label": "Année 6 · Femme 1",
+          "detail": "Année de sortie",
+          "servants": [
+            "Sessyoin Kiara",
+            "Himiko",
+            "Artoria Caster",
+            "Abigail Williams (Summer)"
+          ]
+        },
+        {
+          "id": "pool-02",
+          "label": "Année 6 · Femme 2",
+          "detail": "Année de sortie",
+          "servants": [
+            "Ibuki-Douji",
+            "Ashiya Douman",
+            "Van Gogh",
+            "Taira-no-Kagekiyo"
+          ]
+        },
+        {
+          "id": "pool-03",
+          "label": "Année 6 · Femme 3",
+          "detail": "Année de sortie",
+          "servants": [
+            "Amor (Caren)",
+            "Miss Crane",
+            "Mélusine",
+            "Morgan"
+          ]
+        },
+        {
+          "id": "pool-04",
+          "label": "Année 6 · Homme",
+          "detail": "Année de sortie",
+          "servants": [
+            "Ashiya Douman",
+            "Taira-no-Kagekiyo",
+            "Senji Muramasa"
+          ]
+        },
+        {
+          "id": "pool-05",
+          "label": "Année 7 · Femme 1",
+          "detail": "Année de sortie",
+          "servants": [
+            "Okita Souji (Alter)",
+            "Koyanskaya of Light",
+            "Kama"
+          ]
+        },
+        {
+          "id": "pool-06",
+          "label": "Année 7 · Femme 2",
+          "detail": "Année de sortie",
+          "servants": [
+            "Koyanskaya of Dark",
+            "Izumo-no-Okuni",
+            "Jacques de Molay"
+          ]
+        },
+        {
+          "id": "pool-07",
+          "label": "Année 7 · Femme 3",
+          "detail": "Année de sortie",
+          "servants": [
+            "Hai Bà Trưng",
+            "Super Bunyan",
+            "Kyokutei Bakin",
+            "Manannán mac Lir (Bazett)"
+          ]
+        },
+        {
+          "id": "pool-08",
+          "label": "Année 7 · Homme",
+          "detail": "Année de sortie",
+          "servants": [
+            "Kōnstantînos XI",
+            "Sakamoto Ryouma",
+            "Oberon",
+            "Charlemagne",
+            "James Moriarty"
+          ]
+        },
+        {
+          "id": "pool-09",
+          "label": "Année 8 · Femme 1",
+          "detail": "Année de sortie",
+          "servants": [
+            "Lady Avalon",
+            "Archetype: Earth",
+            "Ibuki-Douji",
+            "Scáthach-Skadi"
+          ]
+        },
+        {
+          "id": "pool-10",
+          "label": "Année 8 · Femme 2",
+          "detail": "Année de sortie",
+          "servants": [
+            "Sen-no-Rikyu",
+            "Kukulcan",
+            "Huyan Zhuo",
+            "Britomart"
+          ]
+        },
+        {
+          "id": "pool-11",
+          "label": "Année 8 · Femme 3",
+          "detail": "Année de sortie",
+          "servants": [
+            "Pope Johanna",
+            "Larva/Tiamat",
+            "Medusa",
+            "Durga"
+          ]
+        },
+        {
+          "id": "pool-12",
+          "label": "Année 8 · Homme",
+          "detail": "Année de sortie",
+          "servants": [
+            "Kotomine Kirei",
+            "Takasugi Shinsaku",
+            "Tezcatlipoca"
+          ]
+        }
+      ],
+      "destinyOrder": {
+        "enabled": true,
+        "slotCount": 9,
+        "slots": [
+          {
+            "id": "saber",
+            "label": "Saber",
+            "class": "Saber"
+          },
+          {
+            "id": "archer",
+            "label": "Archer",
+            "class": "Archer"
+          },
+          {
+            "id": "lancer",
+            "label": "Lancer",
+            "class": "Lancer"
+          },
+          {
+            "id": "rider",
+            "label": "Rider",
+            "class": "Rider"
+          },
+          {
+            "id": "caster",
+            "label": "Caster",
+            "class": "Caster"
+          },
+          {
+            "id": "assassin",
+            "label": "Assassin",
+            "class": "Assassin"
+          },
+          {
+            "id": "berserker",
+            "label": "Berserker",
+            "class": "Berserker"
+          },
+          {
+            "id": "extra-i",
+            "label": "Extra I",
+            "class": "Extra I"
+          },
+          {
+            "id": "extra-ii",
+            "label": "Extra II",
+            "class": "Extra II"
+          }
+        ],
+        "cost": "30 Quartz payants",
+        "oncePerAccount": true,
+        "guaranteed": "1 des 9 Servants choisis"
+      },
+      "source": "https://grandorder.gamepress.gg/p/fgo-8th-anniversary-campaign",
+      "sourceLabel": "GamePress"
+    },
+    {
+      "id": "ny-2026",
+      "year": 2026,
+      "kind": "newyear",
+      "date": "2025-12-31",
+      "title": "Nouvel An 2026",
+      "description": "29 pavillons · Lucky Bag NA",
+      "pools": [
+        {
+          "id": "pool-01",
+          "label": "Pavillon 01",
+          "detail": "Classe × sexe × type/effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-02",
+          "label": "Pavillon 02",
+          "detail": "Classe × sexe × type/effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-03",
+          "label": "Pavillon 03",
+          "detail": "Classe × sexe × type/effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-04",
+          "label": "Pavillon 04",
+          "detail": "Classe × sexe × type/effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-05",
+          "label": "Pavillon 05",
+          "detail": "Classe × sexe × type/effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-06",
+          "label": "Pavillon 06",
+          "detail": "Classe × sexe × type/effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-07",
+          "label": "Pavillon 07",
+          "detail": "Classe × sexe × type/effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-08",
+          "label": "Pavillon 08",
+          "detail": "Classe × sexe × type/effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-09",
+          "label": "Pavillon 09",
+          "detail": "Classe × sexe × type/effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-10",
+          "label": "Pavillon 10",
+          "detail": "Classe × sexe × type/effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-11",
+          "label": "Pavillon 11",
+          "detail": "Classe × sexe × type/effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-12",
+          "label": "Pavillon 12",
+          "detail": "Classe × sexe × type/effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-13",
+          "label": "Pavillon 13",
+          "detail": "Classe × sexe × type/effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-14",
+          "label": "Pavillon 14",
+          "detail": "Classe × sexe × type/effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-15",
+          "label": "Pavillon 15",
+          "detail": "Classe × sexe × type/effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-16",
+          "label": "Pavillon 16",
+          "detail": "Classe × sexe × type/effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-17",
+          "label": "Pavillon 17",
+          "detail": "Classe × sexe × type/effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-18",
+          "label": "Pavillon 18",
+          "detail": "Classe × sexe × type/effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-19",
+          "label": "Pavillon 19",
+          "detail": "Classe × sexe × type/effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-20",
+          "label": "Pavillon 20",
+          "detail": "Classe × sexe × type/effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-21",
+          "label": "Pavillon 21",
+          "detail": "Classe × sexe × type/effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-22",
+          "label": "Pavillon 22",
+          "detail": "Classe × sexe × type/effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-23",
+          "label": "Pavillon 23",
+          "detail": "Classe × sexe × type/effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-24",
+          "label": "Pavillon 24",
+          "detail": "Classe × sexe × type/effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-25",
+          "label": "Pavillon 25",
+          "detail": "Classe × sexe × type/effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-26",
+          "label": "Pavillon 26",
+          "detail": "Classe × sexe × type/effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-27",
+          "label": "Pavillon 27",
+          "detail": "Classe × sexe × type/effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-28",
+          "label": "Pavillon 28",
+          "detail": "Classe × sexe × type/effet NP",
+          "servants": []
+        },
+        {
+          "id": "pool-29",
+          "label": "Pavillon 29",
+          "detail": "Classe × sexe × type/effet NP",
+          "servants": []
+        }
+      ],
+      "source": "https://fate-go.us/newyear2026/",
+      "sourceLabel": "FGO USA",
+      "compositionNote": "La campagne officielle NA confirme 29 groupes par sexe et type/effet de NP ; la page publique ne fournit pas une liste textuelle exploitable des Servants par groupe. Un champ libre reste disponible pour enregistrer le résultat."
+    },
+    {
+      "id": "ann-2026",
+      "year": 2026,
+      "kind": "anniversary",
+      "date": "2026-07-04",
+      "title": "Anniversaire 2026",
+      "description": "17 pavillons + Destiny Order · NA",
+      "pools": [
+        {
+          "id": "pool-01",
+          "label": "Heian-kyō",
+          "detail": "Lostbelt",
+          "servants": [
+            "Taira-no-Kagekiyo",
+            "Ibuki-Douji",
+            "Ashiya Douman"
+          ]
+        },
+        {
+          "id": "pool-02",
+          "label": "Lostbelt 6",
+          "detail": "Lostbelt",
+          "servants": [
+            "Oberon",
+            "Morgan",
+            "Artoria Caster",
+            "Mélusine"
+          ]
+        },
+        {
+          "id": "pool-03",
+          "label": "Traum",
+          "detail": "Lostbelt",
+          "servants": [
+            "James Moriarty",
+            "Pope Johanna",
+            "Charlemagne",
+            "Kōnstantînos XI"
+          ]
+        },
+        {
+          "id": "pool-04",
+          "label": "Lostbelt 7",
+          "detail": "Lostbelt",
+          "servants": [
+            "Koyanskaya of Light",
+            "Tezcatlipoca",
+            "Kukulcan"
+          ]
+        },
+        {
+          "id": "pool-05",
+          "label": "Ordeal Call",
+          "detail": "Ordeal Call",
+          "servants": [
+            "Medusa",
+            "Durga",
+            "The Count of Monte Cristo",
+            "Britomart"
+          ]
+        },
+        {
+          "id": "pool-06",
+          "label": "Existence outside of the domain",
+          "detail": "Thématique",
+          "servants": [
+            "Wandjina",
+            "Jacques de Molay",
+            "Van Gogh"
+          ]
+        },
+        {
+          "id": "pool-07",
+          "label": "Wakuwaku doubutsu",
+          "detail": "Thématique",
+          "servants": [
+            "Miss Crane",
+            "Kyokutei Bakin",
+            "Huyan Zhuo"
+          ]
+        },
+        {
+          "id": "pool-08",
+          "label": "Companions",
+          "detail": "Thématique",
+          "servants": [
+            "Hibiki & Chikagi",
+            "Hai Bà Trưng",
+            "Okita Souji (Alter)"
+          ]
+        },
+        {
+          "id": "pool-09",
+          "label": "New Year",
+          "detail": "Thématique",
+          "servants": [
+            "Yamato Takeru",
+            "Kotomine Kirei",
+            "Koyanskaya of Dark",
+            "Senji Muramasa"
+          ]
+        },
+        {
+          "id": "pool-10",
+          "label": "Chocolate",
+          "detail": "Thématique",
+          "servants": [
+            "Andromeda",
+            "Manannán mac Lir (Bazett)",
+            "Amor (Caren)"
+          ]
+        },
+        {
+          "id": "pool-11",
+          "label": "Summer 1",
+          "detail": "Thématique",
+          "servants": [
+            "Kama",
+            "Abigail Williams (Summer)",
+            "Sessyoin Kiara"
+          ]
+        },
+        {
+          "id": "pool-12",
+          "label": "Summer 2",
+          "detail": "Thématique",
+          "servants": [
+            "Scáthach-Skadi",
+            "Ibuki-Douji",
+            "Lady Avalon"
+          ]
+        },
+        {
+          "id": "pool-13",
+          "label": "Summer 3",
+          "detail": "Thématique",
+          "servants": [
+            "Mélusine",
+            "Artoria Caster",
+            "Aesc the Rain Witch"
+          ]
+        },
+        {
+          "id": "pool-14",
+          "label": "Gudaguda 1",
+          "detail": "Thématique",
+          "servants": [
+            "Himiko",
+            "Sakamoto Ryouma",
+            "Izumo-no-Okuni"
+          ]
+        },
+        {
+          "id": "pool-15",
+          "label": "Gudaguda 2",
+          "detail": "Thématique",
+          "servants": [
+            "Uesugi Kenshin",
+            "Takeda Harunobu",
+            "Sen-no-Rikyu",
+            "Takasugi Shinsaku"
+          ]
+        },
+        {
+          "id": "pool-16",
+          "label": "Borderless 1",
+          "detail": "Thématique",
+          "servants": [
+            "Larva/Tiamat",
+            "Archetype: Earth",
+            "Super Bunyan",
+            "Ptolemaîos"
+          ]
+        },
+        {
+          "id": "pool-17",
+          "label": "Borderless 2",
+          "detail": "Thématique",
+          "servants": [
+            "Kuonji Alice",
+            "Aozaki Aoko",
+            "Minamoto-no-Raikou/Ushi Gozen"
+          ]
+        }
+      ],
+      "destinyOrder": {
+        "enabled": true,
+        "slotCount": 9,
+        "slots": [
+          {
+            "id": "saber",
+            "label": "Saber",
+            "class": "Saber"
+          },
+          {
+            "id": "archer",
+            "label": "Archer",
+            "class": "Archer"
+          },
+          {
+            "id": "lancer",
+            "label": "Lancer",
+            "class": "Lancer"
+          },
+          {
+            "id": "rider",
+            "label": "Rider",
+            "class": "Rider"
+          },
+          {
+            "id": "caster",
+            "label": "Caster",
+            "class": "Caster"
+          },
+          {
+            "id": "assassin",
+            "label": "Assassin",
+            "class": "Assassin"
+          },
+          {
+            "id": "berserker",
+            "label": "Berserker",
+            "class": "Berserker"
+          },
+          {
+            "id": "extra-i",
+            "label": "Extra I",
+            "class": "Extra I"
+          },
+          {
+            "id": "extra-ii",
+            "label": "Extra II",
+            "class": "Extra II"
+          }
+        ],
+        "cost": "30 Quartz payants",
+        "oncePerAccount": true,
+        "guaranteed": "1 des 9 Servants choisis"
+      },
+      "source": "https://fate-go.us/9th_anniversary/campaign/",
+      "sourceLabel": "FGO USA"
+    }
+  ]
+}
