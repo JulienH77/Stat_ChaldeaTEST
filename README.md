@@ -1,3 +1,7 @@
+## V217
+
+Cette version conserve la galerie de Servants, les battle sprites et la rubrique Dépenses. Atlas Academy est chargé à la demande depuis l’onglet Servants et non au démarrage de l’Overview. L’onglet GSSR propose une sélection visuelle des pavillons, les Servants obtenus et le suivi des 9 choix Destiny Order quand disponible.
+
 # Chaldea Command
 
 **Chaldea Command** est une application web de suivi de comptes **Fate/Grand Order (FGO) — serveur NA**.
@@ -28,6 +32,13 @@ Chaque membre du groupe possède ses propres données :
 Les autres utilisateurs peuvent consulter ces données sans pouvoir les modifier.
 
 ---
+
+
+## Dépenses — Julien uniquement
+
+Un onglet **Dépenses** est affiché uniquement lorsqu’une session Supabase authentifiée est associée au compte **Julien**. Il lit la table privée `chaldea_expenses` via le client Supabase côté navigateur. La sécurité ne repose pas sur le bouton masqué : la table est protégée par une policy RLS qui ne laisse lire que le compte Julien.
+
+Les montants personnels ne doivent pas être ajoutés dans `data/*.json`, `app.js` ou un autre fichier publié par GitHub Pages. Le seed de l’historique est fourni séparément et ne doit pas être commité dans le dépôt public.
 
 # Les différents onglets
 
@@ -714,7 +725,7 @@ Chaque événement permet d'enregistrer le pavillon choisi. Les événements pou
 
 À partir de l'anniversaire 2024, le tracker affiche également un module **Destiny Order** à 9 emplacements : un Servant 5★ par classe de base et deux emplacements Extra. Les choix sont enregistrés séparément pour chaque Master dans le navigateur via `localStorage`, sous la clé `chaldea-v200-gssr-choices`. Ils ne nécessitent donc aucune nouvelle table Supabase pour V202.
 
-Les données et règles reprises dans le fichier `/data/gssr.json` s'appuient notamment sur les historiques GamePress, les pages officielles FGO USA lorsque disponibles et les historiques Fate/Grand Companion. Les nombres de pavillons repris dans le fichier sont conservés séparément des libellés lorsque la composition détaillée n’est pas suffisamment exploitable. Les informations spécifiques au Destiny Order NA 2024–2026 sont documentées dans les sources liées à chaque événement.
+Les données et règles reprises dans le fichier `/data/gssr-na.json` s'appuient notamment sur les historiques GamePress, les pages officielles FGO USA lorsque disponibles et les historiques Fate/Grand Companion. Les nombres de pavillons repris dans le fichier sont conservés séparément des libellés lorsque la composition détaillée n’est pas suffisamment exploitable. Les informations spécifiques au Destiny Order NA 2024–2026 sont documentées dans les sources liées à chaque événement.
 
 ### Limitation volontaire du Destiny Order
 
