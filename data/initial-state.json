@@ -75,7 +75,7 @@
           "grail": 0,
           "fouHp": 0,
           "fouAtk": 0,
-          "np": 43,
+          "np": 5,
           "skills": [
             8,
             8,
@@ -222,7 +222,7 @@
           "grail": 0,
           "fouHp": 0,
           "fouAtk": 0,
-          "np": 4,
+          "np": 3,
           "skills": [
             9,
             9,
@@ -2093,9 +2093,9 @@
           "fouAtk": 0,
           "np": 4,
           "skills": [
+            6,
             7,
-            7,
-            7
+            6
           ],
           "appendSkills": [
             null,
@@ -2217,11 +2217,11 @@
           "grail": 0,
           "fouHp": 0,
           "fouAtk": 0,
-          "np": 12,
+          "np": 10,
           "skills": [
-            7,
-            7,
-            7
+            3,
+            3,
+            3
           ],
           "appendSkills": [
             1,
@@ -2885,7 +2885,7 @@
         },
         "139": {
           "level": 90,
-          "bond": 5,
+          "bond": 2,
           "grail": 0,
           "fouHp": 0,
           "fouAtk": 0,
@@ -2933,9 +2933,9 @@
           "fouAtk": 0,
           "np": 5,
           "skills": [
-            9,
-            9,
-            9
+            6,
+            6,
+            6
           ],
           "appendSkills": [
             4,
@@ -4229,7 +4229,7 @@
         },
         "206": {
           "level": 90,
-          "bond": 2,
+          "bond": 0,
           "grail": 0,
           "fouHp": 0,
           "fouAtk": 0,
@@ -6501,7 +6501,7 @@
           "grail": 0,
           "fouHp": 0,
           "fouAtk": 0,
-          "np": 25,
+          "np": 5,
           "skills": [
             9,
             10,
@@ -6791,7 +6791,7 @@
         },
         "329": {
           "level": 90,
-          "bond": 5,
+          "bond": 0,
           "grail": 0,
           "fouHp": 0,
           "fouAtk": 0,
@@ -7805,9 +7805,9 @@
           "fouAtk": 0,
           "np": 4,
           "skills": [
-            7,
-            7,
-            7
+            6,
+            6,
+            6
           ],
           "appendSkills": [
             null,
@@ -8246,9 +8246,9 @@
           "fouAtk": 0,
           "np": 5,
           "skills": [
-            9,
-            9,
-            9
+            6,
+            6,
+            6
           ],
           "appendSkills": [
             4,
@@ -8517,7 +8517,7 @@
           "grail": 0,
           "fouHp": 0,
           "fouAtk": 0,
-          "np": 5,
+          "np": 1,
           "skills": [
             8,
             8,
@@ -8748,7 +8748,7 @@
           "grail": 0,
           "fouHp": 0,
           "fouAtk": 0,
-          "np": 13,
+          "np": 1,
           "skills": [
             9,
             9,
@@ -8756,10 +8756,10 @@
           ],
           "appendSkills": [
             null,
-            7,
             null,
-            7,
-            7
+            null,
+            null,
+            null
           ],
           "servantCoins": null
         },
@@ -8788,43 +8788,43 @@
       "xp": {
         "Autre": {
           "3": 0,
-          "4": 35,
-          "5": 9
+          "4": 0,
+          "5": 5
         },
         "Rider": {
           "3": 0,
-          "4": 29,
-          "5": 10
+          "4": 0,
+          "5": 0
         },
         "Saber": {
           "3": 0,
-          "4": 30,
-          "5": 9
+          "4": 0,
+          "5": 0
         },
         "Archer": {
           "3": 0,
-          "4": 34,
-          "5": 9
+          "4": 0,
+          "5": 0
         },
         "Caster": {
           "3": 0,
-          "4": 29,
-          "5": 14
+          "4": 0,
+          "5": 0
         },
         "Lancer": {
           "3": 0,
-          "4": 28,
-          "5": 5
+          "4": 0,
+          "5": 0
         },
         "Assassin": {
           "3": 0,
-          "4": 27,
-          "5": 902
+          "4": 0,
+          "5": 894
         },
         "Berserker": {
           "3": 0,
-          "4": 45,
-          "5": 9
+          "4": 1,
+          "5": 0
         }
       }
     },
@@ -31106,6 +31106,6 @@
   "meta": {
     "friendProfiles": "basic-skills-np-level-defaulted-to-rarity-cap",
     "friendProfileResetVersion": 2,
-    "cloudSnapshotAt": "2026-09-30T07:22:04.561Z"
+    "cloudSnapshotAt": "2026-09-25T04:44:30.974Z"
   }
 }
