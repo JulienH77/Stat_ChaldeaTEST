@@ -47,25 +47,14 @@ do $$ begin
   begin alter publication supabase_realtime add table public.chaldea_stats; exception when duplicate_object then null; end;
 end $$;
 
--- Optional: lets the first authenticated user claim the Julien slot once.
--- The function refuses to overwrite an existing Julien membership.
+-- Memberships are assigned by an administrator, never claimed by a random visitor.
 create or replace function public.claim_julien()
-returns void
-language plpgsql
-security definer
-set search_path = public
-as $$
+returns void language plpgsql security definer set search_path = public as $$
 begin
-  if exists(select 1 from public.chaldea_members where player_key='julien') then
-    raise exception 'Le slot Julien est déjà attribué.';
-  end if;
-  insert into public.chaldea_members(auth_user_id,player_key,display_name,email)
-  select id,'julien','Julien',coalesce(email,'') from auth.users where id=auth.uid();
-  if not found then raise exception 'Utilisateur authentifié introuvable.'; end if;
+  raise exception 'Un administrateur doit associer le compte à un Master.';
 end;
 $$;
-revoke all on function public.claim_julien() from public;
-grant execute on function public.claim_julien() to authenticated;
+revoke all on function public.claim_julien() from public, anon, authenticated;
 
 do $$ begin
   begin alter publication supabase_realtime add table public.chaldea_support_profiles; exception when duplicate_object then null; end;
@@ -83,7 +72,7 @@ grant select on table public.chaldea_stats to anon, authenticated;
 grant insert, update, delete on table public.chaldea_stats to authenticated;
 grant select on table public.chaldea_support_profiles to anon, authenticated;
 grant insert, update, delete on table public.chaldea_support_profiles to authenticated;
-grant execute on function public.claim_julien() to authenticated;
+
 
 -- XP inventory per Master
 create table if not exists public.chaldea_xp(
@@ -145,6 +134,7 @@ create policy expenses_delete_julien on public.chaldea_expenses
 for delete to authenticated
 using(player_key='julien' and exists(select 1 from public.chaldea_members m where m.auth_user_id=auth.uid() and m.player_key='julien' and m.can_edit=true));
 grant select, insert, update, delete on table public.chaldea_expenses to authenticated;
+grant usage, select on sequence public.chaldea_expenses_id_seq to authenticated;
 
 
 -- GSSR history: one editable result per player and event, readable to authenticated Masters.
@@ -164,20 +154,20 @@ create policy gssr_results_read_authenticated on public.chaldea_gssr_results for
 drop policy if exists gssr_results_insert_self on public.chaldea_gssr_results;
 create policy gssr_results_insert_self on public.chaldea_gssr_results for insert to authenticated with check (
   player_key = (select player_key from public.chaldea_members where auth_user_id = auth.uid() limit 1)
-  and exists (select 1 from public.chaldea_members m where m.auth_user_id=auth.uid() and m.player_key=player_key and m.can_edit=true)
+  and exists (select 1 from public.chaldea_members m where m.auth_user_id=auth.uid() and m.player_key=chaldea_gssr_results.player_key and m.can_edit=true)
 );
 drop policy if exists gssr_results_update_self on public.chaldea_gssr_results;
 create policy gssr_results_update_self on public.chaldea_gssr_results for update to authenticated using (
   player_key = (select player_key from public.chaldea_members where auth_user_id = auth.uid() limit 1)
-  and exists (select 1 from public.chaldea_members m where m.auth_user_id=auth.uid() and m.player_key=player_key and m.can_edit=true)
+  and exists (select 1 from public.chaldea_members m where m.auth_user_id=auth.uid() and m.player_key=chaldea_gssr_results.player_key and m.can_edit=true)
 ) with check (
   player_key = (select player_key from public.chaldea_members where auth_user_id = auth.uid() limit 1)
-  and exists (select 1 from public.chaldea_members m where m.auth_user_id=auth.uid() and m.player_key=player_key and m.can_edit=true)
+  and exists (select 1 from public.chaldea_members m where m.auth_user_id=auth.uid() and m.player_key=chaldea_gssr_results.player_key and m.can_edit=true)
 );
 drop policy if exists gssr_results_delete_self on public.chaldea_gssr_results;
 create policy gssr_results_delete_self on public.chaldea_gssr_results for delete to authenticated using (
   player_key = (select player_key from public.chaldea_members where auth_user_id = auth.uid() limit 1)
-  and exists (select 1 from public.chaldea_members m where m.auth_user_id=auth.uid() and m.player_key=player_key and m.can_edit=true)
+  and exists (select 1 from public.chaldea_members m where m.auth_user_id=auth.uid() and m.player_key=chaldea_gssr_results.player_key and m.can_edit=true)
 );
 grant select, insert, update, delete on table public.chaldea_gssr_results to authenticated;
 grant usage, select on sequence public.chaldea_gssr_results_id_seq to authenticated;

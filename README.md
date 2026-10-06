@@ -1,3 +1,11 @@
+## V218 — audit et corrections
+
+Corrections de la pagination cloud, des sauvegardes, de l'isolation des brouillons GSSR, des variantes Destiny, des formulaires et des snapshots. Voir [le bilan de l'audit](AUDIT-V218.md) pour les tests, les limites et la migration Supabase à appliquer.
+
+Tests : `node --test tests/*.test.cjs` (Node 22+). Aucune dépendance à installer ni écriture vers les services réels.
+
+Les comptes Master sont attribués par un administrateur dans `chaldea_members`. Un visiteur connecté ne peut pas réclamer le compte Julien.
+
 ## V217
 
 Cette version conserve la galerie de Servants, les battle sprites et la rubrique Dépenses. Atlas Academy est chargé à la demande depuis l’onglet Servants et non au démarrage de l’Overview. L’onglet GSSR propose une sélection visuelle des pavillons, les Servants obtenus et le suivi des 9 choix Destiny Order quand disponible.
@@ -719,7 +727,7 @@ Le bloc **Pokédex** ne prend en compte que les Servants **4★, 5★ et Welfare
 
 ## Onglet GSSR
 
-Le nouvel onglet **GSSR** propose une timeline historique NA de 2019 à 2026, avec les événements **Nouvel An** et **Anniversaire** lorsqu'un GSSR est documenté.
+Le nouvel onglet **GSSR** propose une timeline historique NA de 2023 à 2026, avec les événements **Nouvel An** et **Anniversaire** lorsqu'un GSSR est documenté.
 
 Chaque événement permet d'enregistrer le pavillon choisi. Les événements pour lesquels les libellés détaillés des pavillons historiques ne sont pas suffisamment vérifiables dans les sources accessibles utilisent volontairement des libellés neutres (`Pavillon 01`, `Pavillon 02`, etc.) plutôt que d'inventer une composition.
 

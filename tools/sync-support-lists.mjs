@@ -62,15 +62,17 @@ const byPlayer = new Map((profiles || []).map(x => [String(x.player_key), String
 const next = { ...current, version: 2, source: 'Rayshift public API', region: 'NA', updatedAt: new Date().toISOString(), players: { ...(current.players || {}) } };
 
 for (const p of PLAYERS) {
-  const friendId = byPlayer.get(p) || current.players?.[p]?.code || '';
+  const friendId = byPlayer.has(p)?byPlayer.get(p):(current.players?.[p]?.code||'');
   try {
     const data = await rayshiftDecks(friendId);
     if (data) next.players[p] = { ...data };
-    else next.players[p] = { ...(next.players[p] || {}), code: friendId, decksPresent: [], decks: {} };
+    else next.players[p] = {code:friendId,guid:null,decksPresent:[],decks:{},deckImages:{}};
   } catch (error) {
     console.warn(`Rayshift ${p} indisponible : ${error.message}`);
+    if(String(current.players?.[p]?.code||'')!==friendId)next.players[p]={code:friendId,guid:null,decksPresent:[],decks:{},deckImages:{}};
   }
 }
 
+if(JSON.stringify(current.players||{})===JSON.stringify(next.players)){console.log('Support snapshot inchangé.');process.exit(0);}
 await fs.writeFile(OUT, JSON.stringify(next, null, 2) + '\n', 'utf8');
 console.log(`Support snapshot mis à jour : ${PLAYERS.map(p => `${p}=${next.players[p]?.decksPresent?.length || 0}`).join(', ')}`);

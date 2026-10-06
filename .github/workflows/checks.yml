@@ -1,0 +1,24 @@
+name: App regression checks
+on:
+  pull_request:
+  push:
+    branches: [main, 'codex/**']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check JavaScript syntax
+        run: |
+          node --check app.js
+          node --check config.js
+          node --check tools/sync-initial-state.mjs
+          node --check tools/sync-support-lists.mjs
+      - name: Run regression tests without remote writes
+        run: node --test tests/*.test.cjs

@@ -1041,7 +1041,9 @@
         ],
         "cost": "30 Quartz payants",
         "oncePerAccount": true,
-        "guaranteed": "1 des 9 Servants choisis"
+        "guaranteed": "1 des 9 Servants choisis",
+        "maxCollectionNo": 350,
+        "source": "https://webview.fate-go.us/webview/summon/20240707_7th_destiny_0UraUDZ_header.html"
       },
       "source": "https://grandorder.gamepress.gg/p/fgo-7th-anniversary-campaign",
       "sourceLabel": "GamePress"
@@ -1369,7 +1371,9 @@
         ],
         "cost": "30 Quartz payants",
         "oncePerAccount": true,
-        "guaranteed": "1 des 9 Servants choisis"
+        "guaranteed": "1 des 9 Servants choisis",
+        "maxCollectionNo": 384,
+        "source": "https://webview.fate-go.us/webview/summon/20250706_8th_anniversary_FhfskU_header.html"
       },
       "source": "https://grandorder.gamepress.gg/p/fgo-8th-anniversary-campaign",
       "sourceLabel": "GamePress"
@@ -1798,7 +1802,9 @@
         ],
         "cost": "30 Quartz payants",
         "oncePerAccount": true,
-        "guaranteed": "1 des 9 Servants choisis"
+        "guaranteed": "1 des 9 Servants choisis",
+        "maxCollectionNo": 416,
+        "source": "https://webview.fate-go.us/webview/summon/20260705_9th_destiny_HhDJG_header.html"
       },
       "source": "https://fate-go.us/9th_anniversary/campaign/",
       "sourceLabel": "FGO USA"

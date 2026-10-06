@@ -1,13 +1,14 @@
 import initialState from './data/initial-state.json?v=101' with { type: 'json' };
 import welfareData from './data/welfare-ids.json?v=101' with { type: 'json' };
 import supportData from './data/support-lists.json?v=101' with { type: 'json' };
-import gssrData from './data/gssr-na.json?v=217' with { type: 'json' };
+import gssrData from './data/gssr-na.json?v=218' with { type: 'json' };
 const CONFIG=window.CHALDEA_CONFIG||{};
 let supportSnapshot=supportData||{players:{}};
 const SUPABASE_KEY=CONFIG.supabasePublishableKey||CONFIG.supabaseAnonKey||CONFIG.supabaseKey||'';
 const PLAYERS=['julien','yanis','attmann'];
 const PLAYER_LABELS={julien:'Julien',yanis:'Yanis',attmann:'Attmann'};
 const CLASS_ORDER=['Saber','Archer','Lancer','Rider','Caster','Assassin','Berserker','Ruler','Avenger','Alter Ego','Moon Cancer','Foreigner','Pretender','Shielder','Beast'];
+const norm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 const MASH_IDS=new Set([1]);
 const MASH_NAMES=new Set(['mash kyrielight','mash']);
 const NON_VISIBLE_CLASSES=new Set(['Extra']);
@@ -15,7 +16,7 @@ const NA_BLOCKED_IDS=new Set([83,149,152,151,168,240,333,411,412,436,443,460]);
 const NA_BLOCKED_NAMES=new Set(['solomon']);
 const isBlockedRecord=r=>{const ids=[Number(r?.id),Number(r?.collectionNo),Number(r?.atlasId)];if(ids.includes(417))return false;return ids.some(v=>NA_BLOCKED_IDS.has(v))||NA_BLOCKED_NAMES.has(norm(r?.name));};
 const NA_FORCE_INCLUDE=[{id:417,name:'Ereshkigal',class:'Beast',rarity:'SSR',attribute:'Beast',cardType:'Buster',atlasId:3300200}];
-const FUTURE_NAMES=new Set(['Phantasmoon','Louhi','Van Gogh (Miner)','Tutankhamun','Kazuradrop']);
+const FUTURE_NAMES=new Set(['Phantasmoon','Louhi','Van Gogh (Miner)','Tutankhamun','Kazuradrop'].map(name=>norm(name)));
 const SUPPORT_GUID_FALLBACKS={julien:'381d9bb7-fc83-49d2-862d-3990b4c1379c',yanis:'',attmann:''};
 const sanitizeRoster=roster=>{const seen=new Set();const out=[];for(const r of Array.isArray(roster)?roster:[]){const id=Number(r?.id);if(!id||seen.has(id)||isBlockedRecord(r)||FUTURE_NAMES.has(norm(r?.name)))continue;seen.add(id);out.push(r);}if(!seen.has(417))out.push({...NA_FORCE_INCLUDE[0]});return out;};
 const IMG={
@@ -23,13 +24,16 @@ const IMG={
  grail:'graal.webp', np:'np.webp', Q:'quick.webp', A:'arts.webp', B:'buster.webp'
 };
 const IMG_BASE='./IMG/';
-const norm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 const state=structuredClone(initialState);
 // Hide future Excel placeholders immediately; authoritative NA sync runs afterwards.
 state.roster=sanitizeRoster(state.roster);
 let currentPlayer='julien',currentView='overview',rosterMode='cards',sortDir='desc',compareFocusId=284,skillScope='gold',bondScope='gold',showMissing=true,xpTargetClass='',supportMode='normal',showNpOverlay=false;
 let cloudReadyPromise=null,cloud=null,session=null,currentAuth=null,cloudEnabled=false,cloudAuthError='',atlasById=new Map(),atlasFull=new Map(),atlasVariantsByName=new Map(),variantDetailCache=new Map(),renderToken=0,showdownRenderedId=null,showdownRenderToken=0,supportPlayer='julien',atlasRosterSyncStarted=false,atlasRosterSyncPromise=null;
-let expenseRows=[],expenseLoaded=false,expenseLoadError='';
+let expenseRows=[],expenseLoaded=false,expenseLoadError='',expenseLoadToken=0;
+let authRevision=0,statsRevision=0,statsRefreshPromise=null;
+const pendingStatWrites=new Set(),gssrSaving=new Set();
+const xpSaveQueues=new Map(),xpDirtyPlayers=new Set();
+let servantModalPlayer=null;
 let expenseTypeFilters=new Set(['gssr','focus','destiny']);
 const EXPENSE_TYPES=[['gssr','GSSR'],['focus','Focus'],['destiny','Destiny Order']];
 const galleryFallbackMap=new Map();
@@ -76,13 +80,13 @@ function skillInScope(r){if(skillScope==='all')return true;return isWelfare(r)||
 function values(p,idx=null){const a=[];for(const r of state.roster){if(!isCounted(r)||!skillInScope(r))continue;const st=stats(p,r.id);const vals=idx===null?(st.skills||[]):[st.skills?.[idx]];for(const v of vals)if(validSkill(v))a.push(Number(v))}return a}
 function average(p,idx=null){const a=values(p,idx);return a.length?a.reduce((x,y)=>x+y,0)/a.length:0}
 function skillDist(p){const d=Array(11).fill(0);values(p).forEach(v=>d[v]++);return d}
-function countOwned(p,pred=()=>true){return state.roster.filter(r=>isVisible(r)&&pred(r)&&isOwned(p,r)).length}
+function countOwned(p,pred=()=>true){return state.roster.filter(r=>isVisible(r)&&isCounted(r)&&pred(r)&&isOwned(p,r)).length}
 function countLevel(p,level){return countOwned(p,r=>Number(stats(p,r.id).level)===level)}
 function bond10(p){return countOwned(p,r=>Number(stats(p,r.id).bond)>=10)}
-function fourFiveUniverse(){return state.roster.filter(r=>isCounted(r)&&(rarityNum(r.rarity)>=4))}
+function fourFiveUniverse(){return state.roster.filter(r=>isVisible(r)&&isCounted(r)&&(rarityNum(r.rarity)>=4))}
 function fourFiveOwned(p){return fourFiveUniverse().filter(r=>isOwned(p,r)).length}
 function collectionPct(p){const den=fourFiveUniverse().length;return den?fourFiveOwned(p)/den*100:0}
-function goldUniverse(){return state.roster.filter(r=>isCounted(r)&&(rarityNum(r.rarity)>=4||isWelfare(r)));}
+function goldUniverse(){return state.roster.filter(r=>isVisible(r)&&isCounted(r)&&(rarityNum(r.rarity)>=4||isWelfare(r)));}
 function goldOwned(p){return goldUniverse().filter(r=>isOwned(p,r)).length}
 function np5Count(p){return goldUniverse().filter(r=>isOwned(p,r)&&Number(stats(p,r.id).np)>=5).length}
 function np5Pct(p){const den=goldUniverse().length;return den?np5Count(p)/den*100:0}
@@ -143,72 +147,106 @@ function gssrEventById(id=gssrEventId){return (gssrData.events||[]).find(e=>e.id
 function gssrAllEvents(){return [...(gssrData.events||[])].sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')))}
 function gssrPlayerResult(player,eventId=gssrEventId){return gssrResults[`${player}|${eventId}`]||null}
 function gssrCurrentResult(eventId=gssrEventId){return gssrPlayerResult(currentPlayer,eventId)}
-function gssrDraftFor(eventId=gssrEventId){return gssrDraft[eventId]||{poolId:null,obtained:[],destinyObtained:[],destinyChoices:{}}}
+function gssrDraftKey(eventId,player=currentPlayer){return `${player}|${eventId}`}
+function gssrDraftFor(eventId=gssrEventId){
+ const saved=gssrCurrentResult(eventId);
+ return gssrDraft[gssrDraftKey(eventId)]||{poolId:saved?.poolId||null,obtained:gssrNormalizeObtained(saved?.obtained),destinyObtained:gssrNormalizeObtained(saved?.destinyObtained),destinyChoices:{...(saved?.destinyChoices||{})}};
+}
+
 function gssrNormalizeObtained(arr){return (Array.isArray(arr)?arr:[]).map(x=>typeof x==='string'?{name:x,id:null}:x&&typeof x==='object'?{name:String(x.name||''),id:Number(x.id)||null}:null).filter(x=>x?.name)}
 function gssrNormalizeDestinyChoices(value){const src=value&&typeof value==='object'?(value.slots||value.chosen||value):{};return Object.fromEntries(Object.entries(src||{}).filter(([k,v])=>v&&typeof v==='object'&&v.name).map(([k,v])=>[k,{name:String(v.name),id:Number(v.id)||gssrFindRosterId(v.name)||null}]));}
 function gssrPoolById(e,id){return (e?.pools||[]).find(p=>p.id===id)||null}
 function gssrPoolCandidates(pool){return Array.isArray(pool?.servants)?pool.servants:[]}
-function gssrFindRosterId(name){const r=state.roster.find(x=>norm(x.name)===norm(name));return r?Number(r.id):null}
-function gssrRosterRecord(name){const q=norm(name);return state.roster.find(x=>norm(x.name)===q)||state.roster.find(x=>norm(x.name).includes(q)||q.includes(norm(x.name)))||null}
-function gssrMini(name,extra=''){const r=gssrRosterRecord(name);const src=r?guessImage(r.atlasId):'';return `<span class="gssr-mini ${extra}" title="${esc(name)}">${src?`<img src="${src}" alt="" loading="lazy" onerror="this.remove()">`:''}<span class="gssr-mini-fallback">${esc(String(name||'?').split(/\s+/).map(x=>x[0]).slice(0,2).join('').toUpperCase())}</span></span>`}
-function gssrMiniStrip(names,max=8){const a=[...new Set((names||[]).filter(Boolean))];const shown=a.slice(0,max);return `<div class="gssr-mini-strip">${shown.map(n=>gssrMini(typeof n==='string'?n:n.name)).join('')}${a.length>max?`<span class="gssr-more">+${a.length-max}</span>`:''}</div>`}
+function gssrNameKey(name){return norm(name).replace(/\bartoria\b/g,'altria')}
+function gssrRosterRecord(value,pool=null){
+ const id=Number(value?.id);if(id)return state.roster.find(r=>Number(r.id)===id)||null;
+ const name=typeof value==='string'?value:value?.name;const q=gssrNameKey(name);if(!q)return null;
+ let candidates=state.roster.filter(r=>isVisible(r)&&rarityNum(r.rarity)===5);
+ const label=norm(pool?.label);
+ const classes=CLASS_ORDER.filter(c=>label?.includes(norm(c)));
+ if(classes.length)candidates=candidates.filter(r=>classes.includes(classKey(r.class)));
+ else if(label?.includes('extra'))candidates=candidates.filter(r=>!CLASS_ORDER.slice(0,7).includes(classKey(r.class)));
+ const exact=candidates.filter(r=>gssrNameKey(r.name)===q);if(exact.length===1)return exact[0];
+ const base=candidates.filter(r=>gssrNameKey(String(r.name).replace(/\s*\([^)]*\)/g,''))===q);
+ // Shared names (Altria, Jeanne, etc.) must not silently pick another form.
+ return base.length===1?base[0]:null;
+}
+function gssrFindRosterId(name,pool=null){return gssrRosterRecord(name,pool)?.id||null}
+function gssrMini(value,extra='',pool=null){const name=typeof value==='string'?value:value?.name;const r=gssrRosterRecord(value,pool);const src=r?guessImage(r.atlasId):'';return `<span class="gssr-mini ${extra}" title="${esc(name)}">${src?`<img src="${src}" alt="" loading="lazy" onerror="this.remove()">`:''}<span class="gssr-mini-fallback">${esc(String(name||'?').split(/\s+/).map(x=>x[0]).slice(0,2).join('').toUpperCase())}</span></span>`}
+function gssrMiniStrip(names,max=8,pool=null){const a=[...new Set((names||[]).filter(Boolean))];const shown=a.slice(0,max);return `<div class="gssr-mini-strip">${shown.map(n=>gssrMini(n,'',pool)).join('')}${a.length>max?`<span class="gssr-more">+${a.length-max}</span>`:''}</div>`}
+
 function gssrAllEventResults(e){return PLAYERS.map(p=>({player:p,result:gssrPlayerResult(p,e.id)}))}
 async function loadGssrResults(){
  if(!cloudEnabled||!cloud)return;
+ const revision=authRevision;
+ if(!session)return;
  const {data,error}=await cloud.from('chaldea_gssr_results').select('*');
+ if(revision!==authRevision||!session)return;
  if(error){console.warn('GSSR sync read',error.message);return}
  gssrResults={};
  for(const row of data||[]){const dc=row.destiny_choices||{};gssrResults[`${row.player_key}|${row.event_id}`]={id:row.id,player_key:row.player_key,event_id:row.event_id,poolId:row.selected_pool_id||null,destinyObtained:gssrNormalizeObtained(dc.obtained||[]),destinyChoices:gssrNormalizeDestinyChoices(dc),obtained:gssrNormalizeObtained(row.obtained_servants)};}
  if(currentView==='gssr')renderGssr();
 }
 async function saveGssrResult(eventId=gssrEventId){
- if(!cloudEnabled||!cloud||!session||!currentCanEdit()){toast('Connecte-toi avec ton compte éditeur');return false}
- const d=gssrDraftFor(eventId);const payload={player_key:currentPlayer,event_id:eventId,selected_pool_id:d.poolId||null,destiny_choices:{slots:d.destinyChoices||{},obtained:gssrNormalizeObtained(d.destinyObtained)},obtained_servants:gssrNormalizeObtained(d.obtained),updated_at:new Date().toISOString()};
- const {data,error}=await cloud.from('chaldea_gssr_results').upsert(payload,{onConflict:'player_key,event_id'}).select('*').single();
- if(error){toast('Erreur GSSR : '+error.message);return false}
- gssrResults[`${currentPlayer}|${eventId}`]={id:data.id,player_key:currentPlayer,event_id:eventId,poolId:data.selected_pool_id||null,destinyObtained:gssrNormalizeObtained((data.destiny_choices||{}).obtained||[]),destinyChoices:gssrNormalizeDestinyChoices(data.destiny_choices||{}),obtained:gssrNormalizeObtained(data.obtained_servants)};
- toast('Résultat GSSR enregistré');renderGssr();return true;
+ if(!cloudEnabled||!cloud||!currentCanEdit()){toast('Connecte-toi avec ton compte éditeur');return false}
+ const player=currentPlayer,key=gssrDraftKey(eventId,player),revision=authRevision;
+ if(gssrSaving.has(key))return false;
+ const draft=structuredClone(gssrDraftFor(eventId));
+ const payload={player_key:player,event_id:eventId,selected_pool_id:draft.poolId||null,destiny_choices:{slots:draft.destinyChoices||{},obtained:gssrNormalizeObtained(draft.destinyObtained)},obtained_servants:gssrNormalizeObtained(draft.obtained),updated_at:new Date().toISOString()};
+ gssrSaving.add(key);
+ try{
+  const {data,error}=await cloud.from('chaldea_gssr_results').upsert(payload,{onConflict:'player_key,event_id'}).select('*').single();
+  if(error)throw error;
+  if(!data||data.player_key!==player||data.event_id!==eventId)throw Error('Sauvegarde non confirmée');
+  if(revision!==authRevision)return true;
+  gssrResults[key]={id:data.id,player_key:player,event_id:eventId,poolId:data.selected_pool_id||null,destinyObtained:gssrNormalizeObtained((data.destiny_choices||{}).obtained||[]),destinyChoices:gssrNormalizeDestinyChoices(data.destiny_choices||{}),obtained:gssrNormalizeObtained(data.obtained_servants)};
+  if(JSON.stringify(gssrDraft[key])===JSON.stringify(draft))delete gssrDraft[key];
+  toast('Résultat GSSR enregistré');if(currentView==='gssr')renderGssr();return true;
+ }catch(error){toast('Erreur GSSR : '+error.message);return false}
+ finally{gssrSaving.delete(key)}
 }
-function gssrSetPoolDraft(eventId,poolId){gssrDraft[eventId]={...gssrDraftFor(eventId),poolId,obtained:[]};gssrRenderEvent()}
-function gssrSetDestinyChoice(eventId,slotId,name,id=null){const d={...gssrDraftFor(eventId),destinyChoices:{...gssrDraftFor(eventId).destinyChoices}};if(name)d.destinyChoices[slotId]={name,id:Number(id)||gssrFindRosterId(name)||null};else delete d.destinyChoices[slotId];gssrDraft[eventId]=d;gssrRenderEvent()}
-function gssrToggleDestinyObtained(eventId,name,checked,id=null){const d={...gssrDraftFor(eventId),destinyObtained:[...gssrDraftFor(eventId).destinyObtained]};const key=norm(name);if(checked){if(!d.destinyObtained.some(x=>norm(x.name)===key))d.destinyObtained.push({name,id:Number(id)||gssrFindRosterId(name)||null});}else d.destinyObtained=d.destinyObtained.filter(x=>norm(x.name)!==key);gssrDraft[eventId]=d;gssrRenderEvent()}
-function gssrToggleObtained(eventId,name,checked,id=null){const d={...gssrDraftFor(eventId),obtained:[...gssrDraftFor(eventId).obtained]};const key=norm(name);if(checked){if(!d.obtained.some(x=>norm(x.name)===key))d.obtained.push({name,id:Number(id)||gssrFindRosterId(name)||null});}else d.obtained=d.obtained.filter(x=>norm(x.name)!==key);gssrDraft[eventId]=d;gssrRenderEvent()}
+
+function gssrSetPoolDraft(eventId,poolId){if(gssrDraftFor(eventId).poolId===poolId)return;gssrDraft[gssrDraftKey(eventId)]={...gssrDraftFor(eventId),poolId,obtained:[]};gssrRenderEvent()}
+function gssrSetDestinyChoice(eventId,slotId,name,id=null){const d={...gssrDraftFor(eventId),destinyChoices:{...gssrDraftFor(eventId).destinyChoices}};if(name)d.destinyChoices[slotId]={name,id:Number(id)||gssrFindRosterId(name)||null};else delete d.destinyChoices[slotId];gssrDraft[gssrDraftKey(eventId)]=d;gssrRenderEvent()}
+function gssrSameServant(item,name,id){return item.id&&Number(id)?Number(item.id)===Number(id):norm(item.name)===norm(name)}
+function gssrToggleDestinyObtained(eventId,name,checked,id=null){const d={...gssrDraftFor(eventId),destinyObtained:[...gssrDraftFor(eventId).destinyObtained]};const key=norm(name);if(checked){if(!d.destinyObtained.some(x=>gssrSameServant(x,name,id)))d.destinyObtained.push({name,id:Number(id)||gssrFindRosterId(name)||null});}else d.destinyObtained=d.destinyObtained.filter(x=>!gssrSameServant(x,name,id));gssrDraft[gssrDraftKey(eventId)]=d;gssrRenderEvent()}
+function gssrToggleObtained(eventId,name,checked,id=null){const d={...gssrDraftFor(eventId),obtained:[...gssrDraftFor(eventId).obtained]};const key=norm(name);if(checked){if(!d.obtained.some(x=>gssrSameServant(x,name,id)))d.obtained.push({name,id:Number(id)||gssrFindRosterId(name)||null});}else d.obtained=d.obtained.filter(x=>!gssrSameServant(x,name,id));gssrDraft[gssrDraftKey(eventId)]=d;gssrRenderEvent()}
 function gssrTimelineCard(e){const saved=gssrAllEventResults(e).filter(x=>x.result);return `<button type="button" class="gssr-time-event ${e.id===gssrEventId?'active':''} ${saved.length?'has-result':''}" data-gssr-event="${esc(e.id)}"><span class="gssr-time-dot"></span><span class="gssr-time-year">${esc(e.year)}</span><span class="gssr-time-kind">${e.kind==='newyear'?'NOUVEL AN':'ANNIVERSAIRE'}</span><strong>${esc(e.title)}</strong><small>${saved.length}/3 enregistrés${e.destinyOrder?' · DESTINY SÉPARÉ':''}</small></button>`}
 function gssrRenderTimeline(){const events=gssrAllEvents();$('#gssrTimeline').innerHTML=events.map(gssrTimelineCard).join('');$$('[data-gssr-event]').forEach(b=>b.onclick=()=>{gssrEventId=b.dataset.gssrEvent;renderGssr()})}
 function gssrResultSummary(result,e,p){
  if(!result)return `<article class="gssr-player-card empty"><div class="gssr-player-top"><div class="gssr-player-avatar">${PLAYER_LABELS[p][0]}</div><div><b>${PLAYER_LABELS[p]}</b><span>Aucun résultat enregistré</span></div></div><div class="gssr-player-empty">Aucun roll renseigné pour cet événement.</div></article>`;
- const pool=gssrPoolById(e,result.poolId);const g=gssrNormalizeObtained(result.obtained);const d=gssrNormalizeObtained(result.destinyObtained);const slots=Object.values(result.destinyChoices||{}).map(x=>x.name).filter(Boolean);
- return `<article class="gssr-player-card"><div class="gssr-player-top"><div class="gssr-player-avatar">${PLAYER_LABELS[p][0]}</div><div><b>${PLAYER_LABELS[p]}</b><span>${pool?esc(pool.label):'Aucun pavillon'}</span></div><span class="gssr-player-state">${pool?'ENREGISTRÉ':'INCOMPLET'}</span></div><div class="gssr-result-row"><span class="gssr-result-label">GSSR</span>${g.length?gssrMiniStrip(g.map(x=>x.name),10):'<em>Aucun Servant renseigné</em>'}</div>${e.destinyOrder?`<div class="gssr-result-row"><span class="gssr-result-label">DESTINY</span>${slots.length?gssrMiniStrip(slots,9):'<em>Aucun choix renseigné</em>'}</div><div class="gssr-result-row"><span class="gssr-result-label">OBTENU</span>${d.length?gssrMiniStrip(d.map(x=>x.name),6):'<em>Aucun résultat renseigné</em>'}</div>`:''}</article>`
+ const pool=gssrPoolById(e,result.poolId);const g=gssrNormalizeObtained(result.obtained);const d=gssrNormalizeObtained(result.destinyObtained);const slots=Object.values(result.destinyChoices||{}).filter(x=>x.name);
+ return `<article class="gssr-player-card"><div class="gssr-player-top"><div class="gssr-player-avatar">${PLAYER_LABELS[p][0]}</div><div><b>${PLAYER_LABELS[p]}</b><span>${pool?esc(pool.label):'Aucun pavillon'}</span></div><span class="gssr-player-state">${pool?'ENREGISTRÉ':'INCOMPLET'}</span></div><div class="gssr-result-row"><span class="gssr-result-label">GSSR</span>${g.length?gssrMiniStrip(g,10,pool):'<em>Aucun Servant renseigné</em>'}</div>${e.destinyOrder?`<div class="gssr-result-row"><span class="gssr-result-label">DESTINY</span>${slots.length?gssrMiniStrip(slots,9):'<em>Aucun choix renseigné</em>'}</div><div class="gssr-result-row"><span class="gssr-result-label">OBTENU</span>${d.length?gssrMiniStrip(d,6):'<em>Aucun résultat renseigné</em>'}</div>`:''}</article>`
 }
 function gssrPoolCardHtml(pool,selected,editable){
  const names=gssrPoolCandidates(pool);const detail=pool.detail||'Pavillon GSSR';
- return `<button type="button" class="gssr-pool-card ${selected?'selected':''}" data-gssr-pool="${esc(pool.id)}" ${editable?'':'disabled'}><div class="gssr-pool-topline"><span class="gssr-pool-no">${esc(pool.id.replace('pool-','').replace('pavillon-','').toUpperCase())}</span><span class="gssr-pool-state">${selected?'CHOISI':'CHOISIR'}</span></div><strong>${esc(pool.label)}</strong><small>${esc(detail)}</small>${names.length?gssrMiniStrip(names,7):`<div class="gssr-pool-placeholder"><span></span><span></span><span></span><em>Composition détaillée non intégrée</em></div>`}</button>`;
+ return `<button type="button" class="gssr-pool-card ${selected?'selected':''}" data-gssr-pool="${esc(pool.id)}" ${editable?'':'disabled'}><div class="gssr-pool-topline"><span class="gssr-pool-no">${esc(pool.id.replace('pool-','').replace('pavillon-','').toUpperCase())}</span><span class="gssr-pool-state">${selected?'CHOISI':'CHOISIR'}</span></div><strong>${esc(pool.label)}</strong><small>${esc(detail)}</small>${names.length?gssrMiniStrip(names,7,pool):`<div class="gssr-pool-placeholder"><span></span><span></span><span></span><em>Composition détaillée non intégrée</em></div>`}</button>`;
 }
 function gssrObtainedEditor(e,d,availableNames){
  const names=[...new Set(availableNames.filter(Boolean))];
  if(!names.length)return `<div class="gssr-free-result-v217"><label>Servant(s) obtenu(s)</label><input id="gssrFreeObtained" class="editable-input" type="text" value="${esc(gssrNormalizeObtained(d.obtained).map(x=>x.name).join(', '))}" placeholder="Nom du ou des Servants"><small>Le pavillon n’a pas de composition détaillée intégrée : saisis les Servants obtenus, séparés par des virgules.</small></div>`;
  const selected=new Set(gssrNormalizeObtained(d.obtained).map(x=>norm(x.name)));
- return `<div class="gssr-obtained-editor"><div class="gssr-edit-head"><div><span class="eyebrow">RÉSULTAT DU TIRAGE</span><h3>Qui as-tu obtenu ?</h3></div><span>${selected.size} sélectionné(s)</span></div><div class="gssr-servant-card-grid">${names.map(name=>{const id=gssrFindRosterId(name);return `<label class="gssr-servant-card ${selected.has(norm(name))?'selected':''}"><input type="checkbox" data-gssr-obtained="${esc(name)}" data-gssr-obtained-id="${id||''}" ${selected.has(norm(name))?'checked':''}>${gssrMini(name,'large')}<span>${esc(name)}</span><i>✓</i></label>`}).join('')}</div></div>`
+ return `<div class="gssr-obtained-editor"><div class="gssr-edit-head"><div><span class="eyebrow">RÉSULTAT DU TIRAGE</span><h3>Qui as-tu obtenu ?</h3></div><span>${selected.size} sélectionné(s)</span></div><div class="gssr-servant-card-grid">${names.map(name=>{const id=gssrFindRosterId(name,gssrPoolById(e,d.poolId));return `<label class="gssr-servant-card ${selected.has(norm(name))?'selected':''}"><input type="checkbox" data-gssr-obtained="${esc(name)}" data-gssr-obtained-id="${id||''}" ${selected.has(norm(name))?'checked':''}>${gssrMini(name,'large',gssrPoolById(e,d.poolId))}<span>${esc(name)}</span><i>✓</i></label>`}).join('')}</div></div>`
 }
-function gssrDestinyCandidates(slot){
+function gssrDestinyCandidates(slot,e=gssrEventById()){
  const cls=slot.class;
- let arr=state.roster.filter(r=>isVisible(r)&&isCounted(r)&&rarityNum(r.rarity)===5&&!isWelfare(r));
- if(cls==='Extra I')arr=arr.filter(r=>['Ruler','Avenger','Moon Cancer','Alter Ego'].includes(classKey(r.class))); 
- if(cls==='Extra II')arr=arr.filter(r=>['Foreigner','Pretender','Beast','Shielder'].includes(classKey(r.class)));
+ let arr=state.roster.filter(r=>isVisible(r)&&isCounted(r)&&rarityNum(r.rarity)===5&&!isWelfare(r)&&(!e?.destinyOrder?.maxCollectionNo||Number(r.id)<=e.destinyOrder.maxCollectionNo));
+ if(cls==='Extra I')arr=arr.filter(r=>['Ruler','Avenger','Moon Cancer'].includes(classKey(r.class)));
+ if(cls==='Extra II')arr=arr.filter(r=>['Alter Ego','Foreigner','Pretender','Beast'].includes(classKey(r.class)));
  else if(!['Extra I','Extra II'].includes(cls))arr=arr.filter(r=>classKey(r.class)===cls);
  return arr.sort((a,b)=>a.name.localeCompare(b.name,'fr'));
 }
 function gssrDestinyResultEditor(e,d){
- const slots=Array.isArray(e.destinyOrder?.slots)?e.destinyOrder.slots:[];const chosen=d.destinyChoices||{};const obtained=new Set(gssrNormalizeObtained(d.destinyObtained).map(x=>norm(x.name)));
- const slotCards=slots.map(slot=>{const current=chosen[slot.id]?.name||'';const candidates=gssrDestinyCandidates(slot);const icon=slot.class.startsWith('Extra')?`<span class="gssr-extra-icon">EX</span>`:classImg(slot.class);return `<div class="gssr-destiny-slot-v217"><div class="gssr-destiny-slot-head"><span>${icon}</span><div><b>${esc(slot.label)}</b><small>${esc(slot.class)}</small></div></div><select data-destiny-slot="${esc(slot.id)}" ${currentCanEdit()?'':'disabled'}><option value="">Choisir un Servant…</option>${candidates.map(r=>`<option value="${esc(r.name)}" ${norm(r.name)===norm(current)?'selected':''}>${esc(r.name)}</option>`).join('')}</select><div class="gssr-destiny-preview">${current?gssrMini(current,'large'): '<span class="gssr-empty-mini">—</span>'}<span>${current?esc(current):'Aucun choix'}</span></div></div>`}).join('');
- const names=state.roster.filter(r=>isVisible(r)&&isCounted(r)&&rarityNum(r.rarity)===5&&!isWelfare(r)).map(r=>r.name).sort((a,b)=>a.localeCompare(b,'fr'));
- return `<section class="gssr-destiny-v217"><div class="gssr-section-head"><div><span class="eyebrow">DESTINY ORDER</span><h3>${slots.length} choix à préparer</h3></div><span class="gssr-choice-status">${Object.keys(chosen).length} / ${slots.length} renseignés</span></div><p class="gssr-destiny-copy">Associe un Servant à chaque classe. Les miniatures servent de repère visuel ; les résultats obtenus sont suivis séparément.</p><div class="gssr-destiny-grid-v217">${slotCards}</div>${currentCanEdit()?`<div class="gssr-obtained-editor destiny-obtained"><div class="gssr-edit-head"><div><span class="eyebrow">RÉSULTAT</span><h3>Servant(s) réellement obtenu(s)</h3></div><span>${obtained.size} sélectionné(s)</span></div><div class="gssr-servant-card-grid compact">${names.map(name=>{const id=gssrFindRosterId(name);return `<label class="gssr-servant-card ${obtained.has(norm(name))?'selected':''}"><input type="checkbox" data-gssr-destiny-obtained="${esc(name)}" data-gssr-destiny-obtained-id="${id||''}" ${obtained.has(norm(name))?'checked':''}>${gssrMini(name,'large')}<span>${esc(name)}</span><i>✓</i></label>`}).join('')}</div><div class="gssr-free-result-v217"><label>Autre Servant obtenu</label><input id="gssrFreeDestinyObtained" class="editable-input" type="text" value="${esc(gssrNormalizeObtained(d.destinyObtained).filter(x=>!names.some(n=>norm(n)===norm(x.name))).map(x=>x.name).join(', '))}" placeholder="Nom, Nom…"><small>Utile pour les données historiques ou un Servant non listé.</small></div></div>`:''}</section>`;
+ const slots=Array.isArray(e.destinyOrder?.slots)?e.destinyOrder.slots:[];const chosen=d.destinyChoices||{};const obtained=gssrNormalizeObtained(d.destinyObtained);
+ const slotCards=slots.map(slot=>{const current=chosen[slot.id]?.name||'';const candidates=gssrDestinyCandidates(slot,e);const icon=slot.class.startsWith('Extra')?`<span class="gssr-extra-icon">EX</span>`:classImg(slot.class);return `<div class="gssr-destiny-slot-v217"><div class="gssr-destiny-slot-head"><span>${icon}</span><div><b>${esc(slot.label)}</b><small>${esc(slot.class)}</small></div></div><select data-destiny-slot="${esc(slot.id)}" ${currentCanEdit()?'':'disabled'}><option value="">Choisir un Servant…</option>${candidates.map(r=>`<option value="${r.id}" ${Number(chosen[slot.id]?.id)===Number(r.id)||(!chosen[slot.id]?.id&&norm(r.name)===norm(current))?'selected':''}>${esc(r.name)}</option>`).join('')}</select><div class="gssr-destiny-preview">${current?gssrMini(chosen[slot.id],'large'): '<span class="gssr-empty-mini">—</span>'}<span>${current?esc(current):'Aucun choix'}</span></div></div>`}).join('');
+ const records=state.roster.filter(r=>isVisible(r)&&isCounted(r)&&rarityNum(r.rarity)===5&&!isWelfare(r)&&(!e.destinyOrder?.maxCollectionNo||r.id<=e.destinyOrder.maxCollectionNo)).sort((a,b)=>a.name.localeCompare(b.name,'fr'));
+ return `<section class="gssr-destiny-v217"><div class="gssr-section-head"><div><span class="eyebrow">DESTINY ORDER</span><h3>${slots.length} choix à préparer</h3></div><span class="gssr-choice-status">${Object.keys(chosen).length} / ${slots.length} renseignés</span></div><p class="gssr-destiny-copy">Associe un Servant à chaque classe. Les miniatures servent de repère visuel ; les résultats obtenus sont suivis séparément.</p><div class="gssr-destiny-grid-v217">${slotCards}</div>${currentCanEdit()?`<div class="gssr-obtained-editor destiny-obtained"><div class="gssr-edit-head"><div><span class="eyebrow">RÉSULTAT</span><h3>Servant(s) réellement obtenu(s)</h3></div><span>${obtained.length} sélectionné(s)</span></div><div class="gssr-servant-card-grid compact">${records.map(r=>{const {name,id}=r;const selected=obtained.some(x=>gssrSameServant(x,name,id));return `<label class="gssr-servant-card ${selected?'selected':''}"><input type="checkbox" data-gssr-destiny-obtained="${esc(name)}" data-gssr-destiny-obtained-id="${id||''}" ${selected?'checked':''}>${gssrMini({name,id},'large')}<span>${esc(name)} · ${esc(r.class)}</span><i>✓</i></label>`}).join('')}</div><div class="gssr-free-result-v217"><label>Autre Servant obtenu</label><input id="gssrFreeDestinyObtained" class="editable-input" type="text" value="${esc(gssrNormalizeObtained(d.destinyObtained).filter(x=>!records.some(r=>gssrSameServant(x,r.name,r.id))).map(x=>x.name).join(', '))}" placeholder="Nom, Nom…"><small>Utile pour les données historiques ou un Servant non listé.</small></div></div>`:''}</section>`;
 }
 function gssrRenderEvent(){
- const e=gssrEventById();if(!e)return;const saved=gssrCurrentResult(e.id);if(!gssrDraft[e.id])gssrDraft[e.id]={poolId:saved?.poolId||null,obtained:gssrNormalizeObtained(saved?.obtained),destinyObtained:gssrNormalizeObtained(saved?.destinyObtained),destinyChoices:{...(saved?.destinyChoices||{})}};const d=gssrDraftFor(e.id);const pool=gssrPoolById(e,d.poolId);const available=gssrPoolCandidates(pool);
+ const e=gssrEventById();if(!e)return;const saved=gssrCurrentResult(e.id);const d=gssrDraftFor(e.id);const pool=gssrPoolById(e,d.poolId);const available=gssrPoolCandidates(pool);
  const source=e.source?`<a class="gssr-source-link" href="${esc(e.source)}" target="_blank" rel="noopener noreferrer">Source NA</a>`:'';
  const status=currentCanEdit()?'Mode édition':'Lecture seule';
- const gssrBlock=`<section class="gssr-section-v217"><div class="gssr-section-lead"><div><span class="eyebrow">01 · GSSR</span><h3>Choisir le pavillon</h3><p>Le choix est enregistré avec les Servants obtenus.</p></div><span class="gssr-choice-status">${d.poolId?`Pavillon choisi · ${esc(pool?.label||d.poolId)}`:'Aucun pavillon choisi'}</span></div><div class="gssr-pool-grid-v217">${e.pools.map(p=>gssrPoolCardHtml(p,d.poolId===p.id,currentCanEdit())).join('')}</div>${pool?`<div class="gssr-selected-pool-v217"><div class="gssr-selected-pool-head"><div><span class="eyebrow">PAVILLON SÉLECTIONNÉ</span><h3>${esc(pool.label)}</h3></div><span>${available.length?`${available.length} Servants`:'Composition non détaillée'}</span></div>${available.length?`<div class="gssr-selected-roster">${available.map(name=>gssrMini(name,'large')).join('')}</div>`:''}${currentCanEdit()?gssrObtainedEditor(e,d,available):''}</div>`:''}</section>`;
+ const gssrBlock=`<section class="gssr-section-v217"><div class="gssr-section-lead"><div><span class="eyebrow">01 · GSSR</span><h3>Choisir le pavillon</h3><p>Le choix est enregistré avec les Servants obtenus.</p></div><span class="gssr-choice-status">${d.poolId?`Pavillon choisi · ${esc(pool?.label||d.poolId)}`:'Aucun pavillon choisi'}</span></div><div class="gssr-pool-grid-v217">${e.pools.map(p=>gssrPoolCardHtml(p,d.poolId===p.id,currentCanEdit())).join('')}</div>${pool?`<div class="gssr-selected-pool-v217"><div class="gssr-selected-pool-head"><div><span class="eyebrow">PAVILLON SÉLECTIONNÉ</span><h3>${esc(pool.label)}</h3></div><span>${available.length?`${available.length} Servants`:'Composition non détaillée'}</span></div>${available.length?`<div class="gssr-selected-roster">${available.map(name=>gssrMini(name,'large',pool)).join('')}</div>`:''}${currentCanEdit()?gssrObtainedEditor(e,d,available):''}</div>`:''}</section>`;
  const destinyBlock=e.destinyOrder?gssrDestinyResultEditor(e,d):'';
  const summary=PLAYERS.map(p=>gssrResultSummary(gssrPlayerResult(p,e.id),e,p)).join('');
  const progressPool=d.poolId?'GSSR choisi':'GSSR à faire';const progressDest=e.destinyOrder?(Object.keys(d.destinyChoices||{}).length===e.destinyOrder.slotCount?'Destiny complet':`Destiny ${Object.keys(d.destinyChoices||{}).length}/${e.destinyOrder.slotCount}`):'';
@@ -216,11 +254,11 @@ function gssrRenderEvent(){
  $$('[data-gssr-pool]').forEach(b=>b.onclick=()=>gssrSetPoolDraft(e.id,b.dataset.gssrPool));
  $$('[data-gssr-obtained]').forEach(x=>x.onchange=()=>{gssrToggleObtained(e.id,x.dataset.gssrObtained,x.checked,x.dataset.gssrObtainedId)});
  $$('[data-gssr-destiny-obtained]').forEach(x=>x.onchange=()=>{gssrToggleDestinyObtained(e.id,x.dataset.gssrDestinyObtained,x.checked,x.dataset.gssrDestinyObtainedId)});
- $$('[data-destiny-slot]').forEach(x=>x.onchange=()=>gssrSetDestinyChoice(e.id,x.dataset.destinySlot,x.value,gssrFindRosterId(x.value)));
- const free=$('#gssrFreeObtained');if(free)free.onchange=()=>{gssrDraft[e.id]={...gssrDraftFor(e.id),obtained:free.value.split(',').map(x=>x.trim()).filter(Boolean).map(name=>({name,id:gssrFindRosterId(name)}))};gssrRenderEvent()};
- const freeDest=$('#gssrFreeDestinyObtained');if(freeDest)freeDest.onchange=()=>{const names=state.roster.map(r=>norm(r.name));const base=gssrNormalizeObtained(d.destinyObtained).filter(x=>!names.includes(norm(x.name)));gssrDraft[e.id]={...gssrDraftFor(e.id),destinyObtained:[...base,...freeDest.value.split(',').map(x=>x.trim()).filter(Boolean).map(name=>({name,id:gssrFindRosterId(name)}))]};gssrRenderEvent()};
+ $$('[data-destiny-slot]').forEach(x=>x.onchange=()=>{const r=state.roster.find(r=>Number(r.id)===Number(x.value));gssrSetDestinyChoice(e.id,x.dataset.destinySlot,r?.name||'',r?.id)});
+ const free=$('#gssrFreeObtained');if(free)free.oninput=()=>{gssrDraft[gssrDraftKey(e.id)]={...gssrDraftFor(e.id),obtained:free.value.split(',').map(x=>x.trim()).filter(Boolean).map(name=>({name,id:gssrFindRosterId(name)}))};};
+ const freeDest=$('#gssrFreeDestinyObtained');if(freeDest)freeDest.oninput=()=>{const names=state.roster.map(r=>norm(r.name));const base=gssrNormalizeObtained(d.destinyObtained).filter(x=>names.includes(norm(x.name)));gssrDraft[gssrDraftKey(e.id)]={...gssrDraftFor(e.id),destinyObtained:[...base,...freeDest.value.split(',').map(x=>x.trim()).filter(Boolean).map(name=>({name,id:gssrFindRosterId(name)}))]};};
  if($('#gssrSaveEvent'))$('#gssrSaveEvent').onclick=()=>saveGssrResult(e.id);
- if($('#gssrResetEvent'))$('#gssrResetEvent').onclick=()=>{gssrDraft[e.id]={poolId:saved?.poolId||null,obtained:gssrNormalizeObtained(saved?.obtained),destinyObtained:gssrNormalizeObtained(saved?.destinyObtained),destinyChoices:{...(saved?.destinyChoices||{})}};gssrRenderEvent()};
+ if($('#gssrResetEvent'))$('#gssrResetEvent').onclick=()=>{gssrDraft[gssrDraftKey(e.id)]={poolId:saved?.poolId||null,obtained:gssrNormalizeObtained(saved?.obtained),destinyObtained:gssrNormalizeObtained(saved?.destinyObtained),destinyChoices:{...(saved?.destinyChoices||{})}};gssrRenderEvent()};
 }
 function renderGssr(){gssrRenderTimeline();gssrRenderEvent()}
 
@@ -231,19 +269,20 @@ function npCardDisplay(v){const n=num(v);if(n==null)return '—';return `NP ${Ma
 function xpInventory(p){state.players[p].xp??=XP_DEFAULT();for(const c of XP_CLASSES)state.players[p].xp[c]??={5:0,4:0,3:0};return state.players[p].xp}
 function updateSync(text,error=false){$('#syncText').textContent=text;$('#syncDot').parentElement.classList.toggle('error',error)}
 function isApiAuthError(error){return !!error&&(String(error.code)==='401'||String(error.status)==='401'||/jwt|apikey|api key|unauthoriz|invalid/i.test(String(error.message||'')))}
-function currentCanEdit(){return !!currentAuth?.canEdit&&currentAuth.playerKey===currentPlayer}
+function canEditPlayer(player){return !!session&&!!currentAuth?.canEdit&&currentAuth.playerKey===player}
+function currentCanEdit(){return canEditPlayer(currentPlayer)}
 function renderMasterSwitch(){
  $('#masterSwitch').innerHTML=PLAYERS.map(p=>`<button class="master-tab ${p===currentPlayer?'active':''}" data-player="${p}">${state.players[p]?.displayName||PLAYER_LABELS[p]}</button>`).join('');
- $$('.master-tab').forEach(b=>b.onclick=()=>{currentPlayer=b.dataset.player;supportPlayer=currentPlayer;renderAll()});
+ $$('.master-tab').forEach(b=>b.onclick=()=>{closeModal();currentPlayer=b.dataset.player;supportPlayer=currentPlayer;renderAll()});
  $('#heroMaster').textContent=state.players[currentPlayer]?.displayName||PLAYER_LABELS[currentPlayer];
  $('#accountText').textContent=session?(currentAuth?.canEdit?`Connecté · ${PLAYER_LABELS[currentAuth.playerKey]}`:'Connecté · lecteur'):'Connexion';
  const privateNav=$('.julien-only-nav');
- const showPrivate=currentPlayer==='julien';
+ const showPrivate=currentPlayer==='julien'&&julienPrivateAccess();
  if(privateNav)privateNav.classList.toggle('hidden',!showPrivate);
  if(!showPrivate&&currentView==='expenses'){currentView='overview';$$('.view').forEach(x=>x.classList.toggle('active',x.id==='view-overview'));$$('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.view==='overview'));$('#pageName').textContent='Overview';}
 }
 function categoryTotals(){
-  const visible=state.roster.filter(isCounted);
+  const visible=state.roster.filter(r=>isVisible(r)&&isCounted(r));
   return {
     five: visible.filter(r=>rarityNum(r.rarity)===5&&!isWelfare(r)).length,
     four: visible.filter(r=>rarityNum(r.rarity)===4&&!isWelfare(r)).length,
@@ -292,14 +331,14 @@ function focusValue(r,s){const mode=$('#sortFilter').value;if(mode==='bond')retu
 function renderRoster(){
  const token=++renderToken,q=norm($('#searchInput').value);let rows=state.roster.filter(isVisible).map(r=>({r,s:stats(currentPlayer,r.id)})).filter(o=>{const c=classKey(o.r.class),rr=isWelfare(o.r)?'welfare':String(rarityNum(o.r.rarity));return(showMissing||isOwned(currentPlayer,o.r))&&(!q||norm(o.r.name).includes(q))&&(!selectedClasses.size||selectedClasses.has(c))&&(!selectedRarities.size||selectedRarities.has(rr))&&matchesNpFilters(o.r)});
  sortRows(rows);$('#rosterCount').textContent=rows.length;const totalVisible=state.roster.filter(isVisible).length,ownedTotal=countOwned(currentPlayer);$('#rosterSummary').textContent=showMissing?`${ownedTotal} possédés · ${Math.max(0,totalVisible-ownedTotal)} manquants`:`${ownedTotal} possédés affichés`;
- $('#rosterCards').innerHTML=rows.map(({r,s})=>{const own=isOwned(currentPlayer,r);return `<article class="servant-card ${own?'owned':'missing'}" data-servant-id="${r.id}">${own?'':'<span class="missing-ribbon">NON POSSÉDÉ</span>'}<div class="card-art" data-servant-id="${r.id}"><div class="loader">ATLAS</div></div><div class="card-content"><div class="card-topline"><span class="rarity-short">${rarityNum(r.rarity)}★${isWelfare(r)?' · W':''}</span>${classImg(r.class)}</div><div class="card-name">${r.name}</div><div class="card-line"><div class="level-wrap"><span class="level-major">Lv ${displayLevel(currentPlayer,r,s)}</span>${Number(s.grail)>0?`<span class="grail-count">${grailImg()}<b>${Number(s.grail)}</b></span>`:''}</div><span class="np-chip"><span class="np-mini-icon">${npIcon()}</span>${npCardDisplay(s.np)}</span></div>${$('#sortFilter').value==='release'?`<div class="release-skill-row">${[0,1,2].map(i=>`<span><b>${s.skills?.[i]??'—'}</b></span>`).join('')}</div>`:''}${focusValue(r,s)}</div></article>`}).join('');
+ $('#rosterCards').innerHTML=rows.map(({r,s})=>{const own=isOwned(currentPlayer,r);return `<article class="servant-card ${own?'owned':'missing'}" data-servant-id="${r.id}">${own?'':'<span class="missing-ribbon">NON POSSÉDÉ</span>'}<div class="card-art" data-servant-id="${r.id}"><div class="loader">ATLAS</div></div><div class="card-content"><div class="card-topline"><span class="rarity-short">${rarityNum(r.rarity)}★${isWelfare(r)?' · W':''}</span>${classImg(r.class)}</div><div class="card-name">${esc(r.name)}</div><div class="card-line"><div class="level-wrap"><span class="level-major">Lv ${displayLevel(currentPlayer,r,s)}</span>${Number(s.grail)>0?`<span class="grail-count">${grailImg()}<b>${Number(s.grail)}</b></span>`:''}</div><span class="np-chip"><span class="np-mini-icon">${npIcon()}</span>${npCardDisplay(s.np)}</span></div>${$('#sortFilter').value==='release'?`<div class="release-skill-row">${[0,1,2].map(i=>`<span><b>${s.skills?.[i]??'—'}</b></span>`).join('')}</div>`:''}${focusValue(r,s)}</div></article>`}).join('');
  loadCardImages(rows,token);
  $$('.servant-card').forEach(el=>el.onclick=()=>openServant(Number(el.dataset.servantId)));
 }
 async function loadCardImages(rows,token){
   clearNpOverlayTimers();
   let i=0;
-  const hadMissing=rows.some(({r})=>!atlasById.has(Number(r.atlasId||r.id)));
+  const loadedBefore=new Set(atlasById.keys());
   const workers=Array.from({length:6},async()=>{
     while(i<rows.length){
       const row=rows[i++];
@@ -333,7 +372,7 @@ async function loadCardImages(rows,token){
   });
   await Promise.all(workers);
   const mode=$('#sortFilter')?.value;
-  if(hadMissing&&(mode==='atk'||mode==='hp')&&token===renderToken)renderRoster();
+  if(rows.some(({r})=>!loadedBefore.has(Number(r.atlasId||r.id))&&atlasById.has(Number(r.atlasId||r.id)))&&(mode==='atk'||mode==='hp')&&token===renderToken)renderRoster();
 }
 function guessImage(atlasId){if(!atlasId)return'';const id=String(atlasId);return `https://static.atlasacademy.io/NA/CharaGraph/${id}/${id}a@1.png`}
 async function fetchAtlasList(){
@@ -785,13 +824,13 @@ async function ensureNpTypeIndex(){if(npTypeIndexPromise)return npTypeIndexPromi
 function levelIndex(detail,level){const growth=detail?.limits?.slice?.().sort((a,b)=>a.lvMax-b.lvMax)||[];let exact=growth.find(x=>Number(x.lvMax)>=level);return exact||growth[growth.length-1]}
 function statAt(detail,kind,level){if(!detail)return null;const arr=detail?.[kind+'Growth'];if(Array.isArray(arr)&&arr.length){const i=Math.max(0,Math.min(arr.length-1,level-1));return Number(arr[i])}const base=Number(detail?.[kind+'Base']),max=Number(detail?.[kind+'Max']),lvMax=Number(detail?.lvMax)||100;if(!Number.isFinite(base)||!Number.isFinite(max))return null;const t=Math.max(0,Math.min(1,(level-1)/(lvMax-1)));return Math.round(base+(max-base)*t)}
 function currentStats(detail,r,s){const lvl=Math.max(1,Math.min(120,Number(s.level)||Number(detail?.lvMax)||1));const baseAtk=Number(statAt(detail,'atk',lvl)||0),baseHp=Number(statAt(detail,'hp',lvl)||0);const fouAtk=Math.max(0,Math.min(1000,Number(s.fouAtk)||0)),fouHp=Math.max(0,Math.min(1000,Number(s.fouHp)||0));return{atk:baseAtk+1000+fouAtk,hp:baseHp+1000+fouHp,baseAtk,baseHp,fouAtk,fouHp,lvl}}
-function inputOrRead(id,value,min,max){return currentCanEdit()?`<input class="editable-input" id="${id}" type="number" value="${value??''}" min="${min}" max="${max}">`:`<span class="detail-value"><strong>${value??'—'}</strong></span>`}
+function inputOrRead(id,value,min,max){return currentCanEdit()?`<input class="editable-input" id="${id}" type="number" step="1" value="${value??''}" min="${min}" max="${max}">`:`<span class="detail-value"><strong>${value??'—'}</strong></span>`}
 function bondDiamonds(bond,editable=false){
  const n=Math.max(0,Math.min(15,Number(bond)||0));
  const row=(start,count)=>Array.from({length:count},(_,j)=>{const i=start+j+1;const tag=editable?'button':'span';const type=editable?' type="button"':'';return `<${tag}${type} class="bond-diamond ${i<=n?'filled':''}" ${editable?`data-bond="${i}"`:''} aria-label="Bond ${i}"></${tag}>`}).join('');
  return `<div class="bond-diamonds ${editable?'bond-editable':''}" id="bondDiamonds"><div class="bond-row bond-row-1">${row(0,10)}</div><div class="bond-row bond-row-2">${row(10,5)}</div></div><small class="bond-caption" id="bondCaption">Bond ${n||'—'} / 15${editable?' · cliquez sur un losange':''}</small>`;
 }
-function statBox(label,id,value,sub,editId,editVal,min='',max=''){return `<div class="detail-box"><label>${label}</label>${currentCanEdit()?`<input class="editable-input" id="${id}" type="number" value="${value??''}" ${min!==''?`min="${min}"`:''} ${max!==''?`max="${max}"`:''}>`:`<span class="detail-value"><strong>${value??'—'}</strong></span>`}${sub?`<div class="sub-stat">${sub}</div>`:''}${editId&&currentCanEdit()?`<input class="micro-edit" id="${editId}" type="number" min="0" max="1000" value="${editVal??0}" title="Fou 4★">`:''}</div>`}
+function statBox(label,id,value,sub,editId,editVal,min='',max=''){return `<div class="detail-box"><label>${label}</label>${currentCanEdit()?`<input class="editable-input" id="${id}" type="number" step="1" readonly aria-readonly="true" value="${value??''}" ${min!==''?`min="${min}"`:''} ${max!==''?`max="${max}"`:''}>`:`<span class="detail-value"><strong>${value??'—'}</strong></span>`}${sub?`<div class="sub-stat">${sub}</div>`:''}${editId&&currentCanEdit()?`<input class="micro-edit" id="${editId}" type="number" step="1" min="0" max="1000" value="${editVal??0}" title="Fou 4★">`:''}</div>`}
 function galleryItemsWithBattleItems(d,r,battleItems){
   const all=galleryItems(d,r);
   const withoutSprites=all.filter(x=>x.group!=='SPRITES');
@@ -805,18 +844,18 @@ function openModalBase(r,d,urls,idx,profiles=[],battleItems=null){
  const art=galleryItemsAll[initialItem]?.url||guessImage(r.atlasId)||'';
  const npValue=s.np??'';
  const npRead=npDisplay(s.np,true);
- const levelHtml=can?`<input class="editable-input" id="e-level" type="number" value="${s.level??''}" min="1" max="120">`:`<span class="detail-value"><strong>${s.level??'—'}</strong></span>`;
+ const levelHtml=can?`<input class="editable-input" id="e-level" type="number" step="1" value="${s.level??''}" min="1" max="120">`:`<span class="detail-value"><strong>${s.level??'—'}</strong></span>`;
  const npProfileMarkup=npProfilesHtml(profiles);
- const npHtml=can?`<div class="np-edit-wrap"><div class="np-topline">${npIcon()}<div class="np-value-line"><input class="editable-input np-input" id="e-np" type="number" value="${npValue}" min="1" max="999"><span class="np-display-hint">Affiché ${npRead}</span></div></div></div>`:`<div class="np-detail-row"><div class="np-topline">${npIcon()}<b>${npRead}</b></div></div>`;
+ const npHtml=can?`<div class="np-edit-wrap"><div class="np-topline">${npIcon()}<div class="np-value-line"><input class="editable-input np-input" id="e-np" type="number" step="1" value="${npValue}" min="1" max="999"><span class="np-display-hint">Affiché ${npRead}</span></div></div></div>`:`<div class="np-detail-row"><div class="np-topline">${npIcon()}<b>${npRead}</b></div></div>`;
  const grailCount=Number(s.grail)||0;
- const skillHtml=(s.skills||[null,null,null]).map((v,i)=>can?`<div class="level-cell"><span>SKILL ${i+1}</span><input id="skill-${i}" type="number" min="1" max="10" value="${v??''}"></div>`:`<div class="level-cell"><span>SKILL ${i+1}</span><div class="level-read">${v??'—'}</div></div>`).join('');
- const appendHtml=(s.appendSkills||[null,null,null,null,null]).map((v,i)=>can?`<div class="level-cell"><span>APPEND ${i+1}</span><input id="append-${i}" type="number" min="0" max="10" value="${v??''}"></div>`:`<div class="level-cell"><span>APPEND ${i+1}</span><div class="level-read">${v??'—'}</div></div>`).join('');
+ const skillHtml=(s.skills||[null,null,null]).map((v,i)=>can?`<div class="level-cell"><span>SKILL ${i+1}</span><input id="skill-${i}" type="number" step="1" min="1" max="10" value="${v??''}"></div>`:`<div class="level-cell"><span>SKILL ${i+1}</span><div class="level-read">${v??'—'}</div></div>`).join('');
+ const appendHtml=(s.appendSkills||[null,null,null,null,null]).map((v,i)=>can?`<div class="level-cell"><span>APPEND ${i+1}</span><input id="append-${i}" type="number" step="1" min="0" max="10" value="${v??''}"></div>`:`<div class="level-cell"><span>APPEND ${i+1}</span><div class="level-read">${v??'—'}</div></div>`).join('');
  const groupCounts={};galleryItemsAll.forEach(g=>{groupCounts[g.group]=(groupCounts[g.group]||0)+1});
  const galleryGroups=[['ASCENSIONS','ASCENSIONS'],['SPRITES','SPRITES']];
  const initialGroup=galleryItemsAll[initialItem]?.group||galleryGroups[0]?.[0]||'ASCENSIONS';
  const galleryTabs=galleryGroups.map(([key,label])=>`<button type="button" class="gallery-group-tab ${key===initialGroup?'active':''}" data-gallery-group="${key}">${label}</button>`).join('');
  const galleryThumbs=(group)=>{const items=galleryItemsAll.map((item,i)=>({item,i})).filter(x=>x.item.group===group);return items.length?items.map(x=>`<button type="button" class="art-thumb ${x.i===initialItem?'active':''}" data-art="${x.i}" title="${esc(x.item.label)}">${galleryImgHtml(x.item,'')}</button>`).join(''):`<div class="gallery-empty-state">Aucun sprite de combat disponible pour ce Servant.</div>`};
- $('#modal').innerHTML=`<div class="detail-layout ${can?'editor':''}"><div class="detail-gallery"><div class="detail-main-art gallery-kind-${galleryItemsAll[initialItem]?.kind||'ascension'}" id="detailMainArt">${art?galleryImgHtml(galleryItemsAll[initialItem],r.name,'eager').replace('<img ', '<img id=\"detailMainImg\" '):'<div class="image-fallback">ART<br><small>indisponible</small></div>'}</div><div class="gallery-group-tabs" id="galleryGroupTabs">${galleryTabs}</div><div class="art-strip" id="artStrip">${galleryThumbs(initialGroup)}</div><div class="art-controls"><button id="artPrev" type="button">←</button><span id="artCounter">${groupCounts[initialGroup]?`1 / ${groupCounts[initialGroup]}`:'0 art'}</span><button id="artNext" type="button">→</button></div></div><div class="detail-content">${can&&owned?'<button id="unownServant" class="danger danger-quiet detail-danger-corner" title="Retirer ce Servant de ma collection" aria-label="Retirer ce Servant de ma collection">×</button>':''}<div class="detail-title-row"><div class="detail-class">${classImg(r.class)}</div><div class="detail-title"><h2>${r.name}</h2><div class="detail-rarity">${rarityNum(r.rarity)}★${isWelfare(r)?' · WELFARE':''}</div></div></div><div class="detail-stats detail-stats-v10"><div class="detail-box detail-level-box"><label>NIVEAU</label>${levelHtml}<div class="grail-detail grail-v10">${grailImg()}<strong>${grailCount}</strong>${can?`<input class="micro-edit" id="e-grail" type="number" min="0" max="15" value="${s.grail??0}" title="Nombre de Graals">`:''}</div></div>${statBox('ATK','e-atk',st.atk,`Fou 4★ : +${fmtNum(st.fouAtk)} / +1000`,'e-fouatk',st.fouAtk)}${statBox('HP','e-hp',st.hp,`Fou 4★ : +${fmtNum(st.fouHp)} / +1000`,'e-fouhp',st.fouHp)}<div class="detail-box np-detail-box"><label>NOBLE PHANTASM</label>${npHtml}</div><div class="bond-block"><div class="command-title">BOND</div>${bondDiamonds(s.bond,can)}${can?`<input id="e-bond" type="number" min="0" max="15" value="${s.bond??''}" hidden>`:''}</div><div class="np-types-underbox">${npProfileMarkup}</div></div><div class="command-title">COMMAND CARDS</div><div class="cards-row v10-cards-row">${cards.length?cards.map(c=>`<div class="command-card-item">${cardImg(c)}</div>`).join(''):'<span class="card-data-missing">Données Atlas indisponibles</span>'}</div><div class="levels-title">SKILLS</div><div class="levels-row">${skillHtml}</div><div class="levels-title">APPEND SKILLS</div><div class="levels-row">${appendHtml}</div><div class="modal-footer">${can?`<span class="readonly-note">Édition · ${PLAYER_LABELS[currentPlayer]}</span><div class="modal-footer-actions"><button id="modalCancel">Annuler</button><button class="save" id="saveServant">Enregistrer</button></div>`:`<span class="readonly-note">Lecture seule</span><button id="modalCancel">Fermer</button>`}</div></div></div>`;
+ $('#modal').innerHTML=`<div class="detail-layout ${can?'editor':''}"><div class="detail-gallery"><div class="detail-main-art gallery-kind-${galleryItemsAll[initialItem]?.kind||'ascension'}" id="detailMainArt">${art?galleryImgHtml(galleryItemsAll[initialItem],r.name,'eager').replace('<img ', '<img id=\"detailMainImg\" '):'<div class="image-fallback">ART<br><small>indisponible</small></div>'}</div><div class="gallery-group-tabs" id="galleryGroupTabs">${galleryTabs}</div><div class="art-strip" id="artStrip">${galleryThumbs(initialGroup)}</div><div class="art-controls"><button id="artPrev" type="button">←</button><span id="artCounter">${groupCounts[initialGroup]?`1 / ${groupCounts[initialGroup]}`:'0 art'}</span><button id="artNext" type="button">→</button></div></div><div class="detail-content">${can&&owned?'<button id="unownServant" class="danger danger-quiet detail-danger-corner" title="Retirer ce Servant de ma collection" aria-label="Retirer ce Servant de ma collection">×</button>':''}<div class="detail-title-row"><div class="detail-class">${classImg(r.class)}</div><div class="detail-title"><h2>${esc(r.name)}</h2><div class="detail-rarity">${rarityNum(r.rarity)}★${isWelfare(r)?' · WELFARE':''}</div></div></div><div class="detail-stats detail-stats-v10"><div class="detail-box detail-level-box"><label>NIVEAU</label>${levelHtml}<div class="grail-detail grail-v10">${grailImg()}<strong>${grailCount}</strong>${can?`<input class="micro-edit" id="e-grail" type="number" step="1" min="0" max="15" value="${s.grail??0}" title="Nombre de Graals">`:''}</div></div>${statBox('ATK','e-atk',st.atk,`Fou 4★ : +${fmtNum(st.fouAtk)} / +1000`,'e-fouatk',st.fouAtk)}${statBox('HP','e-hp',st.hp,`Fou 4★ : +${fmtNum(st.fouHp)} / +1000`,'e-fouhp',st.fouHp)}<div class="detail-box np-detail-box"><label>NOBLE PHANTASM</label>${npHtml}</div><div class="bond-block"><div class="command-title">BOND</div>${bondDiamonds(s.bond,can)}${can?`<input id="e-bond" type="number" step="1" min="0" max="15" value="${s.bond??''}" hidden>`:''}</div><div class="np-types-underbox">${npProfileMarkup}</div></div><div class="command-title">COMMAND CARDS</div><div class="cards-row v10-cards-row">${cards.length?cards.map(c=>`<div class="command-card-item">${cardImg(c)}</div>`).join(''):'<span class="card-data-missing">Données Atlas indisponibles</span>'}</div><div class="levels-title">SKILLS</div><div class="levels-row">${skillHtml}</div><div class="levels-title">APPEND SKILLS</div><div class="levels-row">${appendHtml}</div><div class="modal-footer">${can?`<span class="readonly-note">Édition · ${PLAYER_LABELS[currentPlayer]}</span><div class="modal-footer-actions"><button id="modalCancel">Annuler</button><button class="save" id="saveServant">Enregistrer</button></div>`:`<span class="readonly-note">Lecture seule</span><button id="modalCancel">Fermer</button>`}</div></div></div>`;
  bindGalleryImageFallbacks($('#modal'));
  $('#modalCancel').onclick=closeModal;
  let currentIndex=initialItem,currentGroup=initialGroup;
@@ -852,6 +891,8 @@ function openModalBase(r,d,urls,idx,profiles=[],battleItems=null){
  $$('.gallery-group-tab').forEach(b=>b.onclick=()=>renderGroup(b.dataset.galleryGroup, currentIndex));
  $$('.art-thumb').forEach(b=>b.onclick=()=>{const scoped=itemsForGroup(currentGroup);const hit=Number(b.dataset.art);const pos=scoped.findIndex(x=>x.i===hit);if(pos>=0)paint(pos)});
  if(can){
+   const updateTotals=()=>{const draft={...s,level:num($('#e-level')?.value),fouAtk:num($('#e-fouatk')?.value),fouHp:num($('#e-fouhp')?.value)};const total=currentStats(d,r,draft);if($('#e-atk'))$('#e-atk').value=total.atk;if($('#e-hp'))$('#e-hp').value=total.hp;};
+   ['#e-level','#e-fouatk','#e-fouhp'].forEach(selector=>$(selector)?.addEventListener('input',updateTotals));
    const bondInput=$('#e-bond'), bondCaption=$('#bondCaption');
    let bondHoverTimer=null;
    $$('[data-bond]').forEach(btn=>{
@@ -863,42 +904,78 @@ function openModalBase(r,d,urls,idx,profiles=[],battleItems=null){
 }
 function idNormalize(id){return Number(id)}
 let servantModalToken=0;
-async function openServant(id){const r=state.roster.find(x=>Number(x.id)===id);if(!r)return;const token=++servantModalToken;$('#modalBackdrop').classList.add('open');openModalBase(r,null,[guessImage(r.atlasId)],0,[],[]);const detailBox=$('#modal .detail-content');if(detailBox){const n=document.createElement('div');n.className='atlas-load-status';n.textContent='Chargement des données Atlas…';detailBox.prepend(n)}try{const d=await atlasDetail(r);if(token!==servantModalToken||!$('#modalBackdrop').classList.contains('open'))return;const urls=imageList(d);openModalBase(r,d,urls.length?urls:[guessImage(r.atlasId)],0,[],[]);const box=$('#modal .detail-content');if(box){const n=document.createElement('div');n.className='atlas-load-status';n.textContent='Chargement des éléments Atlas…';box.prepend(n)}const [profiles,battleItems]=await Promise.all([npProfilesForServant(r,d),battleSpriteEntries(d,r)]);if(token!==servantModalToken)return;openModalBase(r,d,urls.length?urls:[guessImage(r.atlasId)],0,profiles,battleItems);bindGalleryImageFallbacks($('#modal'));}catch(error){console.warn('Atlas servant modal',error);const status=$('#modal .atlas-load-status');if(status)status.textContent='Données Atlas indisponibles · aperçu local conservé';}}
+async function openServant(id){
+ const r=state.roster.find(x=>Number(x.id)===Number(id));if(!r)return;
+ closeModal();const token=++servantModalToken;servantModalPlayer=currentPlayer;
+ $('#modalBackdrop').classList.add('open');openModalBase(r,null,[guessImage(r.atlasId)],0,[],[]);
+ const valid=()=>token===servantModalToken&&servantModalPlayer===currentPlayer&&$('#modalBackdrop').classList.contains('open');
+ const paint=(d,profiles,battleItems)=>{
+  if(!valid()||pendingStatWrites.has(`${servantModalPlayer}|${id}`))return;
+  const fields=new Map($$('#modal input[id]:not([readonly])').map(x=>[x.id,x.value]));
+  const group=$('#modal .gallery-group-tab.active')?.dataset.galleryGroup;
+  const activeArt=$('#detailMainImg')?.src;
+  const focused=document.activeElement?.id;
+  openModalBase(r,d,imageList(d).length?imageList(d):[guessImage(r.atlasId)],0,profiles,battleItems);
+  fields.forEach((value,id)=>{const field=document.getElementById(id);if(field)field.value=value});
+  const bond=Number($('#e-bond')?.value)||0;
+  $$('[data-bond]').forEach(x=>x.classList.toggle('filled',Number(x.dataset.bond)<=bond));
+  if($('#bondCaption')&&$('#e-bond'))$('#bondCaption').textContent=`Bond ${bond} / 15 · cliquez sur un losange`;
+  if(group)$('#modal .gallery-group-tab[data-gallery-group="'+group+'"]').click();
+  if(activeArt){const thumb=$$('#modal .art-thumb').find(x=>x.querySelector('img')?.src===activeArt);thumb?.click();}
+  $('#e-fouatk')?.dispatchEvent(new Event('input'));$('#e-fouhp')?.dispatchEvent(new Event('input'));
+  if(focused)document.getElementById(focused)?.focus();
+ };
+ try{
+  const d=await atlasDetail(r);if(!valid())return;paint(d,[],[]);
+  // NP and sprite lookups update independently, so a slow Fandom API does not hold up NP types.
+  let profiles=[],battleItems=[];
+  await Promise.allSettled([
+   npProfilesForServant(r,d).then(items=>{profiles=items;paint(d,profiles,battleItems)}),
+   battleSpriteEntries(d,r).then(items=>{battleItems=items;paint(d,profiles,battleItems)})
+  ]);
+ }catch(error){console.warn('Atlas servant modal',error)}
+}
+
 async function saveModal(id){
- const s=ensureStats(currentPlayer,id);
- s.level=Math.max(1,Math.min(120,num($('#e-level')?.value)||1));
- s.np=num($('#e-np')?.value);
- s.bond=Math.max(0,Math.min(15,num($('#e-bond')?.value)||0));
- s.grail=Math.max(0,Math.min(15,num($('#e-grail')?.value)||0));
- s.fouHp=Math.max(0,Math.min(1000,num($('#e-fouhp')?.value)||0));
- s.fouAtk=Math.max(0,Math.min(1000,num($('#e-fouatk')?.value)||0));
- s.skills=[0,1,2].map(i=>{const v=num($('#skill-'+i)?.value);return v==null?null:Math.max(1,Math.min(10,v))});
- s.appendSkills=[0,1,2,3,4].map(i=>{const v=num($('#append-'+i)?.value);return v==null?null:Math.max(0,Math.min(10,v))});
- if(cloudEnabled&&session&&currentCanEdit()){
-   const ok=await persistStat(id);
-   if(!ok)return;
-   localCacheSave();
-   closeModal();renderAll();toast('Servant enregistré dans Supabase');
- }else{
-   localCacheSave();
-   closeModal();renderAll();toast('Servant enregistré localement');
- }
+ const player=servantModalPlayer,token=servantModalToken;
+ if(!player||player!==currentPlayer||!canEditPlayer(player)){toast('Compte non éditeur');return false}
+ const fields=$$('#modal input[type="number" step="1"]');
+ if(fields.some(x=>!x.checkValidity())){toast('Vérifie les valeurs : nombres entiers dans les limites indiquées.');return false}
+ const integer=(selector,min,max)=>{const value=num($(selector)?.value);return value==null?null:Math.max(min,Math.min(max,Math.trunc(value)))};
+ const previous=structuredClone(stats(player,id));
+ const next={...previous,level:integer('#e-level',1,120),np:integer('#e-np',1,999),bond:integer('#e-bond',0,15),grail:integer('#e-grail',0,15),fouHp:integer('#e-fouhp',0,1000),fouAtk:integer('#e-fouatk',0,1000),skills:[0,1,2].map(i=>integer('#skill-'+i,1,10)),appendSkills:[0,1,2,3,4].map(i=>integer('#append-'+i,0,10))};
+ const btn=$('#saveServant');if(btn?.disabled)return false;if(btn)btn.disabled=true;
+ if(pendingStatWrites.size){if(btn)btn.disabled=false;toast('Une sauvegarde est déjà en cours');return false}
+ Object.assign(ensureStats(player,id),next);
+ const ok=await persistStat(id,player);
+ if(!ok){Object.assign(ensureStats(player,id),previous);if(btn)btn.disabled=false;return false}
+ localCacheSave();if(token===servantModalToken)closeModal();renderAll();toast('Servant enregistré dans Supabase');return true;
 }
+
 async function unownServant(id){
- const s=ensureStats(currentPlayer,id);
- s.level=null;s.np=null;s.bond=null;s.grail=null;s.fouHp=null;s.fouAtk=null;s.servantCoins=null;
- s.skills=[null,null,null];s.appendSkills=[null,null,null,null,null];
- if(cloudEnabled&&session&&currentCanEdit()){
-   const ok=await persistStat(id);
-   if(!ok)return;
-   localCacheSave();closeModal();renderAll();toast('Servant retiré de ta collection');
- }else{
-   localCacheSave();closeModal();renderAll();toast('Servant retiré localement');
- }
+ const player=servantModalPlayer,token=servantModalToken;
+ if(!player||player!==currentPlayer||!canEditPlayer(player))return false;
+ if(pendingStatWrites.size)return false;
+ const previous=structuredClone(stats(player,id));
+ const s=ensureStats(player,id);
+ Object.assign(s,{level:null,np:null,bond:null,grail:null,fouHp:null,fouAtk:null,servantCoins:null,skills:[null,null,null],appendSkills:[null,null,null,null,null]});
+ const ok=await persistStat(id,player);
+ if(!ok){Object.assign(s,previous);return false}
+ localCacheSave();if(token===servantModalToken)closeModal();renderAll();toast('Servant retiré de ta collection');return true;
 }
-function closeModal(){$('#modalBackdrop').classList.remove('open')}
-function localCacheSave(){localStorage.setItem(localKey,JSON.stringify(state.players))}
-function localCacheLoad(){try{const x=JSON.parse(localStorage.getItem(localKey));if(!x)return;/* Never restore legacy friend snapshots locally: older builds mixed skill columns into level/bond/grail. */if(x.julien)state.players.julien=x.julien;/* XP is kept per profile below; Yanis/Attmann come from the bundled clean snapshot or Supabase. */}catch{}}
+
+function closeModal(){++servantModalToken;servantModalPlayer=null;galleryFallbackMap.clear();$('#modalBackdrop').classList.remove('open');$('#modal').innerHTML=''}
+function localCacheSave(){try{localStorage.setItem(localKey,JSON.stringify(state.players));return true}catch(error){console.warn('Cache local indisponible',error.message);return false}}
+function localCacheLoad(){
+ try{
+  const cached=JSON.parse(localStorage.getItem(localKey));
+  // The cloud snapshot is authoritative. Do not revive old local stats on every page load.
+  // Keep only XP fallback data with the expected shape when cloud is not configured.
+  if(CONFIG.supabaseUrl&&SUPABASE_KEY)return;
+  for(const p of PLAYERS){const xp=cached?.[p]?.xp;if(xp&&typeof xp==='object'&&!Array.isArray(xp))state.players[p].xp=xp;}
+ }catch{}
+}
+
 function compareAverage(p,idx){const vals=[];for(const r of goldUniverse()){const v=stats(p,r.id).skills?.[idx];if(validSkill(v))vals.push(Number(v))}return vals.length?vals.reduce((x,y)=>x+y,0)/vals.length:0}
 function compareCount(p,pred=()=>true){return goldUniverse().filter(r=>pred(r)&&isOwned(p,r)).length}
 function compareBond10(p){return compareCount(p,r=>Number(stats(p,r.id).bond)>=10)}
@@ -908,12 +985,12 @@ function renderCompare(){
  const vals=PLAYERS.map(p=>({p,...compareStats(p)})),tones=['#c6535f','#4f78b7','#579b76'];
  $('#compareTop').innerHTML=vals.map(v=>`<article class="person-card"><div class="person-name">${PLAYER_LABELS[v.p]}</div><div class="person-score">${v.owned}</div><small class="person-label">SERVANTS 4★ / 5★ / WELFARE POSSÉDÉS</small><div class="collection-note"><span>COLLECTION</span><b>${v.owned}</b><small>${v.np5Pct.toFixed(1)}% NP 5</small></div><div class="person-meta"><span><small>5★</small><b>${v.five}</b></span><span><small>4★</small><b>${v.four}</b></span><span><small>WELFARE</small><b>${v.wf}</b></span><span><small>SKILL 1 MOY.</small><b>${v.a1.toFixed(1)}</b></span><span><small>SKILL 2 MOY.</small><b>${v.a2.toFixed(1)}</b></span><span><small>SKILL 3 MOY.</small><b>${v.a3.toFixed(1)}</b></span><span><small>BOND 10+</small><b>${v.bond}</b></span><span><small>LV 120</small><b>${v.lvl120}</b></span><span><small>NP 5</small><b>${v.np5Pct.toFixed(1)}%</b></span></div></article>`).join('');
  initCompareNames();
- renderShowdown(false);
+ renderShowdown(true);
  renderRadar(tones);
 }
 function initCompareNames(){
  const r=state.roster.filter(isVisible);
- $('#compareNames').innerHTML=r.map(x=>`<option value="${x.name}">${x.name}</option>`).join('');
+ $('#compareNames').innerHTML=r.map(x=>`<option value="${esc(x.name)}">${esc(x.name)}</option>`).join('');
  const cur=state.roster.find(x=>Number(x.id)===Number(compareFocusId)&&isVisible(x));
  if(!cur){const caster=state.roster.find(x=>norm(x.name)==='artoria caster'&&isVisible(x));compareFocusId=caster?.id??284;}
 }
@@ -1017,19 +1094,21 @@ function renderSupports(){
 
 function xpFmt(n){return Number(n||0).toLocaleString('fr-FR')}
 function xpTotalsFor(p,targetClass=''){const inv=xpInventory(p);let random=0,effective=0;for(const c of XP_CLASSES){for(const star of [5,4,3]){const n=Math.max(0,Number(inv[c][star])||0);const base=n*XP_CARD_VALUE[star];random+=base;effective+=targetClass&&c===targetClass?Math.round(base*1.2):base}}return{random,classBonus:effective,effective}}
-function xpNeed(from,to){const a=Math.max(1,Math.min(120,Number(from)||1)),b=Math.max(a,Math.min(120,Number(to)||120));return b<=a?0:(XP_TO_LEVEL[b]||0)-(XP_TO_LEVEL[a]||0)}
+function xpNeed(from,to){const a=Math.max(1,Math.min(120,Math.floor(Number(from))||1)),b=Math.max(a,Math.min(120,Math.floor(Number(to))||120));return b<=a?0:(XP_TO_LEVEL[b]||0)-(XP_TO_LEVEL[a]||0)}
 function cardsNeeded(xp,value){return xp>0?Math.ceil(xp/value):0}
 function xpDerivedState(p){
   const inv=xpInventory(p);
   const targetClass=$('#xpClassSelect')?.value||xpTargetClass||'';
   const totals=xpTotalsFor(p,targetClass);
-  const cur=Math.max(1,Math.min(120,Number($('#xpCurrentLevel')?.value)||1));
-  const target=Math.max(cur,Math.min(120,Number($('#xpTargetLevel')?.value)||120));
+  const cur=Math.max(1,Math.min(120,Math.floor(Number($('#xpCurrentLevel')?.value))||1));
+  const target=Math.max(cur,Math.min(120,Math.floor(Number($('#xpTargetLevel')?.value))||120));
   const need=xpNeed(cur,target);
   return {inv,random:totals.random,classBonus:totals.classBonus,cur,target,need,targetClass};
 }
 function updateXpComputed(){
   const d=xpDerivedState(currentPlayer);
+  for(const row of $$('#xpTableBody tr')){const input=row.querySelector('[data-xp-class]');const cls=input?.dataset.xpClass||row.querySelector('.xp-class-name span:last-child')?.textContent;const stock=d.inv[cls];if(!stock)continue;const raw=[5,4,3].reduce((sum,star)=>sum+(Number(stock[star])||0)*XP_CARD_VALUE[star],0);const cells=row.querySelectorAll('td');if(cells[3])cells[3].innerHTML=`<b>${xpFmt(raw)}</b>`;if(cells[4])cells[4].innerHTML=`<b>${xpFmt(d.targetClass===cls?Math.round(raw*1.2):raw)}</b>`;}
+  const footer=$$('#xpTableFoot th');[5,4,3].forEach((star,i)=>{if(footer[i+1])footer[i+1].textContent=fmtNum(XP_CLASSES.reduce((sum,cls)=>sum+(Number(d.inv[cls][star])||0),0))});if(footer[4])footer[4].textContent=xpFmt(d.random);if(footer[5])footer[5].textContent=xpFmt(d.classBonus);
   $('#xpRandomTotal').textContent=xpFmt(d.random);
   $('#xpClassBonusTotal').textContent=xpFmt(d.classBonus);
   const cards=[
@@ -1052,13 +1131,13 @@ function renderXp(){
   $('#xpTableBody').innerHTML=XP_CLASSES.map(c=>{
     const row=inv[c];
     const total=[5,4,3].reduce((z,st)=>z+(Number(row[st])||0)*XP_CARD_VALUE[st],0);
-    const bonus=[5,4,3].reduce((z,st)=>z+(Number(row[st])||0)*XP_CARD_CLASS_VALUE[st],0);
-    return `<tr><th><div class="xp-class-name">${c==='Autre'?'<span class="xp-class-other"></span>':classImg(c)}<span>${c}</span></div></th>${[5,4,3].map(st=>`<td>${can?`<input class="xp-stock-input beige" data-xp-class="${c}" data-xp-star="${st}" type="number" min="0" step="1" value="${fmtInputNumber(row[st]||0)}" inputmode="numeric">`:`<span class="xp-read">${fmtNum(row[st]||0)}</span>`}</td>`).join('')}<td><b>${xpFmt(total)}</b></td><td><b>${xpFmt(bonus)}</b></td></tr>`;
+    const bonus=targetClass&&c===targetClass?[5,4,3].reduce((z,st)=>z+(Number(row[st])||0)*XP_CARD_CLASS_VALUE[st],0):total;
+    return `<tr><th><div class="xp-class-name">${c==='Autre'?'<span class="xp-class-other"></span>':classImg(c)}<span>${c}</span></div></th>${[5,4,3].map(st=>`<td>${can?`<input class="xp-stock-input beige" data-xp-class="${c}" data-xp-star="${st}" type="number" step="1" min="0" value="${fmtInputNumber(row[st]||0)}" inputmode="numeric">`:`<span class="xp-read">${fmtNum(row[st]||0)}</span>`}</td>`).join('')}<td><b>${xpFmt(total)}</b></td><td><b>${xpFmt(bonus)}</b></td></tr>`;
   }).join('');
   const grand=[5,4,3].map(st=>XP_CLASSES.reduce((z,c)=>z+(Number(inv[c][st])||0),0));
   $('#xpTableFoot').innerHTML=`<tr><th>TOTAL</th>${grand.map(v=>`<th>${fmtNum(v)}</th>`).join('')}<th>${xpFmt(totals.random)}</th><th>${xpFmt(totals.classBonus)}</th></tr>`;
   $('#xpMilestones').innerHTML=[60,70,80,90,100,120].map(l=>`<button class="xp-milestone modern" data-xp-milestone="${l}"><span>1 → ${l}</span><b>${xpFmt(XP_TO_LEVEL[l])}</b><small>${fmtNum(cardsNeeded(XP_TO_LEVEL[l],27000))} × 4★</small></button>`).join('');
-  $$('.xp-stock-input').forEach(i=>{i.oninput=()=>{inv[i.dataset.xpClass][i.dataset.xpStar]=Math.max(0,Math.floor(Number(i.value)||0));localCacheSave();clearTimeout(i._cloudTimer);i._cloudTimer=setTimeout(async()=>{const ok=await saveXpCloud();if(ok)updateSync('Cloud · inventaire XP synchronisé');},450);updateXpComputed()};i.onchange=()=>{clearTimeout(i._cloudTimer);i._cloudTimer=setTimeout(async()=>{const ok=await saveXpCloud();if(ok)updateSync('Cloud · inventaire XP synchronisé');},150);};});
+  $$('.xp-stock-input').forEach(i=>{i.oninput=()=>{inv[i.dataset.xpClass][i.dataset.xpStar]=Math.max(0,Math.floor(Number(i.value)||0));localCacheSave();queueXpSave(p,450);updateXpComputed()};i.onchange=()=>{queueXpSave(p,150);};});
   $$('.xp-milestone').forEach(b=>b.onclick=()=>{$('#xpTargetLevel').value=b.dataset.xpMilestone;updateXpComputed()});
   updateXpComputed();
 }
@@ -1079,7 +1158,7 @@ function normalizeExpenseTypes(row){
   return [...new Set(out)];
 }
 function normalizeExpenseCharacters(row){
-  if(Array.isArray(row?.characters))return row.characters.filter(x=>x&&x.name).map(x=>({type:String(x.type||'focus').toLowerCase(),name:String(x.name).trim()})).filter(x=>EXPENSE_TYPES.some(([k])=>k===x.type));
+  if(Array.isArray(row?.characters)&&row.characters.length)return row.characters.filter(x=>x&&x.name).map(x=>({type:String(x.type||'focus').toLowerCase(),name:String(x.name).trim()})).filter(x=>EXPENSE_TYPES.some(([k])=>k===x.type));
   const reason=String(row?.reason||'').trim();
   if(!reason)return [];
   // Legacy fallback: enough to render old rows before the migration is run.
@@ -1121,9 +1200,10 @@ function updateExpenseFormVisibility(){
   renderExpenseCharacterInputs(types);
 }
 function openExpenseEditor(){
+ closeModal();
   if(!julienPrivateAccess()||!currentAuth?.canEdit){toast('Le compte Julien doit être connecté avec les droits d’édition.');return}
-  const today=new Date().toISOString().slice(0,10), types=new Set(['focus']);
-  $('#modal').innerHTML=`<div class="expense-editor"><div class="expense-editor-head"><div><span class="eyebrow">PRIVATE LEDGER</span><h2>Ajouter une dépense</h2><p>Une ligne peut contenir plusieurs types et plusieurs personnages. Chaque personnage reste associé à son type.</p></div><button type="button" id="expenseEditorClose" class="modal-close" aria-label="Fermer">×</button></div><div class="expense-form-grid"><label>Date<input id="expenseDate" type="date" value="${today}" required></label><label>Serveur<select id="expenseServer"><option value="na">NA</option><option value="jp">JP</option></select></label><label>Total €<input id="expenseTotal" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0,00" required></label><label>Achats<input id="expenseTransactions" type="number" min="1" step="1" value="1" required></label></div><div class="expense-form-section"><div class="command-title">TYPE</div><div class="expense-form-types" id="expenseFormTypes">${expenseTypeToggleHtml(types)}</div></div><div class="expense-form-section" id="expenseAttemptsWrap"><div class="command-title">TENTATIVES</div><label class="expense-full-field"><span>Nombre de tentatives</span><input id="expenseAttempts" type="number" min="1" step="1" value="1"></label></div><div class="expense-form-section"><div class="command-title">PERSONNAGE OBTENU</div><div id="expenseCharacterFields"></div></div><div class="expense-form-actions"><button type="button" id="expenseEditorCancel" class="modal-btn">Annuler</button><button type="button" id="expenseEditorSave" class="modal-btn save">Ajouter la dépense</button></div></div>`;
+  const now=new Date(),today=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`, types=new Set(['focus']);
+  $('#modal').innerHTML=`<div class="expense-editor"><div class="expense-editor-head"><div><span class="eyebrow">PRIVATE LEDGER</span><h2>Ajouter une dépense</h2><p>Une ligne peut contenir plusieurs types et plusieurs personnages. Chaque personnage reste associé à son type.</p></div><button type="button" id="expenseEditorClose" class="modal-close" aria-label="Fermer">×</button></div><div class="expense-form-grid"><label>Date<input id="expenseDate" type="date" value="${today}" required></label><label>Serveur<select id="expenseServer"><option value="na">NA</option><option value="jp">JP</option></select></label><label>Total €<input id="expenseTotal" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0,00" required></label><label>Achats<input id="expenseTransactions" type="number" step="1" min="1" value="1" required></label></div><div class="expense-form-section"><div class="command-title">TYPE</div><div class="expense-form-types" id="expenseFormTypes">${expenseTypeToggleHtml(types)}</div></div><div class="expense-form-section" id="expenseAttemptsWrap"><div class="command-title">TENTATIVES</div><label class="expense-full-field"><span>Nombre de tentatives</span><input id="expenseAttempts" type="number" step="1" min="1" value="1"></label></div><div class="expense-form-section"><div class="command-title">PERSONNAGE OBTENU</div><div id="expenseCharacterFields"></div></div><div class="expense-form-actions"><button type="button" id="expenseEditorCancel" class="modal-btn">Annuler</button><button type="button" id="expenseEditorSave" class="modal-btn save">Ajouter la dépense</button></div></div>`;
   $('#modalBackdrop').classList.add('open');
   renderExpenseCharacterInputs(types);
   $$('#expenseFormTypes [data-expense-form-type]').forEach(b=>b.onclick=()=>{b.classList.toggle('active');b.setAttribute('aria-pressed',b.classList.contains('active')?'true':'false');const current={};$$('[data-expense-chars]').forEach(t=>current[t.dataset.expenseChars]=t.value.split(',').map(x=>x.trim()).filter(Boolean));const selected=new Set($$('#expenseFormTypes .expense-form-type.active').map(x=>x.dataset.expenseFormType));$('#expenseAttemptsWrap')?.classList.toggle('hidden',!selected.has('focus'));renderExpenseCharacterInputs(selected,current)});
@@ -1131,17 +1211,17 @@ function openExpenseEditor(){
   $('#expenseEditorSave').onclick=async()=>{
     const types=[...$$('#expenseFormTypes .expense-form-type.active')].map(b=>b.dataset.expenseFormType);
     const date=$('#expenseDate')?.value,total=Number($('#expenseTotal')?.value),transactions=Math.max(1,Math.floor(Number($('#expenseTransactions')?.value)||0)),attempts=types.includes('focus')?Math.max(1,Math.floor(Number($('#expenseAttempts')?.value)||0)):null,server=$('#expenseServer')?.value;
-    if(!date||!(total>=0)||!transactions||!types.length){toast('Complète la date, le total, les achats et au moins un type.');return}
+    if(!date||$('#expenseTotal').value.trim()===''||!Number.isFinite(total)||total<0||!$$('#modal input').every(x=>x.checkValidity())||!types.length){toast('Complète la date, le total, les achats et au moins un type.');return}
     const characters=[];$$('[data-expense-chars]').forEach(t=>t.value.split(',').map(x=>x.trim()).filter(Boolean).forEach(name=>characters.push({type:t.dataset.expenseChars,name})));
     const reason=characters.map(c=>`${expenseTypeLabel(c.type)}: ${c.name}`).join(' · ')||types.map(expenseTypeLabel).join(' + ');
     if(characters.length===0){toast('Ajoute au moins un personnage obtenu.');return}
     if(!cloudEnabled||!cloud||!session||!currentAuth?.canEdit||currentAuth.playerKey!=='julien'){toast('Compte Julien non autorisé.');return}
     const payload={player_key:'julien',event_date:date,reason,server,category:types.includes('gssr')?'gssr':types.includes('destiny')?'destiny':'focus',types,characters,attempts,transaction_count:transactions,total_eur:Number(total.toFixed(2)),game_year:expenseGameYear(date)};
-    const btn=$('#expenseEditorSave');btn.disabled=true;btn.textContent='Enregistrement…';
+    const btn=$('#expenseEditorSave');if(btn.disabled)return;const revision=authRevision,modalToken=servantModalToken;btn.disabled=true;btn.textContent='Enregistrement…';
     const {data,error}=await cloud.from('chaldea_expenses').insert(payload).select().single();
     btn.disabled=false;btn.textContent='Ajouter la dépense';
     if(error){toast('Erreur Supabase : '+error.message);return}
-    if(data)expenseRows.unshift(data);expenseLoaded=true;closeModal();renderExpenses();toast('Dépense ajoutée');
+    if(revision!==authRevision||!julienPrivateAccess())return;if(data)expenseRows.unshift(data);expenseLoaded=true;if(modalToken===servantModalToken)closeModal();renderExpenses();toast('Dépense ajoutée');
   };
 }
 function renderExpenses(){
@@ -1154,79 +1234,130 @@ function renderExpenses(){
  const total=allRows.reduce((a,r)=>a+Number(r.total_eur||0),0),na=allRows.filter(r=>String(r.server||'').toLowerCase()==='na').reduce((a,r)=>a+Number(r.total_eur||0),0);
  const yearMap=new Map();allRows.forEach(r=>{const y=Number(r.game_year||0);if(y)yearMap.set(y,(yearMap.get(y)||0)+Number(r.total_eur||0))});const yearRows=[...yearMap.entries()].sort((a,b)=>b[0]-a[0]),maxYear=Math.max(...yearRows.map(x=>x[1]),1);
  const activeCount=expenseTypeFilters.size;
- host.innerHTML=`<div class="expenses-kpi-grid expenses-kpi-grid-2"><div class="expense-kpi"><small>TOTAL HISTORIQUE</small><strong>${euros(total)}</strong><span>${allRows.length} dépenses enregistrées</span></div><div class="expense-kpi"><small>TOTAL NA</small><strong>${euros(na)}</strong><span>${allRows.filter(r=>String(r.server||'').toLowerCase()==='na').length} dépenses NA</span></div></div><section class="panel expense-summary-panel"><div class="panel-head"><div><span class="eyebrow">ACCOUNT HISTORY</span><h2>Dépenses par année de jeu</h2></div><span class="panel-tag">SOURCE PERSONNELLE</span></div><div class="expense-year-list">${yearRows.map(([y,v])=>`<div class="expense-year-row"><span>Année ${y}</span><div class="expense-year-track"><div class="expense-year-fill" style="width:${Math.max(2,v/maxYear*100)}%"></div></div><b>${euros(v)}</b></div>`).join('')}</div></section><section class="panel expense-table-panel"><div class="panel-head expense-table-head"><div><span class="eyebrow">SPENDING LOG</span><h2>Dépenses</h2></div><div class="expense-table-actions"><div class="expense-filter-buttons" role="group" aria-label="Filtrer les types">${EXPENSE_TYPES.map(([k,l])=>`<button type="button" class="filter-btn expense-filter-btn ${expenseTypeFilters.has(k)?'active':''}" data-expense-filter="${k}" aria-pressed="${expenseTypeFilters.has(k)}">${l}</button>`).join('')}</div><button type="button" class="filter-btn expense-add-btn" id="expenseAddBtn">+ Ajouter</button></div></div><div class="expense-filter-note">${activeCount?`Affichage des dépenses contenant : ${[...expenseTypeFilters].map(expenseTypeLabel).join(', ')}`:'Aucun type sélectionné'}</div><div class="overview-table-wrap"><table class="expense-table"><thead><tr><th>DATE</th><th>TYPE</th><th>PERSONNAGE OBTENU</th><th>SERVEUR</th><th>ACHATS</th><th>TOTAL €</th></tr></thead><tbody>${rows.length?rows.map(r=>`<tr><td>${expenseDate(r.event_date)}</td><td><div class="expense-type-list">${expenseTypesHtml(r)}</div></td><td><div class="expense-character-list">${expenseCharactersHtml(r)}</div></td><td><span class="server-badge ${String(r.server||'').toLowerCase()}">${esc(String(r.server||'—').toUpperCase())}</span></td><td>${Number(r.transaction_count)||0}</td><td><strong>${euros(r.total_eur)}</strong></td></tr>`).join(''):`<tr><td colspan="6"><div class="expense-empty-state">Aucune dépense ne correspond aux filtres actifs.</div></td></tr>`}</tbody></table></div></section>`;
+ host.innerHTML=`<div class="expenses-kpi-grid expenses-kpi-grid-2"><div class="expense-kpi"><small>TOTAL HISTORIQUE</small><strong>${euros(total)}</strong><span>${allRows.length} dépenses enregistrées</span></div><div class="expense-kpi"><small>TOTAL NA</small><strong>${euros(na)}</strong><span>${allRows.filter(r=>String(r.server||'').toLowerCase()==='na').length} dépenses NA</span></div></div><section class="panel expense-summary-panel"><div class="panel-head"><div><span class="eyebrow">ACCOUNT HISTORY</span><h2>Dépenses par année de jeu</h2></div><span class="panel-tag">SOURCE PERSONNELLE</span></div><div class="expense-year-list">${yearRows.map(([y,v])=>`<div class="expense-year-row"><span>Année ${y}</span><div class="expense-year-track"><div class="expense-year-fill" style="width:${Math.max(2,v/maxYear*100)}%"></div></div><b>${euros(v)}</b></div>`).join('')}</div></section><section class="panel expense-table-panel"><div class="panel-head expense-table-head"><div><span class="eyebrow">SPENDING LOG</span><h2>Dépenses</h2></div><div class="expense-table-actions"><div class="expense-filter-buttons" role="group" aria-label="Filtrer les types">${EXPENSE_TYPES.map(([k,l])=>`<button type="button" class="filter-btn expense-filter-btn ${expenseTypeFilters.has(k)?'active':''}" data-expense-filter="${k}" aria-pressed="${expenseTypeFilters.has(k)}">${l}</button>`).join('')}</div><button type="button" class="filter-btn expense-add-btn" id="expenseAddBtn">+ Ajouter</button></div></div><div class="expense-filter-note">${activeCount?`Affichage des dépenses contenant : ${[...expenseTypeFilters].map(expenseTypeLabel).join(', ')}`:'Aucun type sélectionné'}</div><div class="overview-table-wrap"><table class="expense-table"><thead><tr><th>DATE</th><th>TYPE</th><th>PERSONNAGE OBTENU</th><th>SERVEUR</th><th>ACHATS</th><th>TOTAL €</th></tr></thead><tbody>${rows.length?rows.map(r=>`<tr><td>${expenseDate(r.event_date)}</td><td><div class="expense-type-list">${expenseTypesHtml(r)}</div></td><td><div class="expense-character-list">${expenseCharactersHtml(r)}</div></td><td><span class="server-badge ${esc(String(r.server||'').toLowerCase())}">${esc(String(r.server||'—').toUpperCase())}</span></td><td>${Number(r.transaction_count)||0}</td><td><strong>${euros(r.total_eur)}</strong></td></tr>`).join(''):`<tr><td colspan="6"><div class="expense-empty-state">Aucune dépense ne correspond aux filtres actifs.</div></td></tr>`}</tbody></table></div></section>`;
  $$('#expensesContent [data-expense-filter]').forEach(b=>b.onclick=()=>{const type=b.dataset.expenseFilter;if(expenseTypeFilters.has(type))expenseTypeFilters.delete(type);else expenseTypeFilters.add(type);renderExpenses()});
  $('#expenseAddBtn')?.addEventListener('click',openExpenseEditor);
 }
 async function loadExpenses(){
+ const token=++expenseLoadToken,revision=authRevision;
  if(!julienPrivateAccess()||!cloudEnabled||!cloud){expenseRows=[];expenseLoaded=false;expenseLoadError='';renderExpenses();return}
- expenseLoaded=false;expenseLoadError='';renderExpenses();const {data,error}=await cloud.from('chaldea_expenses').select('*').eq('player_key','julien').order('event_date',{ascending:false});
- if(error){expenseRows=[];expenseLoadError=error.message||'Lecture des dépenses refusée.';expenseLoaded=true;renderExpenses();return}
- expenseRows=Array.isArray(data)?data:[];expenseLoaded=true;renderExpenses();
+ expenseLoaded=false;expenseLoadError='';renderExpenses();
+ const {data,error}=await readCloudRows('chaldea_expenses',['event_date','id'],q=>q.eq('player_key','julien'));
+ if(token!==expenseLoadToken||revision!==authRevision||!julienPrivateAccess())return;
+ expenseRows=error?[]:data;expenseLoadError=error?.message||'';expenseLoaded=true;renderExpenses();
 }
 
 async function ensureAtlasRosterSync(){if(atlasRosterSyncStarted)return atlasRosterSyncPromise;atlasRosterSyncStarted=true;atlasRosterSyncPromise=syncRosterNA().catch(e=>{console.warn('Atlas roster sync',e);return null});return atlasRosterSyncPromise}
-function navigate(v){if(v==='expenses'&&currentPlayer!=='julien')return;currentView=v;$$('.view').forEach(x=>x.classList.toggle('active',x.id==='view-'+v));$$('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.view===v));$('#pageName').textContent={overview:'Overview',servants:'Servants',compare:'Compare',supports:'Support Lists',xp:'Calcul XP',gssr:'GSSR',expenses:'Dépenses'}[v]||'Overview';$('#sidebar').classList.remove('open');renderAll();if(v==='servants'){const grid=$('#rosterCards');if(grid&&!atlasRosterSyncStarted)grid.classList.add('atlas-soft-loading');ensureAtlasRosterSync().finally(()=>grid?.classList.remove('atlas-soft-loading'));}if(v==='gssr'&&!atlasRosterSyncStarted)ensureAtlasRosterSync();if(v==='expenses')loadExpenses()}
+function navigate(v){if(v==='expenses'&&(currentPlayer!=='julien'||!julienPrivateAccess()))return;closeModal();if(v!=='servants'){++renderToken;clearNpOverlayTimers();}currentView=v;$$('.view').forEach(x=>x.classList.toggle('active',x.id==='view-'+v));$$('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.view===v));$('#pageName').textContent={overview:'Overview',servants:'Servants',compare:'Compare',supports:'Support Lists',xp:'Calcul XP',gssr:'GSSR',expenses:'Dépenses'}[v]||'Overview';$('#sidebar').classList.remove('open');renderAll();if(v==='servants'){const grid=$('#rosterCards');if(grid&&!atlasRosterSyncStarted)grid.classList.add('atlas-soft-loading');ensureAtlasRosterSync().finally(()=>grid?.classList.remove('atlas-soft-loading'));}if(v==='gssr'&&!atlasRosterSyncStarted)ensureAtlasRosterSync();if(v==='expenses')loadExpenses()}
 function renderAll(){renderMasterSwitch();if(currentView==='overview')renderOverview();if(currentView==='servants'){fillFilters();renderRoster()}if(currentView==='compare')renderCompare();if(currentView==='supports')renderSupports();if(currentView==='xp')renderXp();if(currentView==='gssr')renderGssr();if(currentView==='expenses')renderExpenses()}
-async function persistStat(id){
- if(!cloudEnabled||!cloud||!session||!currentCanEdit()){
-   toast('Impossible de synchroniser ce Servant : compte non éditeur');
-   return false;
- }
- const s=stats(currentPlayer,id);
- const body={
-   player_key:currentPlayer,
-   servant_id:Number(id),
-   level:s.level,
-   np:s.np,
-   bond:s.bond,
-   grail:s.grail,
-   fou_hp:s.fouHp,
-   fou_atk:s.fouAtk,
-   servant_coins:s.servantCoins,
-   skills:s.skills||[null,null,null],
-   append_skills:s.appendSkills||[null,null,null,null,null],
-   updated_at:new Date().toISOString()
- };
- const {data,error}=await cloud
-   .from('chaldea_stats')
-   .upsert(body,{onConflict:'player_key,servant_id',ignoreDuplicates:false})
-   .select('player_key,servant_id,level,np,bond,grail,fou_hp,fou_atk,servant_coins,skills,append_skills')
-   .single();
- if(error){
-   updateSync('Supabase · erreur sauvegarde',true);
-   toast('Erreur Supabase : '+error.message);
-   return false;
- }
- if(!data || String(data.player_key)!==String(currentPlayer) || Number(data.servant_id)!==Number(id)){
-   updateSync('Supabase · sauvegarde non confirmée',true);
-   toast('La sauvegarde du Servant n’a pas pu être confirmée');
-   return false;
- }
- updateSync('Cloud · synchronisé');
- return true;
+async function persistStat(id,player=currentPlayer){
+ if(!cloudEnabled||!cloud||!canEditPlayer(player)){toast('Impossible de synchroniser ce Servant : compte non éditeur');return false}
+ const key=`${player}|${id}`;if(pendingStatWrites.has(key)||pendingStatWrites.has('bulk'))return false;
+ const s=structuredClone(stats(player,id));
+ const body={player_key:player,servant_id:Number(id),level:s.level,np:s.np,bond:s.bond,grail:s.grail,fou_hp:s.fouHp,fou_atk:s.fouAtk,servant_coins:s.servantCoins,skills:s.skills||[null,null,null],append_skills:s.appendSkills||[null,null,null,null,null],updated_at:new Date().toISOString()};
+ ++statsRevision;pendingStatWrites.add(key);
+ try{
+  const {data,error}=await cloud.from('chaldea_stats').upsert(body,{onConflict:'player_key,servant_id',ignoreDuplicates:false}).select('player_key,servant_id').single();
+  if(error)throw error;
+  if(!data||data.player_key!==player||Number(data.servant_id)!==Number(id))throw Error('Sauvegarde non confirmée');
+  updateSync('Cloud · synchronisé');return true;
+ }catch(error){updateSync('Supabase · erreur sauvegarde',true);toast('Erreur Supabase : '+error.message);return false}
+ finally{pendingStatWrites.delete(key);++statsRevision;}
 }
-async function refreshPublicStats(){if(!cloudEnabled||!cloud)return;const {data,error}=await cloud.from('chaldea_stats').select('*');if(error){updateSync('Supabase · lecture refusée',true);return}let changed=false;for(const x of data||[]){const ss=ensureStats(x.player_key,x.servant_id);const next={level:x.level,np:x.np,bond:x.bond,grail:x.grail,fouHp:x.fou_hp,fouAtk:x.fou_atk,servantCoins:x.servant_coins,skills:x.skills||[null,null,null],appendSkills:x.append_skills||[null,null,null,null,null]};if(JSON.stringify(ss)!==JSON.stringify(next)){Object.assign(ss,next);changed=true}}if(changed){localCacheSave();if(currentView==='overview')renderOverview();else if(currentView==='compare')renderCompare()}}
-async function seedCurrentPlayer(){if(!cloudEnabled||!cloud||!session||!currentAuth?.canEdit)return;const ids=Object.entries(state.players[currentPlayer]?.stats||{});for(let i=0;i<ids.length;i+=50){const chunk=ids.slice(i,i+50).map(([id,s])=>({player_key:currentPlayer,servant_id:Number(id),level:s.level,np:s.np,bond:s.bond,grail:s.grail,fou_hp:s.fouHp,fou_atk:s.fouAtk,servant_coins:s.servantCoins,skills:s.skills||[null,null,null],append_skills:s.appendSkills||[null,null,null,null,null]}));const {error}=await cloud.from('chaldea_stats').upsert(chunk,{onConflict:'player_key,servant_id'});if(error){toast('Import impossible : '+error.message);return}}toast('Snapshot importé dans Supabase');await refreshPublicStats()}
+
+async function readCloudRows(table,orderColumns,filter=q=>q){
+ const rows=[],pageSize=500;
+ for(let start=0;;start+=pageSize){
+  let query=filter(cloud.from(table).select('*'));
+  for(const column of orderColumns)query=query.order(column,{ascending:true});
+  const {data,error}=await query.range(start,start+pageSize-1);
+  if(error)return {data:null,error};
+  if(!Array.isArray(data))return {data:null,error:{message:'Réponse Supabase invalide'}};
+  rows.push(...data);if(data.length<pageSize)return {data:rows,error:null};
+ }
+}
+async function refreshPublicStats(){
+ if(!cloudEnabled||!cloud||pendingStatWrites.size)return;
+ if(statsRefreshPromise)return statsRefreshPromise;
+ const revision=statsRevision;
+ statsRefreshPromise=(async()=>{
+  const {data,error}=await readCloudRows('chaldea_stats',['player_key','servant_id']);
+  if(error){updateSync('Supabase · lecture refusée',true);return}
+  if(pendingStatWrites.size||revision!==statsRevision)return;
+  const next=Object.fromEntries(PLAYERS.map(p=>[p,{}]));
+  for(const x of data){if(!PLAYERS.includes(x.player_key))continue;next[x.player_key][String(x.servant_id)]={level:x.level??null,np:x.np??null,bond:x.bond??null,grail:x.grail??null,fouHp:x.fou_hp??null,fouAtk:x.fou_atk??null,servantCoins:x.servant_coins??null,skills:Array.isArray(x.skills)?x.skills:[null,null,null],appendSkills:Array.isArray(x.append_skills)?x.append_skills:[null,null,null,null,null]};}
+  let changed=false;
+  for(const player of PLAYERS){if(JSON.stringify(state.players[player].stats)!==JSON.stringify(next[player])){state.players[player].stats=next[player];changed=true;}}
+  if(changed){localCacheSave();showdownRenderedId=null;if(['overview','compare','servants'].includes(currentView))renderAll();}
+ })().catch(error=>{updateSync('Supabase · lecture indisponible',true);console.warn('Statistiques cloud',error.message)}).finally(()=>{statsRefreshPromise=null});return statsRefreshPromise;
+}
+
+async function seedCurrentPlayer(player=currentAuth?.playerKey){
+ if(!cloudEnabled||!cloud||!canEditPlayer(player))return false;
+ const ids=Object.entries(initialState.players[player]?.stats||{});
+ // Seed inserts missing rows only. It must never overwrite cloud edits made in another tab.
+ for(let i=0;i<ids.length;i+=50){
+  const chunk=ids.slice(i,i+50).map(([id,s])=>({player_key:player,servant_id:Number(id),level:s.level,np:s.np,bond:s.bond,grail:s.grail,fou_hp:s.fouHp,fou_atk:s.fouAtk,servant_coins:s.servantCoins,skills:s.skills||[null,null,null],append_skills:s.appendSkills||[null,null,null,null,null]}));
+  const {error}=await cloud.from('chaldea_stats').upsert(chunk,{onConflict:'player_key,servant_id',ignoreDuplicates:true});
+  if(error){toast('Import impossible : '+error.message);return false}
+ }
+ toast('Snapshot importé dans Supabase');await refreshPublicStats();return true;
+}
+
 async function saveAllToSupabase(){
  if(!cloudEnabled||!cloud||!session||!currentCanEdit()){toast('Connecte-toi avec ton compte éditeur');return false}
+ const lock='bulk';if(pendingStatWrites.size)return false;pendingStatWrites.add(lock);++statsRevision;
  try{
-  const now=new Date().toISOString();const rows=Object.entries(state.players[currentPlayer]?.stats||{}).map(([id,st])=>({player_key:currentPlayer,servant_id:Number(id),level:st.level,np:st.np,bond:st.bond,grail:st.grail,fou_hp:st.fouHp,fou_atk:st.fouAtk,servant_coins:st.servantCoins,skills:st.skills||[null,null,null],append_skills:st.appendSkills||[null,null,null,null,null],updated_at:now}));
+  const player=currentPlayer,inventory=structuredClone(xpInventory(player)),friendId=supportLocal[player]?.friendId||null;const now=new Date().toISOString();const rows=Object.entries(state.players[player]?.stats||{}).map(([id,st])=>({player_key:player,servant_id:Number(id),level:st.level,np:st.np,bond:st.bond,grail:st.grail,fou_hp:st.fouHp,fou_atk:st.fouAtk,servant_coins:st.servantCoins,skills:st.skills||[null,null,null],append_skills:st.appendSkills||[null,null,null,null,null],updated_at:now}));
   for(let i=0;i<rows.length;i+=100){const {error}=await cloud.from('chaldea_stats').upsert(rows.slice(i,i+100),{onConflict:'player_key,servant_id'});if(error)throw error}
-  const {error:xe}=await cloud.from('chaldea_xp').upsert({player_key:currentPlayer,inventory:xpInventory(currentPlayer),updated_at:now},{onConflict:'player_key'});if(xe)throw xe;
-  const {error:se}=await cloud.from('chaldea_support_profiles').upsert({player_key:currentPlayer,friend_id:supportLocal[currentPlayer]?.friendId||null,updated_at:now},{onConflict:'player_key'});if(se)throw se;
+  const {error:xe}=await cloud.from('chaldea_xp').upsert({player_key:player,inventory,updated_at:now},{onConflict:'player_key'});if(xe)throw xe;
+  const {error:se}=await cloud.from('chaldea_support_profiles').upsert({player_key:player,friend_id:friendId,updated_at:now},{onConflict:'player_key'});if(se)throw se;
   localCacheSave();updateSync('Cloud · toutes les données synchronisées');toast('Toutes tes données sont enregistrées dans Supabase');await refreshPublicStats();await loadXpCloud();await loadSupportProfiles();return true;
  }catch(error){toast('Erreur Supabase : '+(error?.message||error));return false}
+ finally{pendingStatWrites.delete(lock);++statsRevision;}
 }
-async function saveXpCloud(){if(!cloudEnabled||!cloud||!session||!currentCanEdit())return false;const inv=xpInventory(currentPlayer);const {error}=await cloud.from('chaldea_xp').upsert({player_key:currentPlayer,inventory:inv,updated_at:new Date().toISOString()},{onConflict:'player_key'});if(error){console.warn('XP sync',error.message);return false}return true}
-async function loadXpCloud(){if(!cloudEnabled||!cloud)return;const {data,error}=await cloud.from('chaldea_xp').select('*');if(error)return;for(const x of data||[]){state.players[x.player_key].xp=x.inventory||XP_DEFAULT()}if(currentView==='xp')renderXp()}
+function queueXpSave(player,delay){
+ xpDirtyPlayers.add(player);clearTimeout(xpSaveQueues.get(player)?.timer);
+ const timer=setTimeout(async()=>{const ok=await saveXpCloud(player);if(ok)updateSync('Cloud · inventaire XP synchronisé')},delay);
+ xpSaveQueues.set(player,{...xpSaveQueues.get(player),timer});
+}
+async function saveXpCloud(player=currentPlayer){
+ if(!cloudEnabled||!cloud||!canEditPlayer(player))return false;
+ const inventory=structuredClone(xpInventory(player));
+ const previous=xpSaveQueues.get(player)?.pending||Promise.resolve();
+ const request=previous.catch(()=>{}).then(async()=>{
+  if(!canEditPlayer(player))return false;
+  const {error}=await cloud.from('chaldea_xp').upsert({player_key:player,inventory,updated_at:new Date().toISOString()},{onConflict:'player_key'});
+  if(error){updateSync('Supabase · erreur inventaire XP',true);toast('Erreur XP : '+error.message);return false}
+  if(JSON.stringify(xpInventory(player))===JSON.stringify(inventory))xpDirtyPlayers.delete(player);
+  return true;
+ });
+ xpSaveQueues.set(player,{...xpSaveQueues.get(player),pending:request});return request;
+}
+
+async function loadXpCloud(){if(!cloudEnabled||!cloud)return;const {data,error}=await cloud.from('chaldea_xp').select('*');if(error)return;for(const x of data||[]){if(PLAYERS.includes(x.player_key)&&!xpDirtyPlayers.has(x.player_key))state.players[x.player_key].xp=x.inventory||XP_DEFAULT()}if(currentView==='xp')renderXp()}
 async function loadSupportProfiles(){if(!cloudEnabled||!cloud)return;const {data,error}=await cloud.from('chaldea_support_profiles').select('*');if(error)return;for(const x of data||[])supportLocal[x.player_key]={friendId:x.friend_id||''}}
 async function saveSupportProfile(p,fid){if(!cloudEnabled||!cloud||!session||!currentAuth?.canEdit||currentAuth.playerKey!==p){localCacheSave();return}const {error}=await cloud.from('chaldea_support_profiles').upsert({player_key:p,friend_id:fid||null,updated_at:new Date().toISOString()},{onConflict:'player_key'});if(error)toast('Erreur Support : '+error.message);else toast('Friend ID synchronisé')}
-async function loadCloud(){if(!cloudEnabled||!cloud)return;await refreshPublicStats();await loadSupportProfiles();await loadXpCloud();await loadGssrResults();const {data}=await cloud.from('chaldea_stats').select('player_key');const counts={};(data||[]).forEach(x=>counts[x.player_key]=(counts[x.player_key]||0)+1);if(session&&currentAuth?.canEdit&&!counts[currentAuth.playerKey])showSeedBanner()}
-function showSeedBanner(){if($('#seedBanner'))return;const div=document.createElement('div');div.id='seedBanner';div.className='seed-banner';div.innerHTML=`<span>Ton compte n’a pas encore été initialisé dans la base cloud.</span><button>Importer ton snapshot Excel</button>`;div.querySelector('button').onclick=async()=>{await seedCurrentPlayer();div.remove()};document.body.appendChild(div)}
+async function loadCloud(){
+ if(!cloudEnabled||!cloud)return;
+ await refreshPublicStats();await loadSupportProfiles();await loadXpCloud();await loadGssrResults();
+ if(session&&currentAuth?.canEdit){const player=currentAuth.playerKey;const {data,error}=await cloud.from('chaldea_stats').select('servant_id').eq('player_key',player).limit(1);if(!error&&data?.length===0)showSeedBanner(player);}
+}
+
+function showSeedBanner(player=currentAuth?.playerKey){if($('#seedBanner'))return;const div=document.createElement('div');div.id='seedBanner';div.className='seed-banner';div.innerHTML=`<span>Ton compte n’a pas encore été initialisé dans la base cloud.</span><button>Importer ton snapshot Excel</button>`;div.querySelector('button').onclick=async()=>{const ok=await seedCurrentPlayer(player);if(ok)div.remove()};document.body.appendChild(div)}
+function clearPrivateState(){++expenseLoadToken;expenseRows=[];expenseLoaded=false;expenseLoadError='';gssrResults={};gssrDraft={};$('#expensesContent').innerHTML='';$('#gssrEventDetail').innerHTML='';$('#seedBanner')?.remove();}
 function updateEditVisibility(){$('#accountText').textContent=session?(currentAuth?.canEdit?`Connecté · ${PLAYER_LABELS[currentAuth.playerKey]}`:'Connecté · lecteur'):'Connexion'}
-async function resolveMembership(){if(!cloud||!session)return;const {data,error}=await cloud.from('chaldea_members').select('auth_user_id,player_key,display_name,can_edit').eq('auth_user_id',session.user.id).maybeSingle();if(error){currentAuth=null;cloudAuthError=error.message||'Accès Supabase refusé';updateSync(error.code==='401'?'Supabase · clé/API refusée':'Supabase · lecture refusée',true);return}cloudAuthError='';currentAuth=data?{playerKey:data.player_key,canEdit:!!data.can_edit}:null;/* Keep the user's currently selected Master. Authentication only controls edit rights. */if(data&&state.players[data.player_key])state.players[data.player_key].displayName=data.display_name||PLAYER_LABELS[data.player_key];updateEditVisibility()}
-async function claimJulien(){if(!cloud||!session)return;const {data,error}=await cloud.rpc('claim_julien');if(error){toast(error.message);return}await resolveMembership();renderAll();toast('Compte associé à Julien')}
+async function resolveMembership(){
+ if(!cloud||!session)return;
+ const userId=session.user.id,revision=authRevision;
+ const {data,error}=await cloud.from('chaldea_members').select('auth_user_id,player_key,display_name,can_edit').eq('auth_user_id',userId).maybeSingle();
+ if(revision!==authRevision||session?.user.id!==userId)return;
+ if(error){currentAuth=null;cloudAuthError=error.message||'Accès Supabase refusé';updateSync('Supabase · lecture refusée',true);return}
+ cloudAuthError='';currentAuth=data&&PLAYERS.includes(data.player_key)?{playerKey:data.player_key,canEdit:!!data.can_edit}:null;
+ if(currentAuth)state.players[data.player_key].displayName=data.display_name||PLAYER_LABELS[data.player_key];updateEditVisibility();
+}
+
+
 async function setupCloud(){
   if(!CONFIG.supabaseUrl||!SUPABASE_KEY||!window.supabase){updateSync('Cloud non configuré',true);return}
   cloud=window.supabase.createClient(CONFIG.supabaseUrl,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
@@ -1243,22 +1374,23 @@ async function setupCloud(){
     else updateSync('Cloud · lecture publique');
     await refreshPublicStats();await loadSupportProfiles();await loadXpCloud();await loadGssrResults();
   }
-  cloud.auth.onAuthStateChange((_event,ses)=>{setTimeout(async()=>{session=ses;currentAuth=null;cloudAuthError='';if(ses){await resolveMembership();updateSync(currentAuth?.canEdit?'Cloud · éditeur':cloudAuthError?'Supabase · lecture refusée':currentAuth?'Cloud · lecteur':'Compte connecté · non associé',!!cloudAuthError);await loadCloud();if(julienPrivateAccess())await loadExpenses();renderAll()}else{updateSync('Cloud · lecture publique');await refreshPublicStats();await loadSupportProfiles();await loadXpCloud();renderAll()}},0)});
+  cloud.auth.onAuthStateChange((_event,ses)=>{const previousUser=session?.user?.id;const nextUser=ses?.user?.id;if(previousUser!==nextUser){++authRevision;session=ses;currentAuth=null;clearPrivateState();closeModal();renderAll();}if(_event==='TOKEN_REFRESHED'&&previousUser===nextUser){session=ses;return}const revision=authRevision;setTimeout(async()=>{if(revision!==authRevision)return;session=ses;currentAuth=null;cloudAuthError='';if(ses){await resolveMembership();updateSync(currentAuth?.canEdit?'Cloud · éditeur':cloudAuthError?'Supabase · lecture refusée':currentAuth?'Cloud · lecteur':'Compte connecté · non associé',!!cloudAuthError);await loadCloud();if(julienPrivateAccess())await loadExpenses();renderAll()}else{updateSync('Cloud · lecture publique');await refreshPublicStats();await loadSupportProfiles();await loadXpCloud();renderAll()}},0)});
   // Realtime is optional. If the WebSocket is unavailable, keep the site functional and poll instead.
   if(CONFIG.enableRealtime===true){try{cloud.channel('chaldea-live').on('postgres_changes',{event:'*',schema:'public',table:'chaldea_stats'},()=>refreshPublicStats()).subscribe(()=>{});}catch(e){console.warn('Supabase Realtime disabled',e)}}
   setInterval(async()=>{if(document.visibilityState==='visible'&&cloudEnabled)await refreshPublicStats()},15000);
 }
 async function accountUI(){
+ closeModal();
  if(!cloud && cloudReadyPromise){try{await cloudReadyPromise}catch(e){}}
  if(!cloud){toast('Supabase n’est pas encore initialisé');return}
  const logged=!!session,can=currentCanEdit(),missing=logged&&!currentAuth&&!cloudAuthError;
- $('#modal').innerHTML=`<div style="padding:26px"><span class="eyebrow">CLOUD ACCESS</span><h2 style="font:700 28px 'Space Grotesk';margin:6px 0 0">${logged?'Compte Supabase':'Connexion'}</h2><p class="account-copy">${logged?`${session.user.email}<br>${can?`Éditeur · ${PLAYER_LABELS[currentAuth.playerKey]}`:cloudAuthError?`Session présente · ${cloudAuthError}`:missing?'Compte authentifié mais pas encore associé à un Master.':'Lecture seule'}`:'Connecte ton compte Supabase. Le site reste consultable sans compte.'}</p>${logged?(missing?`<div class="claim-box"><b>Compte Julien</b><span>Utilise cette action uniquement si ce compte doit devenir le compte Julien.</span><button class="save" id="claimJulien">Associer à Julien</button></div>`:`<div class="modal-footer account-actions"><span class="readonly-note">${cloudAuthError?'L’API Supabase refuse actuellement les requêtes.':'Session active.'}</span><div class="account-action-group">${can?'<button class="save" id="saveAllCloud">Enregistrer toutes mes données</button>':''}<button id="modalCancel">Fermer</button><button id="logout">${cloudAuthError?'Réinitialiser la session':'Se déconnecter'}</button></div></div>`):`<div style="display:grid;gap:10px;margin-top:18px"><input id="loginEmail" class="editable-input" type="email" placeholder="Email" autocomplete="username" required><input id="loginPassword" class="editable-input" type="password" placeholder="Mot de passe" autocomplete="current-password" required></div><div class="modal-footer"><button id="modalCancel">Annuler</button><button class="save" id="login">Se connecter</button></div>`}</div>`;
+ $('#modal').innerHTML=`<div style="padding:26px"><span class="eyebrow">CLOUD ACCESS</span><h2 style="font:700 28px 'Space Grotesk';margin:6px 0 0">${logged?'Compte Supabase':'Connexion'}</h2><p class="account-copy">${logged?`${esc(session.user.email)}<br>${can?`Éditeur · ${PLAYER_LABELS[currentAuth.playerKey]}`:cloudAuthError?`Session présente · ${esc(cloudAuthError)}`:missing?'Compte authentifié mais pas encore associé à un Master.':'Lecture seule'}`:'Connecte ton compte Supabase. Le site reste consultable sans compte.'}</p>${logged?(missing?`<div class="claim-box"><b>Compte non associé</b><span>Un administrateur doit associer ce compte à un Master dans Supabase.</span><button id="logout">Se déconnecter</button><button id="modalCancel">Fermer</button></div>`:`<div class="modal-footer account-actions"><span class="readonly-note">${cloudAuthError?'L’API Supabase refuse actuellement les requêtes.':'Session active.'}</span><div class="account-action-group">${can?'<button class="save" id="saveAllCloud">Enregistrer toutes mes données</button>':''}<button id="modalCancel">Fermer</button><button id="logout">${cloudAuthError?'Réinitialiser la session':'Se déconnecter'}</button></div></div>`):`<div style="display:grid;gap:10px;margin-top:18px"><input id="loginEmail" class="editable-input" type="email" placeholder="Email" autocomplete="username" required><input id="loginPassword" class="editable-input" type="password" placeholder="Mot de passe" autocomplete="current-password" required></div><div class="modal-footer"><button id="modalCancel">Annuler</button><button class="save" id="login">Se connecter</button></div>`}</div>`;
  $('#modalBackdrop').classList.add('open');
  bindGalleryImageFallbacks($('#modal'));
- $('#modalCancel').onclick=closeModal;
- if(logged&&missing){$('#claimJulien').onclick=claimJulien}else if(logged){if($('#saveAllCloud'))$('#saveAllCloud').onclick=async()=>{const ok=await saveAllToSupabase();if(ok)closeModal()};$('#logout').onclick=async()=>{await cloud.auth.signOut();session=null;currentAuth=null;cloudAuthError='';updateSync('Cloud · lecture publique');renderAll();closeModal()}}
+ if($('#modalCancel'))$('#modalCancel').onclick=closeModal;
+ if(logged){if($('#saveAllCloud'))$('#saveAllCloud').onclick=async()=>{const ok=await saveAllToSupabase();if(ok)closeModal()};$('#logout').onclick=async()=>{const {error}=await cloud.auth.signOut();if(error){toast(error.message);return}++authRevision;session=null;currentAuth=null;cloudAuthError='';clearPrivateState();updateSync('Cloud · lecture publique');renderAll();closeModal()}}
  else{$('#login').onclick=async()=>{const email=$('#loginEmail').value.trim(),password=$('#loginPassword').value;const {data,error}=await cloud.auth.signInWithPassword({email,password});if(error){toast(error.message);return}session=data.session;currentAuth=null;cloudAuthError='';await resolveMembership();await loadCloud();if(julienPrivateAccess())await loadExpenses();renderAll();closeModal();}}
 }
 $('#modalBackdrop').onclick=e=>{if(e.target.id==='modalBackdrop')closeModal()};
 $$('.nav-item').forEach(b=>b.onclick=()=>navigate(b.dataset.view));$('#mobileMenu').onclick=()=>$('#sidebar').classList.toggle('open');$('#accountBtn').onclick=accountUI;$('#searchInput').oninput=renderRoster;$('#sortFilter').onchange=renderRoster;$('#hideMissing').onclick=()=>{showMissing=!showMissing;updateFilterLabels();renderRoster()};const toggleNp=$('#toggleNpOverlay');if(toggleNp)toggleNp.onclick=()=>{showNpOverlay=!showNpOverlay;updateFilterLabels();renderRoster()};$('#xpCurrentLevel').oninput=updateXpComputed;$('#xpCurrentLevel').onblur=()=>{const e=$('#xpCurrentLevel');e.value=Math.max(1,Math.min(120,Number(e.value)||1));updateXpComputed()};$('#xpTargetLevel').oninput=()=>{updateXpComputed();$$('[data-xp-goal]').forEach(x=>x.classList.toggle('active',x.dataset.xpGoal===$('#xpTargetLevel').value))};$$('[data-skill-scope]').forEach(b=>b.onclick=()=>{skillScope=b.dataset.skillScope;renderOverview()});$$('[data-bond-scope]').forEach(b=>b.onclick=()=>{bondScope=b.dataset.bondScope;renderOverview()});$$('[data-xp-goal]').forEach(b=>b.onclick=()=>{const e=$('#xpTargetLevel');e.value=b.dataset.xpGoal;updateXpComputed()});$('#sortDir').onclick=()=>{sortDir=sortDir==='desc'?'asc':'desc';$('#sortDir').textContent=sortDir==='asc'?'↑ Ascendant':'↓ Descendant';renderRoster()};const xpClassHidden=$('#xpClassSelect'),xpClassGrid=$('#xpClassGrid');const xpClasses=['Saber','Archer','Lancer','Rider','Caster','Assassin','Berserker'];if(xpClassGrid&&!xpClassGrid.children.length)xpClassGrid.innerHTML=xpClasses.map(c=>`<button type="button" class="xp-class-option" data-xp-class-value="${c}" aria-label="${c}" title="${c}">${classImg(c)}</button>`).join('');if(xpClassHidden){$$('[data-xp-class-value]').forEach(b=>b.onclick=()=>{const c=b.dataset.xpClassValue;xpTargetClass=xpTargetClass===c?'':c;xpClassHidden.value=xpTargetClass;$$('[data-xp-class-value]').forEach(x=>x.classList.toggle('active',x.dataset.xpClassValue===xpTargetClass));const hint=$('#xpClassHint');if(hint)hint.textContent=xpTargetClass?`Bonus de classe · ${xpTargetClass}`:'Aucun bonus · clique sur une classe pour l’activer';updateXpComputed();});}$$('[data-support-mode]').forEach(b=>b.onclick=()=>{supportMode=b.dataset.supportMode;renderSupports();});$$('[data-pop]').forEach(b=>b.onclick=e=>{$$('.filter-pop.open').forEach(x=>x.classList.remove('open'));$('#'+b.dataset.pop).classList.toggle('open');e.stopPropagation()});document.addEventListener('click',e=>{$$('.filter-pop.open').forEach(p=>{if(!p.parentElement.contains(e.target))p.classList.remove('open')})});const chooseCompare=()=>{const q=norm($('#compareSearch').value);const exact=state.roster.find(r=>isVisible(r)&&norm(r.name)===q)||state.roster.find(r=>isVisible(r)&&norm(r.name).startsWith(q));if(exact){compareFocusId=exact.id;renderShowdown(true)}};$('#compareSearch').onchange=chooseCompare;$('#compareSearch').onkeydown=e=>{if(e.key==='Enter')chooseCompare()};
-gssrEventId=gssrAllEvents().at(-1)?.id||'ann-2026';localCacheLoad();state.roster=sanitizeRoster([...state.roster, ...NA_FORCE_INCLUDE]).filter(r=>!NA_BLOCKED_IDS.has(Number(r.id))&&norm(r.name)!=='solomon');if(!state.roster.some(r=>Number(r.id)===417))state.roster.push({...NA_FORCE_INCLUDE[0]});PLAYERS.forEach(p=>{state.players[p]??={displayName:PLAYER_LABELS[p],stats:{}};state.players[p].xp??=XP_DEFAULT()});fillFilters();renderAll();cloudReadyPromise=setupCloud();
+gssrEventId=gssrAllEvents().at(-1)?.id||'ann-2026';localCacheLoad();state.roster=sanitizeRoster([...state.roster, ...NA_FORCE_INCLUDE]).filter(r=>!NA_BLOCKED_IDS.has(Number(r.id))&&norm(r.name)!=='solomon');if(!state.roster.some(r=>Number(r.id)===417))state.roster.push({...NA_FORCE_INCLUDE[0]});PLAYERS.forEach(p=>{state.players[p]??={displayName:PLAYER_LABELS[p],stats:{}};state.players[p].xp??=XP_DEFAULT()});fillFilters();renderAll();cloudReadyPromise=setupCloud().catch(error=>{updateSync('Supabase · connexion indisponible',true);console.warn('Supabase initialisation',error);});
