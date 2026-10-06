@@ -15,6 +15,24 @@ test('snapshot reads every stats page, fetches XP once and does not rewrite unch
 test('snapshot aborts on a failed stats page without writing truncated data',async()=>{
  const input={roster:[],players:{},meta:{}};const mock=async url=>url.includes('basic_servant')?response([{id:100100,collectionNo:2,name:'A',className:'saber',rarity:5}]):({ok:false,status:503,statusText:'Offline'});await assert.rejects(runTool('sync-initial-state.mjs',input,mock),/503/);
 });
+test('the NA snapshot includes Kazuradrop and preserves all final catalogue IDs',async()=>{
+ const fixture=JSON.parse(fs.readFileSync(path.join(__dirname,'fixtures/atlas-na-2026-10-06.json')));
+ const input=JSON.parse(fs.readFileSync(path.join(root,'data/initial-state.json')));
+ const mock=async url=>url.includes('basic_servant')?response(fixture.servants):response([]);
+ const next=await runTool('sync-initial-state.mjs',input,mock);
+ assert.deepEqual(next.roster.map(r=>r.id).sort((a,b)=>a-b),fixture.expectedVisibleIds);
+ assert.equal(next.roster.find(r=>r.id===426).atlasId,1001800);
+ const retained=await runTool('sync-initial-state.mjs',next,mock);
+ assert.equal(retained,null);
+});
+test('a later release in the NA feed is added to and retained in the snapshot',async()=>{
+ const names=['Phantasmoon','Louhi','Van Gogh (Miner)','Tutankhamun','Kazuradrop'];
+ const atlas=names.map((name,i)=>({id:9900000+i,collectionNo:990+i,name,className:'alterEgo',rarity:5}));
+ const mock=async url=>url.includes('basic_servant')?response(atlas):response([]);
+ const next=await runTool('sync-initial-state.mjs',{roster:[],players:{},meta:{}},mock);
+ assert.deepEqual(next.roster.filter(r=>r.id>=990).map(r=>r.name),names);
+ assert.equal(await runTool('sync-initial-state.mjs',next,mock),null);
+});
 test('cleared Friend IDs remove stale support images and GUIDs',async()=>{
  const input={players:{julien:{code:'123456789',guid:'old',deckImages:{1:'https://old.test/image.png'}}}};const next=await runTool('sync-support-lists.mjs',input,async()=>response([{player_key:'julien',friend_id:null}]));assert.equal(next.players.julien.code,'');assert.equal(next.players.julien.guid,null);assert.deepEqual(next.players.julien.deckImages,{});
 });

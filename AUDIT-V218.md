@@ -10,7 +10,7 @@ Base de travail : `Stat_ChaldeaTEST/main` V217 (`08ebc0a`). La proposition pour 
 - **GSSR** : brouillons isolés par joueur et événement, réponse de sauvegarde attachée au joueur initial, résultat cloud tardif pris en compte, conservation d'un résultat lorsqu'on reclique sur le même pavillon, et saisie libre Destiny préservant les cases cochées.
 - **Identité des Servants** : IDs pour les choix Destiny et leurs résultats. Plusieurs SSR partagent un nom (Altria Caster, Leonardo da Vinci, James Moriarty). Pour les miniatures GSSR, la rareté et la classe du pavillon permettent de résoudre les variantes ; un nom encore ambigu affiche ses initiales au lieu de deviner.
 - **Destiny historique** : Alter Ego appartient à Extra II. Les choix historiques sont limités aux collections 350 / 384 / 416 pour les anniversaires 2024 / 2025 / 2026 ; Archetype: EARTH, Aesc et Space Ereshkigal sont exclus de leur propre événement. La liste 2026 comprend bien 162 SSR dans le snapshot actuel.
-- **Comptages** : Mash exclue des totaux, comparaison rafraîchie après modification, noms futurs normalisés de façon cohérente.
+- **Comptages** : Mash exclue des totaux, comparaison rafraîchie après modification, La normalisation de la liste des noms futurs dans V218 était une régression ; elle est retirée dans V218.1 (voir ci-dessous).
 - **XP** : niveaux entiers, sauvegarde différée attachée au joueur initial, écritures ordonnées, protection de l'inventaire modifié contre une lecture tardive, totaux de lignes et de colonnes recalculés et bonus appliqué à la classe sélectionnée.
 - **Dépenses** : accès de navigation lié à la session Julien, rejet d'un montant vide/invalide, protection des résultats tardifs après déconnexion, décodage des anciennes lignes dont `characters=[]`, date locale pour la saisie.
 - **Session** : fenêtre utilisable pour un compte non associé, échappement des champs venant du compte, nettoyage des données privées à la déconnexion/changement d'identité. L'attribution des Masters passe par l'administrateur Supabase.
@@ -42,3 +42,13 @@ Sources Destiny officielles :
 - https://webview.fate-go.us/webview/summon/20250706_8th_anniversary_FhfskU_header.html
 - https://webview.fate-go.us/webview/summon/20260705_9th_destiny_HhDJG_header.html
 - https://news.fate-go.jp/2024/9th_destiny/
+
+## Correctif V218.1 — catalogue NA (6 octobre 2026)
+
+V218 a rendu active une ancienne liste d'exclusion de « futurs Servants ». Kazuradrop (collection 426, Atlas 1001800, avec le costume Murian) y figurait encore alors qu'elle était déjà présente dans l'export NA. Cette modification était une erreur de l'audit.
+
+La liste est supprimée du navigateur et du générateur de snapshot. L'export Atlas NA détermine les sorties disponibles ; les noms Phantasmoon, Louhi, Van Gogh (Miner) et Tutankhamun ne peuvent plus être bloqués par cette liste lorsqu'ils seront fournis par NA. Les exclusions techniques existantes restent en place.
+
+Comparaison exécutée sur les 427 entrées de l'export NA du 6 octobre 2026 : le code final au commit `66dbb3f2aa464b9eb329d47b26389fb44cf3cfe5` produit 418 identifiants visibles. V218 en produisait 417, avec Kazuradrop comme seul identifiant manquant ; V218.1 retrouve les mêmes 418 identifiants. La fixture conserve tous les enregistrements et uniquement les champs nécessaires au catalogue, avec les identifiants attendus mesurés sur le final.
+
+Les **33 tests** réussissent, dont les nouveaux contrôles du catalogue complet, de l'ajout automatique, de la recherche, de la comparaison, des comptages, de la conservation des statistiques et de la génération/rétention du snapshot. Aucun test n'écrit dans Supabase. Les limites de validation navigateur et de base déployée indiquées plus haut restent applicables.

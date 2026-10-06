@@ -7,7 +7,7 @@ const SUPABASE_URL = process.env.SUPABASE_URL?.replace(/\/$/, '');
 const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY;
 const ATLAS_URL = 'https://api.atlasacademy.io/export/NA/basic_servant.json';
 const PLAYERS = ['julien', 'yanis', 'attmann'];
-const FUTURE_NAMES = new Set(['Phantasmoon','Louhi','Van Gogh (Miner)','Tutankhamun','Kazuradrop']);
+// Atlas NA is authoritative for releases, including Servants added after launch.
 const NA_BLOCKED_IDS = new Set([83,149,152,151,168,240,333,411,412,436,443,460]);
 const FORCE_INCLUDE = [{id:417,name:'Ereshkigal',class:'Beast',rarity:'SSR',atlasId:3300200,nonCounted:false}];
 const PLAYER_LABELS = {julien:'Julien', yanis:'Yanis', attmann:'Attmann'};
@@ -78,7 +78,6 @@ for (const r of state.roster || []) {
   if (!a || seen.has(Number(r.id))) continue;
   if (NA_BLOCKED_IDS.has(Number(r.id))) continue;
   if (classKey(a.className) === 'Extra') continue;
-  if (FUTURE_NAMES.has(String(a.name || ''))) continue;
   roster.push({
     ...r,
     id: Number(a.collectionNo),
@@ -95,7 +94,6 @@ for (const a of atlasList) {
   const id = Number(a.collectionNo);
   if (id <= 0 || seen.has(id) || NA_BLOCKED_IDS.has(id)) continue;
   if (classKey(a.className) === 'Extra') continue;
-  if (FUTURE_NAMES.has(String(a.name || ''))) continue;
   roster.push({
     id,
     name: a.name,

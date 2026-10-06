@@ -61,8 +61,42 @@ test('Destiny history excludes SSRs released after each anniversary',()=>{
 test('GSSR thumbnails resolve SSR class variants instead of the first matching name',()=>{
  const a=app();assert.equal(a.run("gssrRosterRecord('Artoria Pendragon',{label:'Archer · Simple cible'}).class"),'Archer');assert.equal(a.run("gssrRosterRecord('Jeanne d’Arc',{label:'Archer · Zone'}).class"),'Archer');assert.equal(a.run("gssrRosterRecord({name:'Ereshkigal',id:417}).class"),'Beast');
 });
-test('future-name matching uses the same normalization as the roster',()=>{
- const a=app();assert.equal(a.run("isVisible({id:999,name:'Van Gogh (Miner)',class:'Foreigner'})"),false);
+test('the complete NA export retains every visible Servant from the final site',async()=>{
+ const fixture=JSON.parse(fs.readFileSync(path.join(__dirname,'fixtures/atlas-na-2026-10-06.json')));
+ const a=app();a.ctx.atlas=fixture.servants;
+ a.run('fetchAtlasList=async()=>atlas;fillFilters=()=>{};renderAll=()=>{};');
+ await a.run('syncRosterNA()');
+ const ids=JSON.parse(a.run('JSON.stringify(state.roster.filter(isVisible).map(r=>r.id).sort((a,b)=>a-b))'));
+ assert.deepEqual(ids,fixture.expectedVisibleIds);
+});
+test('Kazuradrop is automatically added, searchable and counted without losing player stats',async()=>{
+ const fixture=JSON.parse(fs.readFileSync(path.join(__dirname,'fixtures/atlas-na-2026-10-06.json')));
+ const a=app();a.ctx.atlas=fixture.servants;
+ a.run("fetchAtlasList=async()=>atlas;fillFilters=()=>{};renderAll=()=>{};loadCardImages=()=>{};ensureStats('julien',426).np=2;ensureStats('julien',426).level=90;");
+ const existing=a.run("JSON.stringify(stats('julien',2))");
+ await a.run('syncRosterNA()');
+ assert.equal(a.run('state.roster.find(r=>r.id===426).atlasId'),1001800);
+ assert.equal(a.run("stats('julien',426).np"),2);
+ assert.equal(a.run("JSON.stringify(stats('julien',2))"),existing);
+ assert.equal(a.run("stats('yanis',426).np"),null);
+ assert.equal(a.run("countOwned('julien',r=>r.id===426)"),1);
+ a.element('#searchInput').value='Kazuradrop';a.run('renderRoster()');
+ assert.match(a.element('#rosterCards').innerHTML,/data-servant-id="426"/);
+ a.run('initCompareNames()');assert.match(a.element('#compareNames').innerHTML,/Kazuradrop/);
+});
+test('later NA releases are accepted even if their names were formerly blacklisted',async()=>{
+ const names=['Phantasmoon','Louhi','Van Gogh (Miner)','Tutankhamun','Kazuradrop'];
+ const a=app();a.ctx.atlas=names.map((name,i)=>({id:9900000+i,collectionNo:990+i,name,className:'alterEgo',rarity:5}));
+ a.run('fetchAtlasList=async()=>atlas;fillFilters=()=>{};renderAll=()=>{};');
+ await a.run('syncRosterNA()');
+ assert.deepEqual(JSON.parse(a.run('JSON.stringify(state.roster.filter(r=>r.id>=990&&isVisible(r)).map(r=>r.name))')),names);
+ // The next authoritative export, rather than a guessed release date, controls membership.
+ a.ctx.atlas=[];a.ctx.atlas.push({id:100100,collectionNo:2,name:'Altria Pendragon',className:'saber',rarity:5});
+ await a.run('syncRosterNA()');assert.equal(a.run('state.roster.some(r=>r.id>=990)'),false);
+});
+test('an offline Atlas request keeps Kazuradrop from an existing snapshot',async()=>{
+ const a=app();a.run("state.roster.push({id:426,name:'Kazuradrop',class:'Alter Ego',rarity:'SSR',atlasId:1001800});fetchAtlasList=async()=>[];fillFilters=()=>{};renderAll=()=>{};");
+ await a.run('syncRosterNA()');assert.equal(a.run('state.roster.some(r=>r.id===426&&isVisible(r))'),true);
 });
 test('a failed second cloud page preserves the complete fallback',async()=>{
  const a=app();const before=a.run("JSON.stringify(state.players)");a.ctx.rows=Array.from({length:500},()=>({player_key:'julien',servant_id:2,level:120}));a.run("cloudEnabled=true;cloud={from(){return {select(){return this},order(){return this},range(start){return Promise.resolve(start?{error:{message:'offline'}}:{data:rows,error:null})}}}};");await a.run('refreshPublicStats()');assert.equal(a.run('JSON.stringify(state.players)'),before);

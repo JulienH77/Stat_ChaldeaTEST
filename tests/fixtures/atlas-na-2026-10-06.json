@@ -1,0 +1,4272 @@
+{
+  "source": "https://api.atlasacademy.io/export/NA/basic_servant.json",
+  "capturedAt": "2026-10-06",
+  "baselineRepository": "JulienH77/Stat_Chaldea",
+  "baselineCommit": "66dbb3f2aa464b9eb329d47b26389fb44cf3cfe5",
+  "expectedVisibleIds": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82,
+    84,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90,
+    91,
+    92,
+    93,
+    94,
+    95,
+    96,
+    97,
+    98,
+    99,
+    100,
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119,
+    120,
+    121,
+    122,
+    123,
+    124,
+    125,
+    126,
+    127,
+    128,
+    129,
+    130,
+    131,
+    132,
+    133,
+    134,
+    135,
+    136,
+    137,
+    138,
+    139,
+    140,
+    141,
+    142,
+    143,
+    144,
+    145,
+    146,
+    147,
+    148,
+    150,
+    153,
+    154,
+    155,
+    156,
+    157,
+    158,
+    159,
+    160,
+    161,
+    162,
+    163,
+    164,
+    165,
+    166,
+    167,
+    169,
+    170,
+    171,
+    172,
+    173,
+    174,
+    175,
+    176,
+    177,
+    178,
+    179,
+    180,
+    181,
+    182,
+    183,
+    184,
+    185,
+    186,
+    187,
+    188,
+    189,
+    190,
+    191,
+    192,
+    193,
+    194,
+    195,
+    196,
+    197,
+    198,
+    199,
+    200,
+    201,
+    202,
+    203,
+    204,
+    205,
+    206,
+    207,
+    208,
+    209,
+    210,
+    211,
+    212,
+    213,
+    214,
+    215,
+    216,
+    217,
+    218,
+    219,
+    220,
+    221,
+    222,
+    223,
+    224,
+    225,
+    226,
+    227,
+    228,
+    229,
+    230,
+    231,
+    232,
+    233,
+    234,
+    235,
+    236,
+    237,
+    238,
+    239,
+    241,
+    242,
+    243,
+    244,
+    245,
+    246,
+    247,
+    248,
+    249,
+    250,
+    251,
+    252,
+    253,
+    254,
+    255,
+    256,
+    257,
+    258,
+    259,
+    260,
+    261,
+    262,
+    263,
+    264,
+    265,
+    266,
+    267,
+    268,
+    269,
+    270,
+    271,
+    272,
+    273,
+    274,
+    275,
+    276,
+    277,
+    278,
+    279,
+    280,
+    281,
+    282,
+    283,
+    284,
+    285,
+    286,
+    287,
+    288,
+    289,
+    290,
+    291,
+    292,
+    293,
+    294,
+    295,
+    296,
+    297,
+    298,
+    299,
+    300,
+    301,
+    302,
+    303,
+    304,
+    305,
+    306,
+    307,
+    308,
+    309,
+    310,
+    311,
+    312,
+    313,
+    314,
+    315,
+    316,
+    317,
+    318,
+    319,
+    320,
+    321,
+    322,
+    323,
+    324,
+    325,
+    326,
+    327,
+    328,
+    329,
+    330,
+    331,
+    332,
+    334,
+    335,
+    336,
+    337,
+    338,
+    339,
+    340,
+    341,
+    342,
+    343,
+    344,
+    345,
+    346,
+    347,
+    348,
+    349,
+    350,
+    351,
+    352,
+    353,
+    354,
+    355,
+    356,
+    357,
+    358,
+    359,
+    360,
+    361,
+    362,
+    363,
+    364,
+    365,
+    366,
+    367,
+    368,
+    369,
+    370,
+    371,
+    372,
+    373,
+    374,
+    375,
+    376,
+    377,
+    378,
+    379,
+    380,
+    381,
+    382,
+    383,
+    384,
+    385,
+    386,
+    387,
+    388,
+    389,
+    390,
+    391,
+    392,
+    393,
+    394,
+    395,
+    396,
+    397,
+    398,
+    399,
+    400,
+    401,
+    402,
+    403,
+    404,
+    405,
+    406,
+    407,
+    408,
+    409,
+    410,
+    413,
+    414,
+    415,
+    416,
+    417,
+    418,
+    419,
+    420,
+    421,
+    422,
+    423,
+    424,
+    425,
+    426,
+    432
+  ],
+  "servants": [
+    {
+      "id": 800100,
+      "collectionNo": 1,
+      "name": "Mash Kyrielight",
+      "type": "heroine",
+      "className": "shielder",
+      "attribute": "earth",
+      "rarity": 3
+    },
+    {
+      "id": 100100,
+      "collectionNo": 2,
+      "name": "Altria Pendragon",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 100200,
+      "collectionNo": 3,
+      "name": "Altria Pendragon (Alter)",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 100300,
+      "collectionNo": 4,
+      "name": "Altria Pendragon (Lily)",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 100500,
+      "collectionNo": 5,
+      "name": "Nero Claudius",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 100800,
+      "collectionNo": 6,
+      "name": "Siegfried",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 101300,
+      "collectionNo": 7,
+      "name": "Gaius Julius Caesar",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "human",
+      "rarity": 3
+    },
+    {
+      "id": 101800,
+      "collectionNo": 8,
+      "name": "Altera",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 102200,
+      "collectionNo": 9,
+      "name": "Gilles de Rais",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "human",
+      "rarity": 3
+    },
+    {
+      "id": 102600,
+      "collectionNo": 10,
+      "name": "Chevalier d'Eon",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 200100,
+      "collectionNo": 11,
+      "name": "Emiya",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 200200,
+      "collectionNo": 12,
+      "name": "Gilgamesh",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 200300,
+      "collectionNo": 13,
+      "name": "Robin Hood",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "human",
+      "rarity": 3
+    },
+    {
+      "id": 200500,
+      "collectionNo": 14,
+      "name": "Atalante",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 201200,
+      "collectionNo": 15,
+      "name": "Euryale",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "sky",
+      "rarity": 3
+    },
+    {
+      "id": 201300,
+      "collectionNo": 16,
+      "name": "Arash",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "earth",
+      "rarity": 1
+    },
+    {
+      "id": 300100,
+      "collectionNo": 17,
+      "name": "Cú Chulainn",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "sky",
+      "rarity": 3
+    },
+    {
+      "id": 300500,
+      "collectionNo": 18,
+      "name": "Elisabeth Báthory",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 300600,
+      "collectionNo": 19,
+      "name": "Musashibou Benkei",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "human",
+      "rarity": 2
+    },
+    {
+      "id": 300700,
+      "collectionNo": 20,
+      "name": "Cú Chulainn (Prototype)",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "sky",
+      "rarity": 3
+    },
+    {
+      "id": 300900,
+      "collectionNo": 21,
+      "name": "Leonidas I",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "human",
+      "rarity": 2
+    },
+    {
+      "id": 301000,
+      "collectionNo": 22,
+      "name": "Romulus",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "star",
+      "rarity": 3
+    },
+    {
+      "id": 400100,
+      "collectionNo": 23,
+      "name": "Medusa",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "earth",
+      "rarity": 3
+    },
+    {
+      "id": 400600,
+      "collectionNo": 24,
+      "name": "Georgios",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "human",
+      "rarity": 2
+    },
+    {
+      "id": 400800,
+      "collectionNo": 25,
+      "name": "Edward Teach",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "human",
+      "rarity": 2
+    },
+    {
+      "id": 401100,
+      "collectionNo": 26,
+      "name": "Boudica",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "human",
+      "rarity": 3
+    },
+    {
+      "id": 401400,
+      "collectionNo": 27,
+      "name": "Ushiwakamaru",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "human",
+      "rarity": 3
+    },
+    {
+      "id": 401500,
+      "collectionNo": 28,
+      "name": "Alexander",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "human",
+      "rarity": 3
+    },
+    {
+      "id": 401700,
+      "collectionNo": 29,
+      "name": "Marie Antoinette",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 401900,
+      "collectionNo": 30,
+      "name": "Martha",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 500100,
+      "collectionNo": 31,
+      "name": "Medea",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "earth",
+      "rarity": 3
+    },
+    {
+      "id": 500200,
+      "collectionNo": 32,
+      "name": "Gilles de Rais",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "human",
+      "rarity": 3
+    },
+    {
+      "id": 500500,
+      "collectionNo": 33,
+      "name": "Hans Christian Andersen",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "human",
+      "rarity": 2
+    },
+    {
+      "id": 500700,
+      "collectionNo": 34,
+      "name": "William Shakespeare",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "human",
+      "rarity": 2
+    },
+    {
+      "id": 501400,
+      "collectionNo": 35,
+      "name": "Mephistopheles",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "earth",
+      "rarity": 3
+    },
+    {
+      "id": 501500,
+      "collectionNo": 36,
+      "name": "Wolfgang Amadeus Mozart",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "star",
+      "rarity": 1
+    },
+    {
+      "id": 501900,
+      "collectionNo": 37,
+      "name": "Zhuge Liang (Lord El-Melloi II)",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 502100,
+      "collectionNo": 38,
+      "name": "Cú Chulainn",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "sky",
+      "rarity": 3
+    },
+    {
+      "id": 600100,
+      "collectionNo": 39,
+      "name": "Sasaki Kojirou",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "human",
+      "rarity": 1
+    },
+    {
+      "id": 600200,
+      "collectionNo": 40,
+      "name": "Hassan of the Cursed Arm",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "human",
+      "rarity": 2
+    },
+    {
+      "id": 601000,
+      "collectionNo": 41,
+      "name": "Stheno",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "sky",
+      "rarity": 4
+    },
+    {
+      "id": 601100,
+      "collectionNo": 42,
+      "name": "Jing Ke",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "human",
+      "rarity": 3
+    },
+    {
+      "id": 601200,
+      "collectionNo": 43,
+      "name": "Charles-Henri Sanson",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "human",
+      "rarity": 2
+    },
+    {
+      "id": 601300,
+      "collectionNo": 44,
+      "name": "Phantom of the Opera",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "earth",
+      "rarity": 2
+    },
+    {
+      "id": 601400,
+      "collectionNo": 45,
+      "name": "Mata Hari",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "human",
+      "rarity": 1
+    },
+    {
+      "id": 601700,
+      "collectionNo": 46,
+      "name": "Carmilla",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 700100,
+      "collectionNo": 47,
+      "name": "Heracles",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "sky",
+      "rarity": 4
+    },
+    {
+      "id": 700200,
+      "collectionNo": 48,
+      "name": "Lancelot",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 700300,
+      "collectionNo": 49,
+      "name": "Lu Bu Fengxian",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "human",
+      "rarity": 3
+    },
+    {
+      "id": 700500,
+      "collectionNo": 50,
+      "name": "Spartacus",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "human",
+      "rarity": 1
+    },
+    {
+      "id": 700600,
+      "collectionNo": 51,
+      "name": "Sakata Kintoki",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 700700,
+      "collectionNo": 52,
+      "name": "Vlad III",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 700900,
+      "collectionNo": 53,
+      "name": "Asterios",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "earth",
+      "rarity": 1
+    },
+    {
+      "id": 701000,
+      "collectionNo": 54,
+      "name": "Caligula",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "human",
+      "rarity": 2
+    },
+    {
+      "id": 701100,
+      "collectionNo": 55,
+      "name": "Darius III",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "human",
+      "rarity": 3
+    },
+    {
+      "id": 701300,
+      "collectionNo": 56,
+      "name": "Kiyohime",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "earth",
+      "rarity": 3
+    },
+    {
+      "id": 701500,
+      "collectionNo": 57,
+      "name": "Eric Bloodaxe",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "human",
+      "rarity": 2
+    },
+    {
+      "id": 701600,
+      "collectionNo": 58,
+      "name": "Tamamo Cat",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 900100,
+      "collectionNo": 59,
+      "name": "Jeanne d'Arc",
+      "type": "normal",
+      "className": "ruler",
+      "attribute": "star",
+      "rarity": 5
+    },
+    {
+      "id": 200900,
+      "collectionNo": 60,
+      "name": "Orion",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 502600,
+      "collectionNo": 61,
+      "name": "Elisabeth Báthory (Halloween)",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 500300,
+      "collectionNo": 62,
+      "name": "Tamamo-no-Mae",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 200600,
+      "collectionNo": 63,
+      "name": "David",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "sky",
+      "rarity": 3
+    },
+    {
+      "id": 301600,
+      "collectionNo": 64,
+      "name": "Hektor",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "human",
+      "rarity": 3
+    },
+    {
+      "id": 400300,
+      "collectionNo": 65,
+      "name": "Francis Drake",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "star",
+      "rarity": 5
+    },
+    {
+      "id": 400900,
+      "collectionNo": 66,
+      "name": "Anne Bonny & Mary Read",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 501700,
+      "collectionNo": 67,
+      "name": "Medea (Lily)",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 102700,
+      "collectionNo": 68,
+      "name": "Okita Souji",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 202400,
+      "collectionNo": 69,
+      "name": "Oda Nobunaga",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 301300,
+      "collectionNo": 70,
+      "name": "Scáthach",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "star",
+      "rarity": 5
+    },
+    {
+      "id": 300200,
+      "collectionNo": 71,
+      "name": "Diarmuid Ua Duibhne",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "earth",
+      "rarity": 3
+    },
+    {
+      "id": 101400,
+      "collectionNo": 72,
+      "name": "Fergus mac Róich",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "earth",
+      "rarity": 3
+    },
+    {
+      "id": 402200,
+      "collectionNo": 73,
+      "name": "Altria Pendragon (Santa Alter)",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 500400,
+      "collectionNo": 74,
+      "name": "Nursery Rhyme",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 600500,
+      "collectionNo": 75,
+      "name": "Jack the Ripper",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 100900,
+      "collectionNo": 76,
+      "name": "Mordred",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 201100,
+      "collectionNo": 77,
+      "name": "Nikola Tesla",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "star",
+      "rarity": 5
+    },
+    {
+      "id": 301900,
+      "collectionNo": 78,
+      "name": "Altria Pendragon (Alter)",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "sky",
+      "rarity": 4
+    },
+    {
+      "id": 501000,
+      "collectionNo": 79,
+      "name": "Paracelsus von Hohenheim",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "human",
+      "rarity": 3
+    },
+    {
+      "id": 501100,
+      "collectionNo": 80,
+      "name": "Charles Babbage",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "human",
+      "rarity": 3
+    },
+    {
+      "id": 600700,
+      "collectionNo": 81,
+      "name": "Henry Jekyll & Hyde",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "earth",
+      "rarity": 3
+    },
+    {
+      "id": 700400,
+      "collectionNo": 82,
+      "name": "Frankenstein",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 1700100,
+      "collectionNo": 83,
+      "name": "Solomon",
+      "type": "enemyCollectionDetail",
+      "className": "loreGrandCaster",
+      "attribute": "beast",
+      "rarity": 5
+    },
+    {
+      "id": 201500,
+      "collectionNo": 84,
+      "name": "Arjuna",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 300400,
+      "collectionNo": 85,
+      "name": "Karna",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 601800,
+      "collectionNo": 86,
+      "name": "Mysterious Heroine X",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "star",
+      "rarity": 5
+    },
+    {
+      "id": 301100,
+      "collectionNo": 87,
+      "name": "Fionn mac Cumhaill",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "sky",
+      "rarity": 4
+    },
+    {
+      "id": 301200,
+      "collectionNo": 88,
+      "name": "Brynhild",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 700800,
+      "collectionNo": 89,
+      "name": "Beowulf",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 100600,
+      "collectionNo": 90,
+      "name": "Nero Claudius (Bride)",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 102800,
+      "collectionNo": 91,
+      "name": "Ryougi Shiki (Saber)",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 602300,
+      "collectionNo": 92,
+      "name": "Ryougi Shiki (Assassin)",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 900200,
+      "collectionNo": 93,
+      "name": "Amakusa Shirou",
+      "type": "normal",
+      "className": "ruler",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 400400,
+      "collectionNo": 94,
+      "name": "Astolfo",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 201800,
+      "collectionNo": 95,
+      "name": "Gilgamesh (Child)",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "sky",
+      "rarity": 3
+    },
+    {
+      "id": 1100200,
+      "collectionNo": 96,
+      "name": "Edmond Dantès",
+      "type": "normal",
+      "className": "avenger",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 701400,
+      "collectionNo": 97,
+      "name": "Florence Nightingale",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 702000,
+      "collectionNo": 98,
+      "name": "Cú Chulainn (Alter)",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 401300,
+      "collectionNo": 99,
+      "name": "Queen Medb",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 502300,
+      "collectionNo": 100,
+      "name": "Helena Blavatsky",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 101900,
+      "collectionNo": 101,
+      "name": "Rama",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "sky",
+      "rarity": 4
+    },
+    {
+      "id": 301700,
+      "collectionNo": 102,
+      "name": "Li Shuwen",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 502500,
+      "collectionNo": 103,
+      "name": "Thomas Edison",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 501600,
+      "collectionNo": 104,
+      "name": "Geronimo",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "human",
+      "rarity": 3
+    },
+    {
+      "id": 201000,
+      "collectionNo": 105,
+      "name": "Billy the Kid",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "human",
+      "rarity": 3
+    },
+    {
+      "id": 1100300,
+      "collectionNo": 106,
+      "name": "Jeanne d'Arc (Alter)",
+      "type": "normal",
+      "className": "avenger",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 1100100,
+      "collectionNo": 107,
+      "name": "Aŋra Mainiiu",
+      "type": "normal",
+      "className": "avenger",
+      "attribute": "human",
+      "rarity": 0
+    },
+    {
+      "id": 400200,
+      "collectionNo": 108,
+      "name": "Iskandar",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 601500,
+      "collectionNo": 109,
+      "name": "Emiya (Assassin)",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 600300,
+      "collectionNo": 110,
+      "name": "Hassan of the Hundred Personas",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "human",
+      "rarity": 3
+    },
+    {
+      "id": 502000,
+      "collectionNo": 111,
+      "name": "Irisviel (Holy Grail)",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "sky",
+      "rarity": 4
+    },
+    {
+      "id": 602100,
+      "collectionNo": 112,
+      "name": "Shuten-Douji",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 502200,
+      "collectionNo": 113,
+      "name": "Xuanzang Sanzang",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 702300,
+      "collectionNo": 114,
+      "name": "Minamoto-no-Raikou",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 402300,
+      "collectionNo": 115,
+      "name": "Sakata Kintoki (Rider)",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 702200,
+      "collectionNo": 116,
+      "name": "Ibaraki-Douji",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 601900,
+      "collectionNo": 117,
+      "name": "Fuuma \"Evil-wind\" Kotarou",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "human",
+      "rarity": 3
+    },
+    {
+      "id": 401200,
+      "collectionNo": 118,
+      "name": "Ozymandias",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 302000,
+      "collectionNo": 119,
+      "name": "Altria Pendragon (Lancer)",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 501200,
+      "collectionNo": 120,
+      "name": "Nitocris",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 102000,
+      "collectionNo": 121,
+      "name": "Lancelot",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 200800,
+      "collectionNo": 122,
+      "name": "Tristan",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 100700,
+      "collectionNo": 123,
+      "name": "Gawain",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 600900,
+      "collectionNo": 124,
+      "name": "Hassan of the Serenity",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "human",
+      "rarity": 3
+    },
+    {
+      "id": 201400,
+      "collectionNo": 125,
+      "name": "Tawara Touta",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "human",
+      "rarity": 3
+    },
+    {
+      "id": 101200,
+      "collectionNo": 126,
+      "name": "Bedivere",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "star",
+      "rarity": 3
+    },
+    {
+      "id": 500900,
+      "collectionNo": 127,
+      "name": "Leonardo da Vinci",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "star",
+      "rarity": 5
+    },
+    {
+      "id": 302400,
+      "collectionNo": 128,
+      "name": "Tamamo-no-Mae (Lancer)",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 202600,
+      "collectionNo": 129,
+      "name": "Altria Pendragon (Archer)",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 502700,
+      "collectionNo": 130,
+      "name": "Marie Antoinette (Caster)",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 202500,
+      "collectionNo": 131,
+      "name": "Anne Bonny & Mary Read (Archer)",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 402400,
+      "collectionNo": 132,
+      "name": "Mordred (Rider)",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 602400,
+      "collectionNo": 133,
+      "name": "Scáthach (Assassin)",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "star",
+      "rarity": 4
+    },
+    {
+      "id": 302500,
+      "collectionNo": 134,
+      "name": "Kiyohime (Lancer)",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 900400,
+      "collectionNo": 135,
+      "name": "Martha (Ruler)",
+      "type": "normal",
+      "className": "ruler",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 502800,
+      "collectionNo": 136,
+      "name": "Illyasviel von Einzbern",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 202700,
+      "collectionNo": 137,
+      "name": "Chloe von Einzbern",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "sky",
+      "rarity": 4
+    },
+    {
+      "id": 101000,
+      "collectionNo": 138,
+      "name": "Elisabeth Báthory (Brave)",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 600800,
+      "collectionNo": 139,
+      "name": "Cleopatra",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 300300,
+      "collectionNo": 140,
+      "name": "Vlad III (EXTRA)",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 302600,
+      "collectionNo": 141,
+      "name": "Jeanne d'Arc Alter Santa Lily",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 202000,
+      "collectionNo": 142,
+      "name": "Ishtar",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 300800,
+      "collectionNo": 143,
+      "name": "Enkidu",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 401800,
+      "collectionNo": 144,
+      "name": "Quetzalcoatl",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 501800,
+      "collectionNo": 145,
+      "name": "Gilgamesh",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 302700,
+      "collectionNo": 146,
+      "name": "Medusa",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 1100400,
+      "collectionNo": 147,
+      "name": "Gorgon",
+      "type": "normal",
+      "className": "avenger",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 302800,
+      "collectionNo": 148,
+      "name": "Jaguar Warrior",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "earth",
+      "rarity": 3
+    },
+    {
+      "id": 9935400,
+      "collectionNo": 149,
+      "name": "Tiamat",
+      "type": "enemyCollectionDetail",
+      "className": "beastII",
+      "attribute": "beast",
+      "rarity": 5
+    },
+    {
+      "id": 500800,
+      "collectionNo": 150,
+      "name": "Merlin",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 9935500,
+      "collectionNo": 151,
+      "name": "Goetia",
+      "type": "enemyCollectionDetail",
+      "className": "beastI",
+      "attribute": "beast",
+      "rarity": 5
+    },
+    {
+      "id": 9935530,
+      "collectionNo": 152,
+      "name": "Solomon",
+      "type": "enemyCollectionDetail",
+      "className": "caster",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 101700,
+      "collectionNo": 153,
+      "name": "Miyamoto Musashi",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 602500,
+      "collectionNo": 154,
+      "name": "\"First Hassan\"",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 702400,
+      "collectionNo": 155,
+      "name": "Mysterious Heroine X (Alter)",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "star",
+      "rarity": 5
+    },
+    {
+      "id": 202300,
+      "collectionNo": 156,
+      "name": "James Moriarty",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 201600,
+      "collectionNo": 157,
+      "name": "Emiya (Alter)",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 1100500,
+      "collectionNo": 158,
+      "name": "Hessian Lobo",
+      "type": "normal",
+      "className": "avenger",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 602600,
+      "collectionNo": 159,
+      "name": "Yan Qing",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 102900,
+      "collectionNo": 160,
+      "name": "Arthur Pendragon (Prototype)",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 702500,
+      "collectionNo": 161,
+      "name": "Hijikata Toshizo",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 702600,
+      "collectionNo": 162,
+      "name": "Chacha",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 1000200,
+      "collectionNo": 163,
+      "name": "Meltryllis",
+      "type": "normal",
+      "className": "alterEgo",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 1000100,
+      "collectionNo": 164,
+      "name": "Passionlip",
+      "type": "normal",
+      "className": "alterEgo",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 103000,
+      "collectionNo": 165,
+      "name": "Suzuka Gozen",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "sky",
+      "rarity": 4
+    },
+    {
+      "id": 2300100,
+      "collectionNo": 166,
+      "name": "BB",
+      "type": "normal",
+      "className": "moonCancer",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 1000300,
+      "collectionNo": 167,
+      "name": "Sessyoin Kiara",
+      "type": "normal",
+      "className": "alterEgo",
+      "attribute": "beast",
+      "rarity": 5
+    },
+    {
+      "id": 9939130,
+      "collectionNo": 168,
+      "name": "Beast III/R",
+      "type": "enemyCollectionDetail",
+      "className": "beastIIIR",
+      "attribute": "beast",
+      "rarity": 5
+    },
+    {
+      "id": 503000,
+      "collectionNo": 169,
+      "name": "Scheherazade",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 602700,
+      "collectionNo": 170,
+      "name": "Wu Zetian",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 702700,
+      "collectionNo": 171,
+      "name": "Penthesilea",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 402500,
+      "collectionNo": 172,
+      "name": "Christopher Columbus",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "human",
+      "rarity": 3
+    },
+    {
+      "id": 900500,
+      "collectionNo": 173,
+      "name": "Sherlock Holmes",
+      "type": "normal",
+      "className": "ruler",
+      "attribute": "star",
+      "rarity": 5
+    },
+    {
+      "id": 702800,
+      "collectionNo": 174,
+      "name": "Paul Bunyan",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "earth",
+      "rarity": 1
+    },
+    {
+      "id": 503200,
+      "collectionNo": 175,
+      "name": "Nero Claudius (Caster)",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 103100,
+      "collectionNo": 176,
+      "name": "Frankenstein (Saber)",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 602800,
+      "collectionNo": 177,
+      "name": "Nitocris (Assassin)",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "sky",
+      "rarity": 4
+    },
+    {
+      "id": 702900,
+      "collectionNo": 178,
+      "name": "Oda Nobunaga (Berserker)",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 402700,
+      "collectionNo": 179,
+      "name": "Altria Pendragon Alter (Rider)",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 202800,
+      "collectionNo": 180,
+      "name": "Helena Blavatsky (Archer)",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 302900,
+      "collectionNo": 181,
+      "name": "Minamoto-no-Raikou (Lancer)",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "sky",
+      "rarity": 4
+    },
+    {
+      "id": 402600,
+      "collectionNo": 182,
+      "name": "Ishtar (Rider)",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "sky",
+      "rarity": 4
+    },
+    {
+      "id": 303000,
+      "collectionNo": 183,
+      "name": "Pārvatī",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "sky",
+      "rarity": 4
+    },
+    {
+      "id": 202100,
+      "collectionNo": 184,
+      "name": "Tomoe Gozen",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 602900,
+      "collectionNo": 185,
+      "name": "Mochizuki Chiyome",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 301400,
+      "collectionNo": 186,
+      "name": "Houzouin Inshun",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "human",
+      "rarity": 3
+    },
+    {
+      "id": 103200,
+      "collectionNo": 187,
+      "name": "Yagyu Tajima-no-kami Munenori",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 603000,
+      "collectionNo": 188,
+      "name": "Katou \"Black Kite\" Danzo",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 603100,
+      "collectionNo": 189,
+      "name": "Osakabehime",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 1000400,
+      "collectionNo": 190,
+      "name": "Mecha Eli-chan",
+      "type": "normal",
+      "className": "alterEgo",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 1000500,
+      "collectionNo": 191,
+      "name": "Mecha Eli-chan Mk.II",
+      "type": "normal",
+      "className": "alterEgo",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 503300,
+      "collectionNo": 192,
+      "name": "Circe",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "sky",
+      "rarity": 4
+    },
+    {
+      "id": 303100,
+      "collectionNo": 193,
+      "name": "Nezha",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "sky",
+      "rarity": 4
+    },
+    {
+      "id": 503400,
+      "collectionNo": 194,
+      "name": "Queen of Sheba",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 2500100,
+      "collectionNo": 195,
+      "name": "Abigail Williams",
+      "type": "normal",
+      "className": "foreigner",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 303200,
+      "collectionNo": 196,
+      "name": "Ereshkigal",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 202200,
+      "collectionNo": 197,
+      "name": "Attila the San(ta)",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "star",
+      "rarity": 4
+    },
+    {
+      "id": 2500200,
+      "collectionNo": 198,
+      "name": "Katsushika Hokusai",
+      "type": "normal",
+      "className": "foreigner",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 603200,
+      "collectionNo": 199,
+      "name": "Semiramis",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 202900,
+      "collectionNo": 200,
+      "name": "Asagami Fujino",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 503500,
+      "collectionNo": 201,
+      "name": "Anastasia",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 703000,
+      "collectionNo": 202,
+      "name": "Atalante (Alter)",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 503600,
+      "collectionNo": 203,
+      "name": "Avicebron",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "human",
+      "rarity": 3
+    },
+    {
+      "id": 1100600,
+      "collectionNo": 204,
+      "name": "Antonio Salieri",
+      "type": "normal",
+      "className": "avenger",
+      "attribute": "earth",
+      "rarity": 3
+    },
+    {
+      "id": 402800,
+      "collectionNo": 205,
+      "name": "Ivan the Terrible",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 402900,
+      "collectionNo": 206,
+      "name": "Achilles",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 203000,
+      "collectionNo": 207,
+      "name": "Chiron",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "sky",
+      "rarity": 4
+    },
+    {
+      "id": 503800,
+      "collectionNo": 208,
+      "name": "Sieg",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 1000700,
+      "collectionNo": 209,
+      "name": "Okita Souji (Alter)",
+      "type": "normal",
+      "className": "alterEgo",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 603300,
+      "collectionNo": 210,
+      "name": "Okada Izo",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "human",
+      "rarity": 3
+    },
+    {
+      "id": 403000,
+      "collectionNo": 211,
+      "name": "Sakamoto Ryouma",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 203100,
+      "collectionNo": 212,
+      "name": "Napoleon",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "star",
+      "rarity": 5
+    },
+    {
+      "id": 103300,
+      "collectionNo": 213,
+      "name": "Sigurd",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 303300,
+      "collectionNo": 214,
+      "name": "Valkyrie",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "sky",
+      "rarity": 4
+    },
+    {
+      "id": 503900,
+      "collectionNo": 215,
+      "name": "Scáthach-Skadi",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 203200,
+      "collectionNo": 216,
+      "name": "Jeanne d'Arc (Archer)",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 303400,
+      "collectionNo": 217,
+      "name": "Ibaraki-Douji (Lancer)",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 603400,
+      "collectionNo": 218,
+      "name": "Ushiwakamaru (Assassin)",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 703100,
+      "collectionNo": 219,
+      "name": "Jeanne d'Arc Alter (Berserker)",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 2300200,
+      "collectionNo": 220,
+      "name": "BB",
+      "type": "normal",
+      "className": "moonCancer",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 103400,
+      "collectionNo": 221,
+      "name": "Medb (Saber)",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 2500300,
+      "collectionNo": 222,
+      "name": "Mysterious Heroine XX",
+      "type": "normal",
+      "className": "foreigner",
+      "attribute": "star",
+      "rarity": 4
+    },
+    {
+      "id": 103500,
+      "collectionNo": 223,
+      "name": "Diarmuid Ua Duibhne",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 1000800,
+      "collectionNo": 224,
+      "name": "Sitonai",
+      "type": "normal",
+      "className": "alterEgo",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 504000,
+      "collectionNo": 225,
+      "name": "Shuten-Douji (Caster)",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 703200,
+      "collectionNo": 226,
+      "name": "Xiang Yu",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 103600,
+      "collectionNo": 227,
+      "name": "Prince of Lan Ling",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 303500,
+      "collectionNo": 228,
+      "name": "Qin Liangyu",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 900600,
+      "collectionNo": 229,
+      "name": "Qin Shi Huang",
+      "type": "normal",
+      "className": "ruler",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 603500,
+      "collectionNo": 230,
+      "name": "Yu Mei-ren",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 403100,
+      "collectionNo": 231,
+      "name": "Red Hare",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "earth",
+      "rarity": 3
+    },
+    {
+      "id": 303600,
+      "collectionNo": 232,
+      "name": "Bradamante",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 900700,
+      "collectionNo": 233,
+      "name": "Quetzalcoatl (Samba/Santa)",
+      "type": "normal",
+      "className": "ruler",
+      "attribute": "sky",
+      "rarity": 4
+    },
+    {
+      "id": 103700,
+      "collectionNo": 234,
+      "name": "Beni-Enma",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 603600,
+      "collectionNo": 235,
+      "name": "Li Shuwen",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 504100,
+      "collectionNo": 236,
+      "name": "Miyu Edelfelt",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 504200,
+      "collectionNo": 237,
+      "name": "Murasaki Shikibu",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 1000900,
+      "collectionNo": 238,
+      "name": "Kingprotea",
+      "type": "normal",
+      "className": "alterEgo",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 603700,
+      "collectionNo": 239,
+      "name": "Kama",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 9941730,
+      "collectionNo": 240,
+      "name": "Beast III/L",
+      "type": "enemyCollectionDetail",
+      "className": "beastIIIL",
+      "attribute": "beast",
+      "rarity": 5
+    },
+    {
+      "id": 403200,
+      "collectionNo": 241,
+      "name": "Sima Yi (Reines)",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 900800,
+      "collectionNo": 242,
+      "name": "Astraea",
+      "type": "normal",
+      "className": "ruler",
+      "attribute": "sky",
+      "rarity": 4
+    },
+    {
+      "id": 603900,
+      "collectionNo": 243,
+      "name": "Gray",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 2300300,
+      "collectionNo": 244,
+      "name": "Great Stone Statue God",
+      "type": "normal",
+      "className": "moonCancer",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 103900,
+      "collectionNo": 245,
+      "name": "Lakshmi Bai",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 203400,
+      "collectionNo": 246,
+      "name": "William Tell",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "human",
+      "rarity": 3
+    },
+    {
+      "id": 703300,
+      "collectionNo": 247,
+      "name": "Arjuna (Alter)",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 203300,
+      "collectionNo": 248,
+      "name": "Aśvatthāman",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "sky",
+      "rarity": 4
+    },
+    {
+      "id": 504300,
+      "collectionNo": 249,
+      "name": "Asclepius",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "earth",
+      "rarity": 3
+    },
+    {
+      "id": 1100700,
+      "collectionNo": 250,
+      "name": "Oda Nobunaga",
+      "type": "normal",
+      "className": "avenger",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 703500,
+      "collectionNo": 251,
+      "name": "Mori Nagayoshi",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "human",
+      "rarity": 3
+    },
+    {
+      "id": 303800,
+      "collectionNo": 252,
+      "name": "Nagao Kagetora",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 403500,
+      "collectionNo": 253,
+      "name": "Leonardo da Vinci",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 103800,
+      "collectionNo": 254,
+      "name": "Jason",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "earth",
+      "rarity": 1
+    },
+    {
+      "id": 203500,
+      "collectionNo": 255,
+      "name": "Paris",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "earth",
+      "rarity": 2
+    },
+    {
+      "id": 303900,
+      "collectionNo": 256,
+      "name": "Gareth",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "earth",
+      "rarity": 2
+    },
+    {
+      "id": 403400,
+      "collectionNo": 257,
+      "name": "Bartholomew Roberts",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "human",
+      "rarity": 1
+    },
+    {
+      "id": 504400,
+      "collectionNo": 258,
+      "name": "Chen Gong",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "human",
+      "rarity": 2
+    },
+    {
+      "id": 603800,
+      "collectionNo": 259,
+      "name": "Charlotte Corday",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "human",
+      "rarity": 1
+    },
+    {
+      "id": 703400,
+      "collectionNo": 260,
+      "name": "Salome",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "earth",
+      "rarity": 2
+    },
+    {
+      "id": 703600,
+      "collectionNo": 261,
+      "name": "Miyamoto Musashi (Berserker)",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 203600,
+      "collectionNo": 262,
+      "name": "Osakabehime (Archer)",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 403600,
+      "collectionNo": 263,
+      "name": "Carmilla (Rider)",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 104000,
+      "collectionNo": 264,
+      "name": "Katsushika Hokusai (Saber)",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 900900,
+      "collectionNo": 265,
+      "name": "Altria Pendragon (Ruler)",
+      "type": "normal",
+      "className": "ruler",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 304000,
+      "collectionNo": 266,
+      "name": "Mysterious Alter Ego Λ",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 604000,
+      "collectionNo": 267,
+      "name": "Okita J. Souji",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 1100900,
+      "collectionNo": 268,
+      "name": "Space Ishtar",
+      "type": "normal",
+      "className": "avenger",
+      "attribute": "star",
+      "rarity": 5
+    },
+    {
+      "id": 203700,
+      "collectionNo": 269,
+      "name": "Calamity Jane",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 104100,
+      "collectionNo": 270,
+      "name": "Astolfo (Saber)",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 203900,
+      "collectionNo": 271,
+      "name": "Florence Nightingale (Santa)",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 203800,
+      "collectionNo": 272,
+      "name": "Super Orion",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 403900,
+      "collectionNo": 273,
+      "name": "Mandricardo",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "human",
+      "rarity": 3
+    },
+    {
+      "id": 404000,
+      "collectionNo": 274,
+      "name": "Europa",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 2500400,
+      "collectionNo": 275,
+      "name": "Yang Guifei",
+      "type": "normal",
+      "className": "foreigner",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 204000,
+      "collectionNo": 276,
+      "name": "Sei Shounagon",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 403800,
+      "collectionNo": 277,
+      "name": "Odysseus",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 104200,
+      "collectionNo": 278,
+      "name": "Dioscuri",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 304100,
+      "collectionNo": 279,
+      "name": "Caenis",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 304200,
+      "collectionNo": 280,
+      "name": "Romulus=Quirinus",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 2500500,
+      "collectionNo": 281,
+      "name": "Voyager",
+      "type": "normal",
+      "className": "foreigner",
+      "attribute": "star",
+      "rarity": 5
+    },
+    {
+      "id": 703700,
+      "collectionNo": 282,
+      "name": "Kijyo Koyo",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 304300,
+      "collectionNo": 283,
+      "name": "Utsumi Erice",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 504500,
+      "collectionNo": 284,
+      "name": "Altria Caster",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "star",
+      "rarity": 5
+    },
+    {
+      "id": 2300400,
+      "collectionNo": 285,
+      "name": "Sessyoin Kiara (Moon Cancer)",
+      "type": "normal",
+      "className": "moonCancer",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 204200,
+      "collectionNo": 286,
+      "name": "Illyasviel von Einzbern (Archer)",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 703800,
+      "collectionNo": 287,
+      "name": "Brynhild (Berserker)",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "sky",
+      "rarity": 4
+    },
+    {
+      "id": 304400,
+      "collectionNo": 288,
+      "name": "Yu Mei-ren (Lancer)",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 2500700,
+      "collectionNo": 289,
+      "name": "Abigail Williams (Summer)",
+      "type": "normal",
+      "className": "foreigner",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 104500,
+      "collectionNo": 290,
+      "name": "Tomoe Gozen (Saber)",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 404100,
+      "collectionNo": 291,
+      "name": "Murasaki Shikibu (Rider)",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 901000,
+      "collectionNo": 292,
+      "name": "Himiko",
+      "type": "normal",
+      "className": "ruler",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 104400,
+      "collectionNo": 293,
+      "name": "Saito Hajime",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 204100,
+      "collectionNo": 294,
+      "name": "Oda Nobukatsu",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "human",
+      "rarity": 1
+    },
+    {
+      "id": 2500600,
+      "collectionNo": 295,
+      "name": "Van Gogh",
+      "type": "normal",
+      "className": "foreigner",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 403700,
+      "collectionNo": 296,
+      "name": "Nemo",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 1001000,
+      "collectionNo": 297,
+      "name": "Ashiya Douman",
+      "type": "normal",
+      "className": "alterEgo",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 104700,
+      "collectionNo": 298,
+      "name": "Watanabe-no-Tsuna",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 104600,
+      "collectionNo": 299,
+      "name": "Ibuki-Douji",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 304600,
+      "collectionNo": 300,
+      "name": "Vritra",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 104800,
+      "collectionNo": 301,
+      "name": "Karna (Santa)",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "sky",
+      "rarity": 4
+    },
+    {
+      "id": 104900,
+      "collectionNo": 302,
+      "name": "Senji Muramasa",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 1101000,
+      "collectionNo": 303,
+      "name": "Taira-no-Kagekiyo",
+      "type": "normal",
+      "className": "avenger",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 604100,
+      "collectionNo": 304,
+      "name": "Kiichi Hogen",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 901100,
+      "collectionNo": 305,
+      "name": "Amor (Caren)",
+      "type": "normal",
+      "className": "ruler",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 703900,
+      "collectionNo": 306,
+      "name": "Galatea",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 504600,
+      "collectionNo": 307,
+      "name": "Miss Crane",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 2500800,
+      "collectionNo": 308,
+      "name": "Mysterious Idol X (Alter)",
+      "type": "normal",
+      "className": "foreigner",
+      "attribute": "star",
+      "rarity": 4
+    },
+    {
+      "id": 704000,
+      "collectionNo": 309,
+      "name": "Morgan",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 105000,
+      "collectionNo": 310,
+      "name": "Tam Lin Gawain",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 204300,
+      "collectionNo": 311,
+      "name": "Tam Lin Tristan",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 304800,
+      "collectionNo": 312,
+      "name": "Tam Lin Lancelot",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 304700,
+      "collectionNo": 313,
+      "name": "Percival",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 604200,
+      "collectionNo": 314,
+      "name": "Koyanskaya of Light",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "beast",
+      "rarity": 5
+    },
+    {
+      "id": 404200,
+      "collectionNo": 315,
+      "name": "Habetrot",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 2800100,
+      "collectionNo": 316,
+      "name": "Oberon",
+      "type": "normal",
+      "className": "pretender",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 105100,
+      "collectionNo": 317,
+      "name": "Okita Souji Alter (Saber)",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 204400,
+      "collectionNo": 318,
+      "name": "Anastasia & Viy",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 504800,
+      "collectionNo": 319,
+      "name": "Charlotte Corday (Caster)",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 901200,
+      "collectionNo": 320,
+      "name": "Leonardo da Vinci (Ruler)",
+      "type": "normal",
+      "className": "ruler",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 1101100,
+      "collectionNo": 321,
+      "name": "Kama (Avenger)",
+      "type": "normal",
+      "className": "avenger",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 404500,
+      "collectionNo": 322,
+      "name": "Caenis (Rider)",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 704100,
+      "collectionNo": 323,
+      "name": "Sei Shounagon (Berserker)",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 2501000,
+      "collectionNo": 324,
+      "name": "Jacques de Molay",
+      "type": "normal",
+      "className": "foreigner",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 204500,
+      "collectionNo": 325,
+      "name": "Zenobia",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 404600,
+      "collectionNo": 326,
+      "name": "Elisabeth Báthory (Cinderella)",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 504900,
+      "collectionNo": 327,
+      "name": "Izumo-no-Okuni",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 1101200,
+      "collectionNo": 328,
+      "name": "Mysterious Ranmaru X",
+      "type": "normal",
+      "className": "avenger",
+      "attribute": "star",
+      "rarity": 4
+    },
+    {
+      "id": 305000,
+      "collectionNo": 329,
+      "name": "Sakamoto Ryouma (Lancer)",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 505000,
+      "collectionNo": 330,
+      "name": "Martha (Santa)",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 404300,
+      "collectionNo": 331,
+      "name": "Taigong Wang",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 404400,
+      "collectionNo": 332,
+      "name": "Dobrynya Nikitich",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 9943610,
+      "collectionNo": 333,
+      "name": "Beast IV",
+      "type": "enemyCollectionDetail",
+      "className": "beastIV",
+      "attribute": "beast",
+      "rarity": 5
+    },
+    {
+      "id": 2500900,
+      "collectionNo": 334,
+      "name": "Koyanskaya of Dark",
+      "type": "normal",
+      "className": "foreigner",
+      "attribute": "beast",
+      "rarity": 5
+    },
+    {
+      "id": 2800200,
+      "collectionNo": 335,
+      "name": "Hephaistíon",
+      "type": "normal",
+      "className": "pretender",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 1001100,
+      "collectionNo": 336,
+      "name": "Manannan mac Lir (Bazett)",
+      "type": "normal",
+      "className": "alterEgo",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 105300,
+      "collectionNo": 337,
+      "name": "Hai Bà Trưng",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 1001200,
+      "collectionNo": 338,
+      "name": "Taisui Xingjun",
+      "type": "normal",
+      "className": "alterEgo",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 1001300,
+      "collectionNo": 339,
+      "name": "Super Bunyan",
+      "type": "normal",
+      "className": "alterEgo",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 504700,
+      "collectionNo": 340,
+      "name": "Daikokuten",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "sky",
+      "rarity": 4
+    },
+    {
+      "id": 304900,
+      "collectionNo": 341,
+      "name": "Mary Anning",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "human",
+      "rarity": 1
+    },
+    {
+      "id": 404700,
+      "collectionNo": 342,
+      "name": "Kōnstantînos XI",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 105200,
+      "collectionNo": 343,
+      "name": "Charlemagne",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "star",
+      "rarity": 5
+    },
+    {
+      "id": 104300,
+      "collectionNo": 344,
+      "name": "Roland",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 704200,
+      "collectionNo": 345,
+      "name": "Kriemhild",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 901300,
+      "collectionNo": 346,
+      "name": "James Moriarty",
+      "type": "normal",
+      "className": "ruler",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 305100,
+      "collectionNo": 347,
+      "name": "Don Quixote",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 505100,
+      "collectionNo": 348,
+      "name": "Zhang Jue",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "human",
+      "rarity": 3
+    },
+    {
+      "id": 404800,
+      "collectionNo": 349,
+      "name": "Kyokutei Bakin",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 204600,
+      "collectionNo": 350,
+      "name": "Minamoto-no-Tametomo",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 2300500,
+      "collectionNo": 351,
+      "name": "Archetype: EARTH",
+      "type": "normal",
+      "className": "moonCancer",
+      "attribute": "star",
+      "rarity": 5
+    },
+    {
+      "id": 1001400,
+      "collectionNo": 352,
+      "name": "Xu Fu",
+      "type": "normal",
+      "className": "alterEgo",
+      "attribute": "human",
+      "rarity": 3
+    },
+    {
+      "id": 2800300,
+      "collectionNo": 353,
+      "name": "Lady Avalon",
+      "type": "normal",
+      "className": "pretender",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 105400,
+      "collectionNo": 354,
+      "name": "Gareth (Saber)",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 704300,
+      "collectionNo": 355,
+      "name": "Ibuki-Douji (Berserker)",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 1101400,
+      "collectionNo": 356,
+      "name": "Utsumi Erice (Avenger)",
+      "type": "normal",
+      "className": "avenger",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 901400,
+      "collectionNo": 357,
+      "name": "Scáthach-Skadi (Ruler)",
+      "type": "normal",
+      "className": "ruler",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 505200,
+      "collectionNo": 358,
+      "name": "Wu Zetian (Caster)",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 604500,
+      "collectionNo": 359,
+      "name": "Thrúd",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "sky",
+      "rarity": 4
+    },
+    {
+      "id": 604400,
+      "collectionNo": 360,
+      "name": "Hildr",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "sky",
+      "rarity": 4
+    },
+    {
+      "id": 604300,
+      "collectionNo": 361,
+      "name": "Ortlinde",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "sky",
+      "rarity": 4
+    },
+    {
+      "id": 704400,
+      "collectionNo": 362,
+      "name": "Sen-no-Rikyu",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 105500,
+      "collectionNo": 363,
+      "name": "Yamanami Keisuke",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 901500,
+      "collectionNo": 364,
+      "name": "Iyo",
+      "type": "normal",
+      "className": "ruler",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 604600,
+      "collectionNo": 365,
+      "name": "Huyan Zhuo",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 404900,
+      "collectionNo": 366,
+      "name": "Huang Feihu",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 2800400,
+      "collectionNo": 367,
+      "name": "Elisa the Nine-Tattooed Dragon",
+      "type": "normal",
+      "className": "pretender",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 305300,
+      "collectionNo": 368,
+      "name": "Britomart",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 1001500,
+      "collectionNo": 369,
+      "name": "Grigori Rasputin",
+      "type": "normal",
+      "className": "alterEgo",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 1101500,
+      "collectionNo": 370,
+      "name": "Nitocris (Alter)",
+      "type": "normal",
+      "className": "avenger",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 604700,
+      "collectionNo": 371,
+      "name": "Tezcatlipoca",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 2800500,
+      "collectionNo": 372,
+      "name": "Tlāloc",
+      "type": "normal",
+      "className": "pretender",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 2501100,
+      "collectionNo": 373,
+      "name": "Kukulcan",
+      "type": "normal",
+      "className": "foreigner",
+      "attribute": "star",
+      "rarity": 5
+    },
+    {
+      "id": 901600,
+      "collectionNo": 374,
+      "name": "Pope Johanna",
+      "type": "normal",
+      "className": "ruler",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 204700,
+      "collectionNo": 375,
+      "name": "Takasugi Shinsaku",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 1001600,
+      "collectionNo": 376,
+      "name": "Larva/Tiamat",
+      "type": "normal",
+      "className": "alterEgo",
+      "attribute": "star",
+      "rarity": 5
+    },
+    {
+      "id": 3300100,
+      "collectionNo": 377,
+      "name": "Sodom's Beast/Draco",
+      "type": "normal",
+      "className": "beast",
+      "attribute": "beast",
+      "rarity": 5
+    },
+    {
+      "id": 604800,
+      "collectionNo": 378,
+      "name": "Locusta",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 105700,
+      "collectionNo": 379,
+      "name": "Sétanta",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 604900,
+      "collectionNo": 380,
+      "name": "Kashin Koji",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 305400,
+      "collectionNo": 381,
+      "name": "Bhīma",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 704600,
+      "collectionNo": 382,
+      "name": "Duryodhana",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 204800,
+      "collectionNo": 383,
+      "name": "Durgā",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 105600,
+      "collectionNo": 384,
+      "name": "Medusa",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 505300,
+      "collectionNo": 385,
+      "name": "Aesc the Rain Witch",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 704700,
+      "collectionNo": 386,
+      "name": "Altria Caster",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "star",
+      "rarity": 5
+    },
+    {
+      "id": 405000,
+      "collectionNo": 387,
+      "name": "Suzuka Gozen (Vacay)",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "sky",
+      "rarity": 4
+    },
+    {
+      "id": 1101600,
+      "collectionNo": 388,
+      "name": "Chloe von Einzbern",
+      "type": "normal",
+      "className": "avenger",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 2501200,
+      "collectionNo": 389,
+      "name": "Cnoc na Riabh Yaraändoo",
+      "type": "normal",
+      "className": "foreigner",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 901700,
+      "collectionNo": 390,
+      "name": "Mélusine",
+      "type": "normal",
+      "className": "ruler",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 204900,
+      "collectionNo": 391,
+      "name": "UDK-Barghest",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 2800600,
+      "collectionNo": 392,
+      "name": "Cait Cú MikoCer",
+      "type": "normal",
+      "className": "pretender",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 2501300,
+      "collectionNo": 393,
+      "name": "Wandjina",
+      "type": "normal",
+      "className": "foreigner",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 205000,
+      "collectionNo": 394,
+      "name": "Ptolemaîos",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 205100,
+      "collectionNo": 395,
+      "name": "Sugitani Zenjubou",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "human",
+      "rarity": 3
+    },
+    {
+      "id": 105800,
+      "collectionNo": 396,
+      "name": "Thēseus",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "earth",
+      "rarity": 3
+    },
+    {
+      "id": 405200,
+      "collectionNo": 397,
+      "name": "Takeda Harunobu",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 704800,
+      "collectionNo": 398,
+      "name": "Nagakura Shinpachi",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 205200,
+      "collectionNo": 399,
+      "name": "Saika Magoichi",
+      "type": "normal",
+      "className": "archer",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 901800,
+      "collectionNo": 400,
+      "name": "Uesugi Kenshin",
+      "type": "normal",
+      "className": "ruler",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 405300,
+      "collectionNo": 401,
+      "name": "Nemo (Santa)",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "sky",
+      "rarity": 4
+    },
+    {
+      "id": 105900,
+      "collectionNo": 402,
+      "name": "Yamato Takeru",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 1101800,
+      "collectionNo": 403,
+      "name": "Minamoto-no-Raikou/Ushi Gozen",
+      "type": "normal",
+      "className": "avenger",
+      "attribute": "sky",
+      "rarity": 5
+    },
+    {
+      "id": 505400,
+      "collectionNo": 404,
+      "name": "Yui Shousetsu",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 106000,
+      "collectionNo": 405,
+      "name": "Miyamoto Iori",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 405500,
+      "collectionNo": 406,
+      "name": "Andromeda",
+      "type": "normal",
+      "className": "rider",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 1101300,
+      "collectionNo": 407,
+      "name": "Marie Antoinette (Alter)",
+      "type": "normal",
+      "className": "avenger",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 605000,
+      "collectionNo": 408,
+      "name": "Hassan of the Shining Star",
+      "type": "normal",
+      "className": "assassin",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 1101700,
+      "collectionNo": 409,
+      "name": "Monte Cristo",
+      "type": "normal",
+      "className": "avenger",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 2800700,
+      "collectionNo": 410,
+      "name": "Alessandro di Cagliostro",
+      "type": "normal",
+      "className": "pretender",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 9945590,
+      "collectionNo": 411,
+      "name": "E-Flare Marie",
+      "type": "enemyCollectionDetail",
+      "className": "uOlgaMarieFlareCollection",
+      "attribute": "human",
+      "rarity": 0
+    },
+    {
+      "id": 9945600,
+      "collectionNo": 412,
+      "name": "E-Aqua Marie",
+      "type": "enemyCollectionDetail",
+      "className": "uOlgaMarieAquaCollection",
+      "attribute": "human",
+      "rarity": 0
+    },
+    {
+      "id": 2501400,
+      "collectionNo": 413,
+      "name": "Aozaki Aoko",
+      "type": "normal",
+      "className": "foreigner",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 704900,
+      "collectionNo": 414,
+      "name": "Sizuki Soujyuro",
+      "type": "normal",
+      "className": "berserker",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 505500,
+      "collectionNo": 415,
+      "name": "Kuonji Alice",
+      "type": "normal",
+      "className": "caster",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 1001700,
+      "collectionNo": 416,
+      "name": "Hibiki & Chikagi",
+      "type": "normal",
+      "className": "alterEgo",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 3300200,
+      "collectionNo": 417,
+      "name": "Ereshkigal",
+      "type": "normal",
+      "className": "beastEresh",
+      "attribute": "beast",
+      "rarity": 5
+    },
+    {
+      "id": 2300900,
+      "collectionNo": 418,
+      "name": "Mysterious Executor C.I.E.L",
+      "type": "normal",
+      "className": "moonCancer",
+      "attribute": "human",
+      "rarity": 5
+    },
+    {
+      "id": 305500,
+      "collectionNo": 419,
+      "name": "Dobrynya Nikitich (Lancer)",
+      "type": "normal",
+      "className": "lancer",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 1101900,
+      "collectionNo": 420,
+      "name": "Xu Fu (Avenger)",
+      "type": "normal",
+      "className": "avenger",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 2300600,
+      "collectionNo": 421,
+      "name": "BB Dubai",
+      "type": "normal",
+      "className": "moonCancer",
+      "attribute": "star",
+      "rarity": 5
+    },
+    {
+      "id": 2301000,
+      "collectionNo": 422,
+      "name": "Tenochtitlan (Moon Cancer)",
+      "type": "normal",
+      "className": "moonCancer",
+      "attribute": "earth",
+      "rarity": 4
+    },
+    {
+      "id": 2501600,
+      "collectionNo": 423,
+      "name": "Mysterious Heroine XX (Alter)",
+      "type": "normal",
+      "className": "foreigner",
+      "attribute": "star",
+      "rarity": 4
+    },
+    {
+      "id": 2300700,
+      "collectionNo": 424,
+      "name": "Kishinami Hakuno",
+      "type": "normal",
+      "className": "moonCancer",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 2300800,
+      "collectionNo": 425,
+      "name": "Kishinami Hakuno",
+      "type": "normal",
+      "className": "moonCancer",
+      "attribute": "human",
+      "rarity": 4
+    },
+    {
+      "id": 1001800,
+      "collectionNo": 426,
+      "name": "Kazuradrop",
+      "type": "normal",
+      "className": "alterEgo",
+      "attribute": "earth",
+      "rarity": 5
+    },
+    {
+      "id": 106100,
+      "collectionNo": 432,
+      "name": "Richard I",
+      "type": "normal",
+      "className": "saber",
+      "attribute": "human",
+      "rarity": 5
+    }
+  ],
+  "projection": "Only catalogue fields used by app.js and sync-initial-state.mjs; all 427 source records retained."
+}

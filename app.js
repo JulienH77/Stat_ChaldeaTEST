@@ -16,16 +16,16 @@ const NA_BLOCKED_IDS=new Set([83,149,152,151,168,240,333,411,412,436,443,460]);
 const NA_BLOCKED_NAMES=new Set(['solomon']);
 const isBlockedRecord=r=>{const ids=[Number(r?.id),Number(r?.collectionNo),Number(r?.atlasId)];if(ids.includes(417))return false;return ids.some(v=>NA_BLOCKED_IDS.has(v))||NA_BLOCKED_NAMES.has(norm(r?.name));};
 const NA_FORCE_INCLUDE=[{id:417,name:'Ereshkigal',class:'Beast',rarity:'SSR',attribute:'Beast',cardType:'Buster',atlasId:3300200}];
-const FUTURE_NAMES=new Set(['Phantasmoon','Louhi','Van Gogh (Miner)','Tutankhamun','Kazuradrop'].map(name=>norm(name)));
+// The live NA export determines releases; a static future-name blacklist becomes stale.
 const SUPPORT_GUID_FALLBACKS={julien:'381d9bb7-fc83-49d2-862d-3990b4c1379c',yanis:'',attmann:''};
-const sanitizeRoster=roster=>{const seen=new Set();const out=[];for(const r of Array.isArray(roster)?roster:[]){const id=Number(r?.id);if(!id||seen.has(id)||isBlockedRecord(r)||FUTURE_NAMES.has(norm(r?.name)))continue;seen.add(id);out.push(r);}if(!seen.has(417))out.push({...NA_FORCE_INCLUDE[0]});return out;};
+const sanitizeRoster=roster=>{const seen=new Set();const out=[];for(const r of Array.isArray(roster)?roster:[]){const id=Number(r?.id);if(!id||seen.has(id)||isBlockedRecord(r))continue;seen.add(id);out.push(r);}if(!seen.has(417))out.push({...NA_FORCE_INCLUDE[0]});return out;};
 const IMG={
  Saber:'saber.webp',Archer:'archer.webp',Lancer:'lancer.webp',Rider:'rider.webp',Caster:'caster.webp',Assassin:'assassin.webp',Berserker:'berserker.webp',Ruler:'ruler.webp',Avenger:'avenger.webp','Alter Ego':'alter_ego.webp','Moon Cancer':'moon_cancer.webp',Foreigner:'foreigner.webp',Pretender:'pretender.webp',Shielder:'shielder.webp',Beast:'beast.webp',
  grail:'graal.webp', np:'np.webp', Q:'quick.webp', A:'arts.webp', B:'buster.webp'
 };
 const IMG_BASE='./IMG/';
 const state=structuredClone(initialState);
-// Hide future Excel placeholders immediately; authoritative NA sync runs afterwards.
+// Remove duplicates and excluded records; the live NA export refreshes the catalogue.
 state.roster=sanitizeRoster(state.roster);
 let currentPlayer='julien',currentView='overview',rosterMode='cards',sortDir='desc',compareFocusId=284,skillScope='gold',bondScope='gold',showMissing=true,xpTargetClass='',supportMode='normal',showNpOverlay=false;
 let cloudReadyPromise=null,cloud=null,session=null,currentAuth=null,cloudEnabled=false,cloudAuthError='',atlasById=new Map(),atlasFull=new Map(),atlasVariantsByName=new Map(),variantDetailCache=new Map(),renderToken=0,showdownRenderedId=null,showdownRenderToken=0,supportPlayer='julien',atlasRosterSyncStarted=false,atlasRosterSyncPromise=null;
@@ -69,7 +69,7 @@ function grailImg(){return `<img class="grail-thumb" src="${localAsset(IMG.grail
 function isWelfare(r){return WELFARE_IDS.has(Number(r.id))||r.isWelfare===true}
 function isMash(r){return MASH_IDS.has(Number(r.id))||MASH_NAMES.has(norm(r.name))}
 function isCounted(r){return !isMash(r)&&!r.nonCounted&&!NON_VISIBLE_CLASSES.has(classKey(r.class))}
-function isVisible(r){return !isBlockedRecord(r)&&!NON_VISIBLE_CLASSES.has(classKey(r.class))&&!FUTURE_NAMES.has(norm(r.name))}
+function isVisible(r){return !isBlockedRecord(r)&&!NON_VISIBLE_CLASSES.has(classKey(r.class))}
 function stats(p,id){return state.players[p]?.stats?.[String(id)]||{level:null,np:null,bond:null,grail:null,fouHp:null,fouAtk:null,servantCoins:null,skills:[null,null,null],appendSkills:[null,null,null,null,null]}}
 function defaultMaxLevel(r){const rr=rarityNum(r.rarity);return rr===5?90:rr===4?80:rr===3?70:rr===2?65:60}
 function displayLevel(p,r,s){const n=Number(s.level);if(Number.isFinite(n)&&n>0)return n;return (p==='yanis'||p==='attmann')&&isOwned(p,r)?defaultMaxLevel(r):'—'}
@@ -411,14 +411,14 @@ async function syncRosterNA(){
   const keep=[];
   const pushUnique=r=>{
     const id=Number(r?.id);
-    if(!id||isBlockedRecord(r)||FUTURE_NAMES.has(norm(r?.name))||keep.some(x=>Number(x.id)===id))return;
+    if(!id||isBlockedRecord(r)||keep.some(x=>Number(x.id)===id))return;
     keep.push(r);
   };
   const primaryNames=new Set(arr.filter(a=>Number(a?.collectionNo)>0).map(a=>norm(a?.name)).filter(Boolean));
   atlasVariantsByName.clear();
   for(const a of arr){
     const id=Number(a?.id),collectionNo=Number(a?.collectionNo),name=String(a?.name||'');
-    if(!id||isBlockedRecord(a)||FUTURE_NAMES.has(norm(name)))continue;
+    if(!id||isBlockedRecord(a))continue;
     if(collectionNo===0){
       const key=norm(name);
       if(key&&primaryNames.has(key)){
