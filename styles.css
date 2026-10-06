@@ -759,3 +759,14 @@ main.main{position:relative;overflow:visible;isolation:isolate}
 .gssr-destiny-v217{margin-top:18px}.gssr-destiny-copy{margin:8px 0 0;color:#7c8997;font-size:10px;line-height:1.5}.gssr-destiny-grid-v217{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}.gssr-destiny-slot-v217{display:grid;gap:8px;border:1px solid #e1e7ed;background:#fbfcfd;border-radius:13px;padding:10px}.gssr-destiny-slot-head{display:flex;align-items:center;gap:8px}.gssr-destiny-slot-head>span{width:24px;height:24px;display:grid;place-items:center}.gssr-destiny-slot-head>div{display:grid;gap:1px}.gssr-destiny-slot-head b{font-size:10px}.gssr-destiny-slot-head small{font-size:8px;color:#8995a1}.gssr-extra-icon{display:grid!important;place-items:center;width:24px;height:24px;border-radius:7px;background:#2f4359;color:#fff;font:800 8px monospace;letter-spacing:.04em}.gssr-destiny-slot-v217 select{width:100%;min-width:0;border:1px solid #d7dfe8;background:#fff;border-radius:9px;padding:9px 8px;color:var(--ink);font-size:10px;outline:none}.gssr-destiny-slot-v217 select:focus{border-color:#7997b7;box-shadow:0 0 0 3px rgba(80,118,184,.10)}.gssr-destiny-preview{display:flex;align-items:center;gap:7px;min-height:36px}.gssr-destiny-preview>span:last-child{font-size:8px;color:#7d8996;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.gssr-empty-mini{width:44px;height:44px;display:grid;place-items:center;border-radius:10px;background:#edf1f4;color:#a0a8b0;font-weight:700}.gssr-save-row-v217{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:18px 2px 0;padding-top:15px;border-top:1px solid var(--line);color:#87939f;font-size:9px}.gssr-save-row-v217>div{display:flex;gap:7px}
 @media(max-width:1050px){.gssr-history-grid-v217{grid-template-columns:1fr}.gssr-destiny-grid-v217{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.gssr-event-head-v217{flex-direction:column;gap:12px}.gssr-event-side{justify-content:flex-start}.gssr-event-stat{text-align:left}.gssr-pool-grid-v217{grid-template-columns:1fr}.gssr-destiny-grid-v217{grid-template-columns:1fr}.gssr-save-row-v217{align-items:flex-start;flex-direction:column}.gssr-save-row-v217>div{width:100%}.gssr-save-row-v217 button{flex:1}.gssr-servant-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* V218: NP profiles can wrap across 3 columns; every mobile item stays in one column. */
+@media (min-width:1051px){
+  .detail-stats-v10>.np-types-underbox{grid-column:2 / -1;justify-self:end;margin:0;}
+}
+@media (max-width:700px){
+  .detail-stats-v10>.detail-box,
+  .detail-stats-v10>.bond-block,
+  .detail-stats-v10>.np-types-underbox{grid-column:1!important;grid-row:auto!important;}
+}
+.editable-input[readonly]{background:transparent;cursor:default;}

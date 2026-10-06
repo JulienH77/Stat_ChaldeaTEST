@@ -8,7 +8,7 @@ const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY;
 const ATLAS_URL = 'https://api.atlasacademy.io/export/NA/basic_servant.json';
 const PLAYERS = ['julien', 'yanis', 'attmann'];
 const FUTURE_NAMES = new Set(['Phantasmoon','Louhi','Van Gogh (Miner)','Tutankhamun','Kazuradrop']);
-const NA_BLOCKED_IDS = new Set([83,149,151,168,240,333,411,412,436,443,460]);
+const NA_BLOCKED_IDS = new Set([83,149,152,151,168,240,333,411,412,436,443,460]);
 const FORCE_INCLUDE = [{id:417,name:'Ereshkigal',class:'Beast',rarity:'SSR',atlasId:3300200,nonCounted:false}];
 const PLAYER_LABELS = {julien:'Julien', yanis:'Yanis', attmann:'Attmann'};
 const EMPTY = () => ({level:null,bond:null,grail:null,fouHp:null,fouAtk:null,np:null,skills:[null,null,null],appendSkills:[null,null,null,null,null],servantCoins:null});
@@ -27,7 +27,7 @@ async function fetchAllStats() {
   const out = [];
   const pageSize = 1000;
   for (let from = 0; ; from += pageSize) {
-    const rows = await getJson(`${SUPABASE_URL}/rest/v1/chaldea_stats?select=*`, {
+    const rows = await getJson(`${SUPABASE_URL}/rest/v1/chaldea_stats?select=*&order=player_key.asc,servant_id.asc`, {
       headers: {
         apikey: SUPABASE_SECRET_KEY,
         Authorization: `Bearer ${SUPABASE_SECRET_KEY}`,
@@ -68,13 +68,14 @@ const atlas = await getJson(ATLAS_URL, {headers:{'User-Agent':'Chaldea-Command s
 const atlasList = Array.isArray(atlas) ? atlas : (Array.isArray(atlas?.data) ? atlas.data : []);
 if (!atlasList.length) throw new Error('Atlas NA n’a renvoyé aucun Servant. Snapshot interrompu.');
 
-const byCollection = new Map(atlasList.map(x => [Number(x.collectionNo), x]));
+const byCollection = new Map();
+for(const x of atlasList){const id=Number(x.collectionNo);if(id>0&&!byCollection.has(id))byCollection.set(id,x);}
 const roster = [];
 const seen = new Set();
 
 for (const r of state.roster || []) {
   const a = byCollection.get(Number(r.id));
-  if (!a) continue;
+  if (!a || seen.has(Number(r.id))) continue;
   if (NA_BLOCKED_IDS.has(Number(r.id))) continue;
   if (classKey(a.className) === 'Extra') continue;
   if (FUTURE_NAMES.has(String(a.name || ''))) continue;
@@ -92,7 +93,7 @@ for (const r of state.roster || []) {
 
 for (const a of atlasList) {
   const id = Number(a.collectionNo);
-  if (!id || seen.has(id) || NA_BLOCKED_IDS.has(id)) continue;
+  if (id <= 0 || seen.has(id) || NA_BLOCKED_IDS.has(id)) continue;
   if (classKey(a.className) === 'Extra') continue;
   if (FUTURE_NAMES.has(String(a.name || ''))) continue;
   roster.push({
@@ -131,8 +132,9 @@ for (const row of await fetchAllStats()) {
     servantCoins: row.servant_coins ?? null
   };
 }
+const xpRows=await fetchXp();
 for (const p of PLAYERS) {
-  const xp = (await fetchXp()).find(x => String(x.player_key) === p);
+  const xp = xpRows.find(x => String(x.player_key) === p);
   freshStats[p].xp = xp?.inventory || state.players?.[p]?.xp || {};
 }
 
@@ -141,7 +143,10 @@ state.source = 'Supabase cloud snapshot + Atlas Academy NA catalogue';
 state.region = 'NA';
 state.roster = roster;
 state.players = freshStats;
-state.meta = {...(state.meta || {}), cloudSnapshotAt: new Date().toISOString()};
+const previous=JSON.parse(await fs.readFile(INITIAL_PATH,'utf8'));
+state.meta={...(state.meta||{})};
+if(JSON.stringify(previous.roster)===JSON.stringify(state.roster)&&JSON.stringify(previous.players)===JSON.stringify(state.players)){console.log('Snapshot inchangé.');process.exit(0);}
+state.meta.cloudSnapshotAt=new Date().toISOString();
 
 await fs.writeFile(INITIAL_PATH, JSON.stringify(state, null, 2) + '\n', 'utf8');
 console.log(`Snapshot écrit : ${roster.length} Servants · ${PLAYERS.map(p => `${p}=${Object.keys(freshStats[p].stats).length}`).join(', ')}`);
